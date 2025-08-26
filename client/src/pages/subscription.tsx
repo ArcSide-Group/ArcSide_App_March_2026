@@ -1,346 +1,269 @@
-import { useAuth } from "@/hooks/useAuth";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import type { User, UsageTracking } from "@shared/schema";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { useEffect } from "react";
+import { Link, useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+const subscriptionTiers = [
+  {
+    name: 'Free',
+    price: 0,
+    period: 'forever',
+    features: [
+      'Basic calculators (5 per day)',
+      'Limited AI chatbot (10 messages/day)',
+      '1 active project',
+      'Small CAD template library',
+      'Community support'
+    ],
+    limitations: [
+      'Limited calculations',
+      'Basic templates only',
+      'No offline access',
+      'Standard support'
+    ],
+    current: true,
+    buttonText: 'Current Plan',
+    popular: false
+  },
+  {
+    name: 'Premium',
+    price: 19.99,
+    period: 'month',
+    features: [
+      'All calculators (unlimited)',
+      'Unlimited AI chatbot interactions',
+      'Up to 10 active projects',
+      'Extended CAD template library',
+      'Offline functionality',
+      'Export calculations (PDF/Excel)',
+      'Priority support',
+      'Ad-free experience'
+    ],
+    limitations: [
+      'Limited Text-to-CAD features',
+      'Standard cloud storage (5GB)'
+    ],
+    current: false,
+    buttonText: 'Upgrade to Premium',
+    popular: true
+  },
+  {
+    name: 'Pro',
+    price: 49.99,
+    period: 'month',
+    features: [
+      'Everything in Premium',
+      'Full Text-to-CAD access',
+      'Unlimited active projects',
+      'Complete CAD template library',
+      'Unlimited cloud storage',
+      'Advanced project management',
+      'Team collaboration tools',
+      'Custom WPS templates',
+      'Priority customer support',
+      'Early access to new features'
+    ],
+    limitations: [],
+    current: false,
+    buttonText: 'Upgrade to Pro',
+    popular: false
+  }
+];
 
 export default function Subscription() {
-  const { user, isLoading } = useAuth();
-  const { toast } = useToast();
-
-  const { data: usage } = useQuery<UsageTracking>({
-    queryKey: ["/api/usage"],
-    enabled: !!user,
-  });
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const upgradeMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/subscription/upgrade', {});
+    mutationFn: async (tier: string) => {
+      const response = await fetch('/api/subscription/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+      });
+      if (!response.ok) throw new Error('Failed to upgrade subscription');
       return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Upgrade Successful",
-        description: "Welcome to Premium! Enjoy unlimited access.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast.success('Subscription upgraded successfully!');
+      queryClient.invalidateQueries();
+      setLocation('/');
     },
-    onError: (error) => {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Upgrade Failed",
-        description: (error as Error).message,
-        variant: "destructive",
-      });
-    },
+    onError: () => {
+      toast.error('Failed to upgrade subscription');
+    }
   });
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [user, isLoading, toast]);
+  const handleUpgrade = (tierName: string) => {
+    if (tierName === 'Free') return;
+    // In a real app, this would integrate with Stripe/PayPal
+    upgradeMutation.mutate(tierName.toLowerCase());
+  };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center pb-20">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
-            <div className="text-primary-foreground font-bold text-xl">A</div>
-          </div>
-          <p className="text-muted-foreground">Loading subscription...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const isPremium = (user as User)?.subscriptionTier === 'premium';
+  const currentTier = user?.subscriptionTier || 'free';
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
-            <Link href="/">
+            <Link href="/settings">
               <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full bg-secondary/50">
                 <i className="fas fa-arrow-left text-sm"></i>
               </Button>
             </Link>
             <div>
               <h1 className="text-lg font-bold">Subscription</h1>
-              <p className="text-xs text-muted-foreground">Manage your premium access</p>
+              <p className="text-xs text-muted-foreground">Choose your plan</p>
             </div>
           </div>
-          <i className="fas fa-crown text-accent cursor-pointer"></i>
+          <Badge variant="outline">
+            {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
+          </Badge>
         </div>
 
         {/* Current Plan */}
-        <div className="px-6 mb-6">
-          <Card className={`${isPremium ? 'bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30' : 'bg-card border-border'}`}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <i className={`fas ${isPremium ? 'fa-crown text-accent' : 'fa-user text-muted-foreground'}`}></i>
-                  <span className="font-semibold">
-                    {isPremium ? 'Premium Plan' : 'Free Plan'}
-                  </span>
+        {user && (
+          <div className="px-6 mb-6">
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Current Plan</h3>
+                  <Badge variant="default">
+                    {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
+                  </Badge>
                 </div>
-                <Badge className={isPremium ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}>
-                  Active
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                {isPremium 
-                  ? 'Full access to all AI tools and unlimited analyses' 
-                  : 'Limited access to basic features'
-                }
-              </p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-lg font-bold">
-                    {isPremium ? '$29.99' : '$0.00'}
-                  </span>
-                  <span className="text-sm text-muted-foreground">/month</span>
-                </div>
-                {isPremium && (
-                  <span className="text-xs text-muted-foreground">
-                    Renews {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
-                  </span>
+                <p className="text-sm text-muted-foreground">
+                  {currentTier === 'free' 
+                    ? 'You are currently on the free plan. Upgrade for unlimited access to all features.'
+                    : `You have full access to all ${currentTier} features. Thanks for supporting ArcSide!`
+                  }
+                </p>
+                {user.subscriptionExpiresAt && currentTier !== 'free' && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Renews on {new Date(user.subscriptionExpiresAt).toLocaleDateString()}
+                  </p>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Subscription Tiers */}
+        <div className="px-6 space-y-4">
+          {subscriptionTiers.map((tier) => {
+            const isCurrentTier = currentTier === tier.name.toLowerCase();
+            const canUpgrade = currentTier === 'free' && tier.name !== 'Free';
+
+            return (
+              <Card key={tier.name} className={`relative ${tier.popular ? 'border-primary shadow-lg' : 'border-border'}`}>
+                {tier.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-primary">Most Popular</Badge>
+                  </div>
+                )}
+
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{tier.name}</CardTitle>
+                    {isCurrentTier && (
+                      <Badge variant="secondary">Current</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-baseline space-x-1">
+                    <span className="text-2xl font-bold">
+                      ${tier.price}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      /{tier.period}
+                    </span>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">Features included:</h4>
+                    <ul className="space-y-1">
+                      {tier.features.map((feature, index) => (
+                        <li key={index} className="text-xs text-muted-foreground flex items-start">
+                          <i className="fas fa-check text-green-500 mr-2 mt-0.5"></i>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {tier.limitations.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Limitations:</h4>
+                      <ul className="space-y-1">
+                        {tier.limitations.map((limitation, index) => (
+                          <li key={index} className="text-xs text-muted-foreground flex items-start">
+                            <i className="fas fa-times text-orange-500 mr-2 mt-0.5"></i>
+                            {limitation}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <Button 
+                    onClick={() => handleUpgrade(tier.name)}
+                    disabled={isCurrentTier || upgradeMutation.isPending}
+                    className={`w-full ${tier.popular ? 'bg-primary' : ''}`}
+                    variant={isCurrentTier ? 'secondary' : (canUpgrade ? 'default' : 'outline')}
+                  >
+                    {upgradeMutation.isPending ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin mr-2"></i>
+                        Processing...
+                      </>
+                    ) : (
+                      tier.buttonText
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* FAQ Section */}
+        <div className="px-6 mt-8 mb-6">
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <h3 className="font-semibold">Frequently Asked Questions</h3>
+
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-medium text-sm">Can I cancel anytime?</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Yes, you can cancel your subscription at any time. You'll continue to have access to premium features until the end of your billing period.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-sm">What payment methods do you accept?</h4>
+                  <p className="text-xs text-muted-foreground">
+                    We accept all major credit cards, PayPal, and bank transfers for annual plans.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-sm">Is there a free trial?</h4>
+                  <p className="text-xs text-muted-foreground">
+                    The free plan gives you access to basic features. Premium and Pro plans offer 7-day free trials.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Usage Statistics */}
-        <div className="px-6 mb-6">
-          <h3 className="font-semibold mb-3">This Month's Usage</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="bg-card border-border">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">AI Analyses</span>
-                  <i className="fas fa-robot text-primary text-sm"></i>
-                </div>
-                <div>
-                  <span className="text-xl font-bold">{(usage as UsageTracking)?.analysesCount || 0}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {isPremium ? ' / Unlimited' : ' / 150 daily'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border-border">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">WPS Generated</span>
-                  <i className="fas fa-file-alt text-accent text-sm"></i>
-                </div>
-                <div>
-                  <span className="text-xl font-bold">{(usage as UsageTracking)?.wpsCount || 0}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {isPremium ? ' / Unlimited' : ' / Premium Only'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border-border">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Projects</span>
-                  <i className="fas fa-folder text-chart-1 text-sm"></i>
-                </div>
-                <div>
-                  <span className="text-xl font-bold">
-                    {/* Mock project count */}
-                    {Math.floor(((usage as UsageTracking)?.analysesCount || 0) / 10) + 1}
-                  </span>
-                  <span className="text-sm text-muted-foreground"> / Unlimited</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border-border">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Exports</span>
-                  <i className="fas fa-download text-chart-2 text-sm"></i>
-                </div>
-                <div>
-                  <span className="text-xl font-bold">{(usage as UsageTracking)?.exportsCount || 0}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {isPremium ? ' / Unlimited' : ' / Premium Only'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Plan Comparison */}
-        <div className="px-6 mb-6">
-          <h3 className="font-semibold mb-3">Plan Comparison</h3>
-          <div className="space-y-3">
-            
-            {/* Free Plan */}
-            <Card className="bg-card border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="font-semibold">Free Plan</h4>
-                    <p className="text-lg font-bold">$0<span className="text-sm font-normal text-muted-foreground">/month</span></p>
-                  </div>
-                  {!isPremium && (
-                    <Badge className="bg-secondary text-secondary-foreground">Current</Badge>
-                  )}
-                </div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-check text-primary"></i>
-                    <span>5 AI analyses per day</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-check text-primary"></i>
-                    <span>Basic defect analyzer</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-times text-destructive"></i>
-                    <span>Limited WPS generation</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-times text-destructive"></i>
-                    <span>No export capabilities</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Premium Plan */}
-            <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary/50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold">Premium Plan</h4>
-                      <Badge className="bg-accent text-accent-foreground text-xs">Most Popular</Badge>
-                    </div>
-                    <p className="text-lg font-bold">$29.99<span className="text-sm font-normal text-muted-foreground">/month</span></p>
-                  </div>
-                  {isPremium ? (
-                    <Badge className="bg-primary text-primary-foreground">Active</Badge>
-                  ) : (
-                    <Button
-                      onClick={() => upgradeMutation.mutate()}
-                      disabled={upgradeMutation.isPending}
-                      size="sm"
-                      className="bg-primary text-primary-foreground"
-                      data-testid="button-upgrade"
-                    >
-                      {upgradeMutation.isPending ? (
-                        <i className="fas fa-spinner fa-spin"></i>
-                      ) : (
-                        'Upgrade'
-                      )}
-                    </Button>
-                  )}
-                </div>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-check text-primary"></i>
-                    <span>Unlimited AI analyses</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-check text-primary"></i>
-                    <span>All AI tools access</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-check text-primary"></i>
-                    <span>Advanced WPS generation</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-check text-primary"></i>
-                    <span>PDF export & sharing</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <i className="fas fa-check text-primary"></i>
-                    <span>Priority support</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Billing & Payment */}
-        <div className="px-6 mb-6">
-          <h3 className="font-semibold mb-3">Billing & Payment</h3>
-          <div className="space-y-3">
-            <Card className="bg-card border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <i className="fas fa-credit-card text-muted-foreground"></i>
-                    <div>
-                      <span className="font-medium text-sm">Payment Method</span>
-                      <p className="text-xs text-muted-foreground">•••• •••• •••• 4242</p>
-                    </div>
-                  </div>
-                  <i className="fas fa-chevron-right text-muted-foreground text-sm"></i>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <i className="fas fa-receipt text-muted-foreground"></i>
-                    <span className="font-medium text-sm">Billing History</span>
-                  </div>
-                  <i className="fas fa-chevron-right text-muted-foreground text-sm"></i>
-                </div>
-              </CardContent>
-            </Card>
-
-            {isPremium && (
-              <Card className="bg-destructive/10 border-destructive/30">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <i className="fas fa-times-circle text-destructive"></i>
-                    <span className="font-medium text-sm text-destructive">Cancel Subscription</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
         </div>
       </div>
     </div>

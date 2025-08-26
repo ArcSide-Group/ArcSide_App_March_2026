@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { lazy } from "react";
 
 // Pages
 import Landing from "@/pages/landing";
@@ -42,6 +43,14 @@ function Router() {
             <Route path="/tools/weld-assistant" component={WeldAssistant} />
             <Route path="/calculators" component={Calculators} />
             <Route path="/calculators/voltage-amperage" component={VoltageAmperageCalculator} />
+            <Route path="/calculators/wire-feed-speed" component={lazy(() => import('./pages/calculators/wire-feed-speed'))} />
+            <Route path="/calculators/heat-input" component={lazy(() => import('./pages/calculators/heat-input'))} />
+            <Route path="/calculators/gas-flow" component={lazy(() => import('./pages/calculators/gas-flow'))} />
+            <Route path="/calculators/metal-weight" component={lazy(() => import('./pages/calculators/metal-weight'))} />
+            <Route path="/calculators/bend-allowance" component={lazy(() => import('./pages/calculators/bend-allowance'))} />
+            <Route path="/calculators/project-cost" component={lazy(() => import('./pages/calculators/project-cost'))} />
+            <Route path="/calculators/history" component={lazy(() => import('./pages/calculators/history'))} />
+            <Route path="/profile" component={lazy(() => import('./pages/profile'))} />
             <Route path="/projects" component={Projects} />
             <Route path="/subscription" component={Subscription} />
             <Route path="/settings" component={Settings} />

@@ -17,7 +17,6 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { db } from "./db";
 
 // Interface for storage operations
 export interface IStorage {

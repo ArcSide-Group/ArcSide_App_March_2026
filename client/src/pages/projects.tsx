@@ -1,68 +1,107 @@
-import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
-import type { User, Project } from "@shared/schema";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Link } from "wouter";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { useEffect } from "react";
+
+import { useState } from 'react';
+import { Link } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  material: string;
+  process: string;
+  status: string;
+  progress: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Projects() {
-  const { user, isLoading } = useAuth();
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [filter, setFilter] = useState('all');
+  
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: '',
+    material: '',
+    process: '',
+    status: 'active'
+  });
 
-  const { data: projects, isLoading: projectsLoading } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const response = await fetch('/api/projects');
+      if (!response.ok) throw new Error('Failed to fetch projects');
+      return response.json();
+    },
     enabled: !!user,
   });
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
+  const createProjectMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
+      if (!response.ok) throw new Error('Failed to create project');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Project created successfully');
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setIsDialogOpen(false);
+      setNewProject({ name: '', description: '', material: '', process: '', status: 'active' });
+    },
+    onError: () => {
+      toast.error('Failed to create project');
     }
-  }, [user, isLoading, toast]);
+  });
+
+  const handleCreateProject = () => {
+    createProjectMutation.mutate(newProject);
+  };
+
+  const updateField = (field: string, value: string) => {
+    setNewProject(prev => ({ ...prev, [field]: value }));
+  };
+
+  const filteredProjects = projects?.filter((project: Project) => {
+    if (filter === 'all') return true;
+    return project.status === filter;
+  }) || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-primary text-primary-foreground';
-      case 'completed': return 'bg-chart-2 text-accent-foreground';
-      case 'archived': return 'bg-muted text-muted-foreground';
-      default: return 'bg-accent text-accent-foreground';
+      case 'active': return 'bg-primary';
+      case 'completed': return 'bg-green-500';
+      case 'archived': return 'bg-muted-foreground';
+      default: return 'bg-primary';
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return 'fa-play-circle';
-      case 'completed': return 'fa-check-circle';
-      case 'archived': return 'fa-archive';
-      default: return 'fa-clock';
-    }
+  const getProcessIcon = (process: string) => {
+    const icons: Record<string, string> = {
+      'GMAW': 'fas fa-bolt',
+      'GTAW': 'fas fa-fire',
+      'SMAW': 'fas fa-tools',
+      'FCAW': 'fas fa-industry',
+    };
+    return icons[process] || 'fas fa-wrench';
   };
-
-  if (isLoading || projectsLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
-            <div className="text-primary-foreground font-bold text-xl">A</div>
-          </div>
-          <p className="text-muted-foreground">Loading projects...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -81,196 +120,213 @@ export default function Projects() {
               <p className="text-xs text-muted-foreground">Manage your welding projects</p>
             </div>
           </div>
-          <Button size="sm" className="bg-primary text-primary-foreground w-8 h-8 p-0 rounded-full">
-            <i className="fas fa-plus text-sm"></i>
-          </Button>
+          
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="w-8 h-8 p-0 rounded-full">
+                <i className="fas fa-plus text-sm"></i>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm mx-2">
+              <DialogHeader>
+                <DialogTitle>New Project</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Project Name</Label>
+                  <Input
+                    value={newProject.name}
+                    onChange={(e) => updateField('name', e.target.value)}
+                    placeholder="Enter project name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea
+                    value={newProject.description}
+                    onChange={(e) => updateField('description', e.target.value)}
+                    placeholder="Project description..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Material</Label>
+                  <Select value={newProject.material} onValueChange={(value) => updateField('material', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select material" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mild-steel">Mild Steel</SelectItem>
+                      <SelectItem value="stainless-steel">Stainless Steel</SelectItem>
+                      <SelectItem value="aluminum">Aluminum</SelectItem>
+                      <SelectItem value="carbon-steel">Carbon Steel</SelectItem>
+                      <SelectItem value="cast-iron">Cast Iron</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Welding Process</Label>
+                  <Select value={newProject.process} onValueChange={(value) => updateField('process', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select process" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GMAW">GMAW (MIG/MAG)</SelectItem>
+                      <SelectItem value="GTAW">GTAW (TIG)</SelectItem>
+                      <SelectItem value="SMAW">SMAW (Stick)</SelectItem>
+                      <SelectItem value="FCAW">FCAW (Flux Core)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button 
+                  onClick={handleCreateProject} 
+                  disabled={createProjectMutation.isPending || !newProject.name}
+                  className="w-full"
+                >
+                  {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Filter Tabs */}
-        <div className="px-6 mb-6">
-          <div className="flex space-x-2 bg-secondary/30 rounded-lg p-1">
-            <Button size="sm" className="flex-1 bg-primary text-primary-foreground">All</Button>
-            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground">Active</Button>
-            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground">Completed</Button>
+        <div className="px-6 mb-4">
+          <div className="flex space-x-2 overflow-x-auto pb-2">
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'active', label: 'Active' },
+              { key: 'completed', label: 'Completed' },
+              { key: 'archived', label: 'Archived' }
+            ].map((tab) => (
+              <Button
+                key={tab.key}
+                variant={filter === tab.key ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilter(tab.key)}
+                className="whitespace-nowrap"
+              >
+                {tab.label}
+              </Button>
+            ))}
           </div>
         </div>
 
         {/* Projects List */}
-        <div className="px-6 mb-6 space-y-4">
-          {projects && projects.length > 0 ? (
-            (projects as Project[]).map((project: Project) => (
-              <Card key={project.id} className="bg-card border-border">
+        <div className="px-6 space-y-3">
+          {isLoading ? (
+            <div className="text-center py-8">
+              <i className="fas fa-spinner fa-spin text-muted-foreground mb-2"></i>
+              <p className="text-sm text-muted-foreground">Loading projects...</p>
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="text-center py-8">
+              <i className="fas fa-folder-open text-muted-foreground text-2xl mb-2"></i>
+              <p className="text-sm text-muted-foreground">
+                {filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Create your first project to get started
+              </p>
+            </div>
+          ) : (
+            filteredProjects.map((project: Project) => (
+              <Card key={project.id} className="bg-card border-border hover:border-primary/30 transition-colors">
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm mb-1">{project.name}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        {project.description || `${project.process || 'Welding'} project`}
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-secondary/50 rounded-lg flex items-center justify-center">
+                      <i className={`${getProcessIcon(project.process)} text-primary text-sm`}></i>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold text-sm truncate">{project.name}</h3>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${getStatusColor(project.status)} text-white border-0`}
+                        >
+                          {project.status}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                        {project.description || 'No description provided'}
                       </p>
-                    </div>
-                    <Badge className={getStatusColor(project.status || 'active')}>
-                      {project.status || 'Active'}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 mb-3">
-                    <div>
-                      <span className="text-xs text-muted-foreground">Material</span>
-                      <p className="text-sm font-medium">{project.material || 'Not specified'}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground">Process</span>
-                      <p className="text-sm font-medium">{project.process || 'GMAW'}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground">Progress</span>
-                      <p className="text-sm font-medium">{project.progress || 0}%</p>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <Progress value={project.progress || 0} className="h-2" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <i className="fas fa-file text-xs text-muted-foreground"></i>
+                      
+                      <div className="flex items-center space-x-3 mb-2">
                         <span className="text-xs text-muted-foreground">
-                          {Math.floor(Math.random() * 10) + 1} analyses
+                          <i className="fas fa-cogs mr-1"></i>
+                          {project.process}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          <i className="fas fa-cube mr-1"></i>
+                          {project.material?.replace('-', ' ')}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <i className="fas fa-clock text-xs text-muted-foreground"></i>
+                      
+                      {project.progress > 0 && (
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Progress</span>
+                            <span className="text-xs font-medium">{project.progress}%</span>
+                          </div>
+                          <Progress value={project.progress} className="h-1" />
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between mt-3">
                         <span className="text-xs text-muted-foreground">
-                          {new Date(project.updatedAt || Date.now()).toLocaleDateString()}
+                          Created {new Date(project.createdAt).toLocaleDateString()}
                         </span>
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="sm" className="h-6 px-2">
+                            <i className="fas fa-edit text-xs"></i>
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2">
+                            <i className="fas fa-chevron-right text-xs"></i>
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                    <Button variant="link" size="sm" className="text-primary p-0 h-auto">
-                      Open
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))
-          ) : (
-            <Card className="bg-card border-border">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <i className="fas fa-folder-open text-2xl text-muted-foreground"></i>
-                </div>
-                <h3 className="font-semibold mb-2">No Projects Yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create your first welding project to get started with organizing your work.
-                </p>
-                <Button className="bg-primary text-primary-foreground">
-                  <i className="fas fa-plus mr-2"></i>
-                  Create Project
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Sample projects for demonstration */}
-          {(!projects || projects.length === 0) && (
-            <>
-              <Card className="bg-card border-border opacity-50">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm mb-1">Pipeline Section A-12</h3>
-                      <p className="text-xs text-muted-foreground">6G position pipe welding with SMAW process</p>
-                    </div>
-                    <Badge className="bg-primary text-primary-foreground">Active</Badge>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 mb-3">
-                    <div>
-                      <span className="text-xs text-muted-foreground">Material</span>
-                      <p className="text-sm font-medium">API 5L X65</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground">Process</span>
-                      <p className="text-sm font-medium">SMAW</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground">Progress</span>
-                      <p className="text-sm font-medium">75%</p>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <Progress value={75} className="h-2" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <i className="fas fa-file text-xs text-muted-foreground"></i>
-                        <span className="text-xs text-muted-foreground">5 analyses</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <i className="fas fa-clock text-xs text-muted-foreground"></i>
-                        <span className="text-xs text-muted-foreground">2 hours ago</span>
-                      </div>
-                    </div>
-                    <Button variant="link" size="sm" className="text-primary p-0 h-auto">
-                      Open
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border opacity-50">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm mb-1">Structural Steel Frame</h3>
-                      <p className="text-xs text-muted-foreground">GMAW fillet welds for building construction</p>
-                    </div>
-                    <Badge className="bg-chart-2 text-accent-foreground">Completed</Badge>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 mb-3">
-                    <div>
-                      <span className="text-xs text-muted-foreground">Material</span>
-                      <p className="text-sm font-medium">A572 Gr.50</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground">Process</span>
-                      <p className="text-sm font-medium">GMAW</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground">Progress</span>
-                      <p className="text-sm font-medium">100%</p>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <Progress value={100} className="h-2" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <i className="fas fa-file text-xs text-muted-foreground"></i>
-                        <span className="text-xs text-muted-foreground">8 analyses</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <i className="fas fa-clock text-xs text-muted-foreground"></i>
-                        <span className="text-xs text-muted-foreground">Yesterday</span>
-                      </div>
-                    </div>
-                    <Button variant="link" size="sm" className="text-primary p-0 h-auto">
-                      Open
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
           )}
         </div>
+
+        {/* Quick Stats */}
+        {!isLoading && projects && projects.length > 0 && (
+          <div className="px-6 mt-6">
+            <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-sm mb-3">Project Stats</h4>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-primary">{projects.length}</div>
+                    <div className="text-xs text-muted-foreground">Total</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-green-500">
+                      {projects.filter((p: Project) => p.status === 'active').length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Active</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-chart-1">
+                      {projects.filter((p: Project) => p.status === 'completed').length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Done</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

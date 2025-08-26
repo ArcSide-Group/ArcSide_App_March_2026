@@ -51,7 +51,7 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
@@ -90,9 +90,11 @@ export default function Settings() {
                     {(user as User)?.certifications || 'CWI, AWS D1.1 Certified'}
                   </p>
                 </div>
-                <Button variant="link" size="sm" className="text-primary p-0">
-                  Edit
-                </Button>
+                <Link href="/profile">
+                  <Button variant="link" size="sm" className="text-primary p-0">
+                    Edit
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -100,7 +102,7 @@ export default function Settings() {
 
         {/* Settings Groups */}
         <div className="px-6 mb-6 space-y-6">
-          
+
           {/* Preferences */}
           <div>
             <h3 className="font-semibold mb-3">Preferences</h3>

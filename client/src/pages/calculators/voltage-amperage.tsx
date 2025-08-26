@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "wouter";
 import { useMutation } from "@tanstack/react-query";
@@ -8,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+
 
 interface CalculationResult {
   recommendedAmperage: number;
@@ -19,13 +20,13 @@ interface CalculationResult {
 export default function VoltageAmperageCalculator() {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
+    material: 'mild-steel',
+    thickness: '0.25',
     process: 'GMAW',
-    material: 'steel',
-    thickness: '',
     position: 'flat',
-    fillerSize: ''
+    wireSize: '0.035'
   });
-  
+
   const [result, setResult] = useState<CalculationResult | null>(null);
 
   const calculateMutation = useMutation({
@@ -67,7 +68,7 @@ export default function VoltageAmperageCalculator() {
     const calculationData = {
       ...formData,
       thickness: parseFloat(formData.thickness),
-      fillerSize: formData.fillerSize ? parseFloat(formData.fillerSize) : undefined
+      wireSize: formData.wireSize ? parseFloat(formData.wireSize) : undefined
     };
 
     calculateMutation.mutate(calculationData);
@@ -80,7 +81,7 @@ export default function VoltageAmperageCalculator() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
@@ -168,7 +169,7 @@ export default function VoltageAmperageCalculator() {
                   ))}
                 </div>
               </div>
-
+              
               {formData.process === 'SMAW' && (
                 <div>
                   <Label htmlFor="fillerSize">Electrode Size (mm)</Label>
@@ -181,6 +182,25 @@ export default function VoltageAmperageCalculator() {
                     placeholder="Enter electrode diameter"
                     className="mt-2"
                   />
+                </div>
+              )}
+
+              {formData.process === 'GMAW' || formData.process === 'FCAW' && (
+                <div className="space-y-2">
+                  <Label>Wire Size (inches)</Label>
+                  <Select value={formData.wireSize} onValueChange={(value) => updateFormData('wireSize', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0.023">0.023"</SelectItem>
+                      <SelectItem value="0.030">0.030"</SelectItem>
+                      <SelectItem value="0.035">0.035"</SelectItem>
+                      <SelectItem value="0.045">0.045"</SelectItem>
+                      <SelectItem value="0.052">0.052"</SelectItem>
+                      <SelectItem value="0.0625">1/16"</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 

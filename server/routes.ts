@@ -11,7 +11,7 @@ class AIService {
   static async analyzeDefect(description: string): Promise<any> {
     // Simulate AI processing time
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     return {
       defectType: "Porosity",
       severity: "medium",
@@ -32,7 +32,7 @@ class AIService {
 
   static async generateWPS(params: any): Promise<any> {
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     return {
       wpsNumber: `WPS-${Date.now()}`,
       title: params.projectName || "Welding Procedure Specification",
@@ -53,7 +53,7 @@ class AIService {
 
   static async checkMaterialCompatibility(material1: string, material2: string): Promise<any> {
     await new Promise(resolve => setTimeout(resolve, 800));
-    
+
     return {
       status: "caution",
       compatibility: "These materials can be welded together but require special considerations",
@@ -81,7 +81,7 @@ class AIService {
 
   static async searchTerminology(term: string): Promise<any> {
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const definitions: Record<string, any> = {
       porosity: {
         definition: "Porosity is a cavity-type discontinuity formed by gas entrapment during solidification. It appears as rounded or elongated cavities in the weld metal.",
@@ -95,7 +95,7 @@ class AIService {
         relatedTerms: ["Gas Inclusion", "Wormhole", "Cavity", "Discontinuity"]
       }
     };
-    
+
     return definitions[term.toLowerCase()] || {
       definition: `Definition for "${term}" not found in current database.`,
       types: [],
@@ -106,21 +106,21 @@ class AIService {
 
   static async askAssistant(question: string): Promise<string> {
     await new Promise(resolve => setTimeout(resolve, 1200));
-    
+
     // Simple keyword-based responses for demo
     const responses: Record<string, string> = {
       undercut: "Great question! Preventing undercut in overhead welding requires several key techniques:\n\n• Use proper weaving technique - narrow stringer beads work best\n• Reduce travel speed to allow proper penetration\n• Maintain correct electrode angle (5-15° trailing)\n• Use appropriate amperage - not too high\n• Keep short arc length for better control\n\nWould you like me to explain any of these techniques in more detail?",
       "filler metal": "Selecting the right filler metal depends on your base materials, welding process, and application requirements. Here are the key factors:\n\n• Match or exceed base metal strength\n• Consider service conditions (temperature, corrosion)\n• Ensure chemical compatibility\n• Follow AWS classification system\n\nWhat specific materials are you working with?",
       "6g": "6G pipe welding is challenging but achievable with proper technique:\n\n• Start at the bottom (6 o'clock position)\n• Use uphill progression for better penetration\n• Maintain consistent travel speed\n• Watch your electrode angle and arc length\n• Practice root pass consistency\n\nWhat specific challenges are you facing with your 6G welds?"
     };
-    
+
     const lowerQuestion = question.toLowerCase();
     for (const [keyword, response] of Object.entries(responses)) {
       if (lowerQuestion.includes(keyword)) {
         return response;
       }
     }
-    
+
     return "I can help you with welding techniques, codes, materials, and troubleshooting. Could you provide more specific details about what you'd like to know?";
   }
 
@@ -165,10 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/projects', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const projectData = insertProjectSchema.parse({
-        ...req.body,
-        userId
-      });
+      const projectData = { ...req.body, userId };
       const project = await storage.createProject(projectData);
       res.json(project);
     } catch (error) {
@@ -181,20 +178,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { description, projectId } = req.body;
-      
+
       // Check subscription limits for free users
       const user = await storage.getUser(userId);
       if (user?.subscriptionTier === 'free') {
         const todayUsage = await storage.getTodayUsage(userId);
         if (todayUsage && (todayUsage.analysesCount || 0) >= 5) {
-          return res.status(403).json({ 
-            message: "Daily analysis limit reached. Upgrade to Premium for unlimited analyses." 
+          return res.status(403).json({
+            message: "Daily analysis limit reached. Upgrade to Premium for unlimited analyses."
           });
         }
       }
 
       const result = await AIService.analyzeDefect(description);
-      
+
       // Save analysis
       const analysisData = insertAnalysisSchema.parse({
         userId,
@@ -205,10 +202,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         severity: result.severity,
         title: `Defect Analysis - ${result.defectType}`
       });
-      
+
       const analysis = await storage.createAnalysis(analysisData);
       await storage.incrementUsage(userId, 'analyses');
-      
+
       res.json({ analysis, result });
     } catch (error) {
       console.error('Defect analysis error:', error);
@@ -220,15 +217,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.subscriptionTier === 'free') {
-        return res.status(403).json({ 
-          message: "WPS generation requires Premium subscription" 
+        return res.status(403).json({
+          message: "WPS generation requires Premium subscription"
         });
       }
 
       const result = await AIService.generateWPS(req.body);
-      
+
       // Save WPS document
       const wpsData = insertWpsSchema.parse({
         userId,
@@ -242,10 +239,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         thickness: req.body.thickness,
         parameters: result.parameters
       });
-      
+
       const wps = await storage.createWps(wpsData);
       await storage.incrementUsage(userId, 'wps');
-      
+
       res.json({ wps, result });
     } catch (error) {
       console.error('WPS generation error:', error);
@@ -257,9 +254,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { material1, material2, projectId } = req.body;
-      
+
       const result = await AIService.checkMaterialCompatibility(material1, material2);
-      
+
       // Save analysis
       const analysisData = insertAnalysisSchema.parse({
         userId,
@@ -269,10 +266,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result,
         title: `Material Compatibility - ${material1} + ${material2}`
       });
-      
+
       const analysis = await storage.createAnalysis(analysisData);
       await storage.incrementUsage(userId, 'analyses');
-      
+
       res.json({ analysis, result });
     } catch (error) {
       console.error('Material compatibility error:', error);
@@ -284,9 +281,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { term } = req.body;
-      
+
       const result = await AIService.searchTerminology(term);
-      
+
       // Save search
       const analysisData = insertAnalysisSchema.parse({
         userId,
@@ -295,9 +292,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result,
         title: `Terminology Search - ${term}`
       });
-      
+
       const analysis = await storage.createAnalysis(analysisData);
-      
+
       res.json({ analysis, result });
     } catch (error) {
       console.error('Terminology search error:', error);
@@ -309,9 +306,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { question, projectId } = req.body;
-      
+
       const answer = await AIService.askAssistant(question);
-      
+
       // Save conversation
       const analysisData = insertAnalysisSchema.parse({
         userId,
@@ -321,9 +318,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result: { answer },
         title: `Assistant Query`
       });
-      
+
       const analysis = await storage.createAnalysis(analysisData);
-      
+
       res.json({ analysis, answer });
     } catch (error) {
       console.error('Assistant error:', error);
@@ -335,8 +332,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/usage', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const usage = await storage.getMonthlyUsage(userId);
-      res.json(usage);
+      const usage = await storage.getTodayUsage(userId);
+      res.json(usage || { analysesCount: 0, wpsCount: 0, exportsCount: 0 });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch usage" });
     }
@@ -347,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const result = WeldingCalculators.calculateVoltageAmperage(req.body);
-      
+
       // Save calculation
       const calculation = await storage.saveCalculation({
         userId,
@@ -356,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results: result,
         title: 'Voltage & Amperage Calculation'
       });
-      
+
       await storage.incrementUsage(userId, 'calculations');
       res.json({ calculation, result });
     } catch (error) {
@@ -368,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const result = WeldingCalculators.calculateWireFeedSpeed(req.body);
-      
+
       const calculation = await storage.saveCalculation({
         userId,
         calculatorType: 'wire-feed-speed',
@@ -376,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results: result,
         title: 'Wire Feed Speed Calculation'
       });
-      
+
       await storage.incrementUsage(userId, 'calculations');
       res.json({ calculation, result });
     } catch (error) {
@@ -388,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const result = WeldingCalculators.calculateHeatInput(req.body);
-      
+
       const calculation = await storage.saveCalculation({
         userId,
         calculatorType: 'heat-input',
@@ -396,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results: result,
         title: 'Heat Input Calculation'
       });
-      
+
       await storage.incrementUsage(userId, 'calculations');
       res.json({ calculation, result });
     } catch (error) {
@@ -408,7 +405,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const result = WeldingCalculators.calculateGasFlowRate(req.body);
-      
+
       const calculation = await storage.saveCalculation({
         userId,
         calculatorType: 'gas-flow',
@@ -416,7 +413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results: result,
         title: 'Gas Flow Rate Calculation'
       });
-      
+
       await storage.incrementUsage(userId, 'calculations');
       res.json({ calculation, result });
     } catch (error) {
@@ -428,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const result = FabricationCalculators.calculateMetalWeight(req.body);
-      
+
       const calculation = await storage.saveCalculation({
         userId,
         calculatorType: 'metal-weight',
@@ -436,7 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results: result,
         title: 'Metal Weight Calculation'
       });
-      
+
       await storage.incrementUsage(userId, 'calculations');
       res.json({ calculation, result });
     } catch (error) {
@@ -448,7 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const result = FabricationCalculators.calculateBendAllowance(req.body);
-      
+
       const calculation = await storage.saveCalculation({
         userId,
         calculatorType: 'bend-allowance',
@@ -456,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results: result,
         title: 'Bend Allowance Calculation'
       });
-      
+
       await storage.incrementUsage(userId, 'calculations');
       res.json({ calculation, result });
     } catch (error) {
@@ -468,7 +465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const result = FabricationCalculators.calculateProjectCost(req.body);
-      
+
       const calculation = await storage.saveCalculation({
         userId,
         calculatorType: 'project-cost',
@@ -476,7 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results: result,
         title: 'Project Cost Estimate'
       });
-      
+
       await storage.incrementUsage(userId, 'calculations');
       res.json({ calculation, result });
     } catch (error) {
