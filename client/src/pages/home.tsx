@@ -28,7 +28,7 @@ export default function Home() {
   useEffect(() => {
     if (!isLoading && !user) {
       toast({
-        title: "Unauthorized", 
+        title: "Unauthorized",
         description: "You are logged out. Logging in again...",
         variant: "destructive",
       });
@@ -58,7 +58,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
@@ -79,9 +79,9 @@ export default function Home() {
             </div>
             <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
               {(user as User)?.profileImageUrl ? (
-                <img 
-                  src={(user as User).profileImageUrl!} 
-                  alt="Profile" 
+                <img
+                  src={(user as User).profileImageUrl!}
+                  alt="Profile"
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
@@ -127,12 +127,12 @@ export default function Home() {
               <ToolCard
                 icon="fas fa-search"
                 title="Defect Analyzer"
-                description="AI-powered weld defect analysis"
+                description="AI weld defect analysis"
                 iconColor="text-primary"
                 bgColor="bg-primary/20"
               />
             </Link>
-            
+
             <Link href="/tools/wps-generator">
               <ToolCard
                 icon="fas fa-file-alt"
@@ -161,6 +161,38 @@ export default function Home() {
                 description="Welding terms & definitions"
                 iconColor="text-chart-1"
                 bgColor="bg-chart-1/20"
+              />
+            </Link>
+          </div>
+        </div>
+
+        {/* Calculators Section */}
+        <div className="px-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Calculators</h3>
+            <Link href="/calculators">
+              <Button variant="link" size="sm" className="text-primary p-0 h-auto">
+                View All
+              </Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Link href="/calculators/voltage-amperage">
+              <ToolCard
+                icon="fas fa-bolt"
+                title="Voltage & Amperage"
+                description="Calculate weld parameters"
+                iconColor="text-primary"
+                bgColor="bg-primary/20"
+              />
+            </Link>
+            <Link href="/calculators/metal-weight">
+              <ToolCard
+                icon="fas fa-balance-scale"
+                title="Metal Weight"
+                description="Material weight calculator"
+                iconColor="text-chart-2"
+                bgColor="bg-chart-2/20"
               />
             </Link>
           </div>
@@ -200,7 +232,7 @@ export default function Home() {
               </Button>
             </Link>
           </div>
-          
+
           <div className="space-y-3">
             {recentProjects.length > 0 ? (
               recentProjects.map((project: Project) => (

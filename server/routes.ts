@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema } from "@shared/schema";
+import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { z } from "zod";
 
 // AI Service Mock - In production, this would call actual AI APIs
@@ -338,6 +339,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(usage);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch usage" });
+    }
+  });
+
+  // Calculator routes
+  app.post('/api/calculators/voltage-amperage', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculateVoltageAmperage(req.body);
+      
+      // Save calculation
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'voltage-amperage',
+        inputs: req.body,
+        results: result,
+        title: 'Voltage & Amperage Calculation'
+      });
+      
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate voltage and amperage" });
+    }
+  });
+
+  app.post('/api/calculators/wire-feed-speed', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculateWireFeedSpeed(req.body);
+      
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'wire-feed-speed',
+        inputs: req.body,
+        results: result,
+        title: 'Wire Feed Speed Calculation'
+      });
+      
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate wire feed speed" });
+    }
+  });
+
+  app.post('/api/calculators/heat-input', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculateHeatInput(req.body);
+      
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'heat-input',
+        inputs: req.body,
+        results: result,
+        title: 'Heat Input Calculation'
+      });
+      
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate heat input" });
+    }
+  });
+
+  app.post('/api/calculators/gas-flow', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculateGasFlowRate(req.body);
+      
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'gas-flow',
+        inputs: req.body,
+        results: result,
+        title: 'Gas Flow Rate Calculation'
+      });
+      
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate gas flow rate" });
+    }
+  });
+
+  app.post('/api/calculators/metal-weight', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = FabricationCalculators.calculateMetalWeight(req.body);
+      
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'metal-weight',
+        inputs: req.body,
+        results: result,
+        title: 'Metal Weight Calculation'
+      });
+      
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate metal weight" });
+    }
+  });
+
+  app.post('/api/calculators/bend-allowance', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = FabricationCalculators.calculateBendAllowance(req.body);
+      
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'bend-allowance',
+        inputs: req.body,
+        results: result,
+        title: 'Bend Allowance Calculation'
+      });
+      
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate bend allowance" });
+    }
+  });
+
+  app.post('/api/calculators/project-cost', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = FabricationCalculators.calculateProjectCost(req.body);
+      
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'project-cost',
+        inputs: req.body,
+        results: result,
+        title: 'Project Cost Estimate'
+      });
+      
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate project cost" });
+    }
+  });
+
+  // User profile management
+  app.get('/api/user/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  app.put('/api/user/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const updatedUser = await storage.updateUserProfile(userId, req.body);
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update user profile" });
+    }
+  });
+
+  // Calculator history
+  app.get('/api/calculators/history', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const calculations = await storage.getUserCalculations(userId);
+      res.json(calculations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch calculation history" });
     }
   });
 

@@ -4,6 +4,7 @@ import {
   analyses,
   wpsDocuments,
   usageTracking,
+  calculatorResults,
   type User,
   type UpsertUser,
   type InsertProject,
@@ -15,31 +16,43 @@ import {
   type UsageTracking,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, desc } from "drizzle-orm";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
   // User operations - mandatory for Replit Auth
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+  updateUserProfile(userId: string, profileData: any): Promise<User>;
+
   // Project operations
   getUserProjects(userId: string): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
-  
+
   // Analysis operations
   createAnalysis(analysis: InsertAnalysis): Promise<Analysis>;
   getUserAnalyses(userId: string): Promise<Analysis[]>;
-  
+
   // WPS operations
   createWps(wps: InsertWps): Promise<WpsDocument>;
   getUserWpsDocuments(userId: string): Promise<WpsDocument[]>;
-  
+
   // Usage tracking
   getTodayUsage(userId: string): Promise<UsageTracking | undefined>;
   getMonthlyUsage(userId: string): Promise<UsageTracking | undefined>;
-  incrementUsage(userId: string, type: 'analyses' | 'wps' | 'exports'): Promise<void>;
-  
+  incrementUsage(userId: string, type: 'analyses' | 'wps' | 'exports' | 'calculations'): Promise<void>;
+
+  // Calculation operations
+  saveCalculation(data: {
+    userId: string;
+    calculatorType: string;
+    inputs: any;
+    results: any;
+    title: string;
+    projectId?: string;
+  }): Promise<any>;
+  getUserCalculations(userId: string): Promise<any[]>;
+
   // Subscription operations
   upgradeSubscription(userId: string): Promise<User>;
 }
@@ -62,6 +75,17 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
+      .returning();
+    return user;
+  }
+
+  async updateUserProfile(userId: string, profileData: any): Promise<User> {
+    const [user] = await this.db.update(users)
+      .set({
+        ...profileData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
       .returning();
     return user;
   }
@@ -121,7 +145,7 @@ export class DatabaseStorage implements IStorage {
   async getTodayUsage(userId: string): Promise<UsageTracking | undefined> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const [usage] = await db
       .select()
       .from(usageTracking)
@@ -131,7 +155,7 @@ export class DatabaseStorage implements IStorage {
           gte(usageTracking.date, today)
         )
       );
-    
+
     return usage;
   }
 
@@ -139,7 +163,7 @@ export class DatabaseStorage implements IStorage {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
-    
+
     const [usage] = await db
       .select()
       .from(usageTracking)
@@ -149,16 +173,16 @@ export class DatabaseStorage implements IStorage {
           gte(usageTracking.date, startOfMonth)
         )
       );
-    
+
     return usage;
   }
 
-  async incrementUsage(userId: string, type: 'analyses' | 'wps' | 'exports'): Promise<void> {
+  async incrementUsage(userId: string, type: 'analyses' | 'wps' | 'exports' | 'calculations'): Promise<void> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const existing = await this.getTodayUsage(userId);
-    
+
     if (existing) {
       const updates: any = {};
       switch (type) {
@@ -171,8 +195,11 @@ export class DatabaseStorage implements IStorage {
         case 'exports':
           updates.exportsCount = (existing.exportsCount || 0) + 1;
           break;
+        case 'calculations':
+          updates.calculationsCount = (existing.calculationsCount || 0) + 1;
+          break;
       }
-      
+
       await db
         .update(usageTracking)
         .set(updates)
@@ -184,8 +211,9 @@ export class DatabaseStorage implements IStorage {
         analysesCount: 0,
         wpsCount: 0,
         exportsCount: 0,
+        calculationsCount: 0,
       };
-      
+
       switch (type) {
         case 'analyses':
           initialData.analysesCount = 1;
@@ -196,17 +224,48 @@ export class DatabaseStorage implements IStorage {
         case 'exports':
           initialData.exportsCount = 1;
           break;
+        case 'calculations':
+          initialData.calculationsCount = 1;
+          break;
       }
-      
+
       await db.insert(usageTracking).values(initialData);
     }
+  }
+
+  // Calculation operations
+  async saveCalculation(data: {
+    userId: string;
+    calculatorType: string;
+    inputs: any;
+    results: any;
+    title: string;
+    projectId?: string;
+  }): Promise<any> {
+    const [calculation] = await db.insert(calculatorResults).values({
+      userId: data.userId,
+      projectId: data.projectId,
+      calculatorType: data.calculatorType,
+      inputs: data.inputs,
+      results: data.results,
+      title: data.title
+    }).returning();
+    return calculation;
+  }
+
+  async getUserCalculations(userId: string): Promise<any[]> {
+    return await db.query.calculatorResults.findMany({
+      where: eq(calculatorResults.userId, userId),
+      orderBy: desc(calculatorResults.createdAt),
+      limit: 50
+    });
   }
 
   // Subscription operations
   async upgradeSubscription(userId: string): Promise<User> {
     const expiresAt = new Date();
     expiresAt.setMonth(expiresAt.getMonth() + 1);
-    
+
     const [user] = await db
       .update(users)
       .set({
@@ -217,7 +276,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-    
+
     return user;
   }
 }

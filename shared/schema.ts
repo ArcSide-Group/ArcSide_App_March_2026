@@ -33,9 +33,24 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   certifications: text("certifications"),
-  subscriptionTier: varchar("subscription_tier").default("free"), // free, premium
+  phoneNumber: varchar("phone_number"),
+  companyName: varchar("company_name"),
+  jobTitle: varchar("job_title"),
+  yearsExperience: integer("years_experience"),
+  // Authentication fields
+  passwordHash: varchar("password_hash"), // for email/password auth
+  googleId: varchar("google_id"),
+  appleId: varchar("apple_id"),
+  authProvider: varchar("auth_provider").default("replit"), // replit, email, google, apple
+  emailVerified: boolean("email_verified").default(false),
+  passwordResetToken: varchar("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
+  // Subscription and preferences
+  subscriptionTier: varchar("subscription_tier").default("free"), // free, premium, pro
   subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  preferences: jsonb("preferences").default({}),
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -90,6 +105,57 @@ export const usageTracking = pgTable("usage_tracking", {
   analysesCount: integer("analyses_count").default(0),
   wpsCount: integer("wps_count").default(0),
   exportsCount: integer("exports_count").default(0),
+  calculationsCount: integer("calculations_count").default(0),
+  templatesUsed: integer("templates_used").default(0),
+});
+
+export const calculatorResults = pgTable("calculator_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  projectId: varchar("project_id").references(() => projects.id),
+  calculatorType: varchar("calculator_type").notNull(), // voltage-amperage, wire-feed, heat-input, etc.
+  inputs: jsonb("inputs").notNull(),
+  results: jsonb("results").notNull(),
+  title: varchar("title"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const cadTemplates = pgTable("cad_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  category: varchar("category").notNull(), // weld-joints, fabrication, structural, etc.
+  type: varchar("type").notNull(), // 2d, 3d
+  templateData: jsonb("template_data").notNull(),
+  thumbnail: varchar("thumbnail_url"),
+  isPremium: boolean("is_premium").default(false),
+  downloads: integer("downloads").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const userTemplates = pgTable("user_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  templateId: varchar("template_id").notNull().references(() => cadTemplates.id),
+  customizations: jsonb("customizations"),
+  downloadedAt: timestamp("downloaded_at").defaultNow(),
+});
+
+export const weldLogEntries = pgTable("weld_log_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  projectId: varchar("project_id").notNull().references(() => projects.id),
+  entryDate: timestamp("entry_date").defaultNow(),
+  weldJoint: varchar("weld_joint"),
+  dimensions: varchar("dimensions"),
+  fillerMetal: varchar("filler_metal"),
+  consumables: jsonb("consumables"),
+  inspectionResults: jsonb("inspection_results"),
+  photos: text("photos").array(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Relations

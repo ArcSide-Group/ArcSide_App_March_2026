@@ -13,6 +13,8 @@ import WpsGenerator from "@/pages/tools/wps-generator";
 import MaterialChecker from "@/pages/tools/material-checker";
 import Terminology from "@/pages/tools/terminology";
 import WeldAssistant from "@/pages/tools/weld-assistant";
+import Calculators from "@/pages/calculators";
+import VoltageAmperageCalculator from "@/pages/calculators/voltage-amperage";
 import Projects from "@/pages/projects";
 import Subscription from "@/pages/subscription";
 import Settings from "@/pages/settings";
@@ -38,6 +40,8 @@ function Router() {
             <Route path="/tools/material-checker" component={MaterialChecker} />
             <Route path="/tools/terminology" component={Terminology} />
             <Route path="/tools/weld-assistant" component={WeldAssistant} />
+            <Route path="/calculators" component={Calculators} />
+            <Route path="/calculators/voltage-amperage" component={VoltageAmperageCalculator} />
             <Route path="/projects" component={Projects} />
             <Route path="/subscription" component={Subscription} />
             <Route path="/settings" component={Settings} />
