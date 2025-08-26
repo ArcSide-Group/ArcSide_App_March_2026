@@ -17,6 +17,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { db } from "./db";
 
 // Interface for storage operations
 export interface IStorage {
@@ -80,7 +81,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(userId: string, profileData: any): Promise<User> {
-    const [user] = await this.db.update(users)
+    const [user] = await db.update(users)
       .set({
         ...profileData,
         updatedAt: new Date()

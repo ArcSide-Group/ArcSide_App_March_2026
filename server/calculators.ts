@@ -1,59 +1,58 @@
 
 export class WeldingCalculators {
-  // Voltage and Amperage Calculator
   static calculateVoltageAmperage(params: {
-    process: string;
     material: string;
     thickness: number;
+    process: string;
     position: string;
-    fillerSize?: number;
+    wireSize?: number;
   }) {
-    const { process, material, thickness, position } = params;
+    const { material, thickness, process, position, wireSize = 0.035 } = params;
     
-    let baseAmperage = 0;
-    let baseVoltage = 0;
+    let baseVoltage = 18;
+    let baseAmperage = 100;
     
-    // Base calculations for different processes
-    switch (process) {
-      case 'GMAW':
-        baseAmperage = thickness * 40; // Rough estimate: 40A per mm
-        baseVoltage = 18 + (baseAmperage * 0.04);
-        break;
-      case 'SMAW':
-        baseAmperage = params.fillerSize ? params.fillerSize * 40 : thickness * 35;
-        baseVoltage = 20 + (baseAmperage * 0.04);
-        break;
-      case 'GTAW':
-        baseAmperage = thickness * 35;
-        baseVoltage = 12 + (baseAmperage * 0.02);
-        break;
-      case 'FCAW':
-        baseAmperage = thickness * 45;
-        baseVoltage = 22 + (baseAmperage * 0.03);
-        break;
-      default:
-        baseAmperage = thickness * 40;
-        baseVoltage = 20;
+    // Adjust for thickness
+    if (thickness <= 0.125) {
+      baseAmperage = 80 + (thickness * 400);
+      baseVoltage = 16 + (thickness * 20);
+    } else if (thickness <= 0.5) {
+      baseAmperage = 130 + (thickness * 200);
+      baseVoltage = 18 + (thickness * 16);
+    } else {
+      baseAmperage = 180 + (thickness * 120);
+      baseVoltage = 20 + (thickness * 12);
     }
     
-    // Position adjustments
-    const positionMultiplier = position === 'overhead' ? 0.85 : position === 'vertical' ? 0.9 : 1.0;
+    // Adjust for process
+    if (process === 'GTAW') {
+      baseAmperage *= 0.8;
+      baseVoltage *= 0.9;
+    } else if (process === 'SMAW') {
+      baseAmperage *= 1.1;
+      baseVoltage *= 0.95;
+    }
+    
+    // Adjust for position
+    if (position === 'overhead') {
+      baseAmperage *= 0.85;
+    } else if (position === 'vertical') {
+      baseAmperage *= 0.9;
+    }
     
     return {
-      recommendedAmperage: Math.round(baseAmperage * positionMultiplier),
-      recommendedVoltage: Math.round(baseVoltage * 10) / 10,
-      amperageRange: {
-        min: Math.round(baseAmperage * positionMultiplier * 0.85),
-        max: Math.round(baseAmperage * positionMultiplier * 1.15)
-      },
-      voltageRange: {
-        min: Math.round((baseVoltage * 0.9) * 10) / 10,
-        max: Math.round((baseVoltage * 1.1) * 10) / 10
-      }
+      voltage: Math.round(baseVoltage),
+      amperage: Math.round(baseAmperage),
+      voltageRange: `${Math.round(baseVoltage - 2)}-${Math.round(baseVoltage + 2)}V`,
+      amperageRange: `${Math.round(baseAmperage - 20)}-${Math.round(baseAmperage + 20)}A`,
+      recommendations: [
+        "Start with lower settings and gradually increase",
+        "Adjust based on penetration and bead appearance",
+        "Monitor for proper arc characteristics"
+      ]
     };
   }
 
-  // Wire Feed Speed Calculator
   static calculateWireFeedSpeed(params: {
     amperage: number;
     wireSize: number;
@@ -61,32 +60,29 @@ export class WeldingCalculators {
   }) {
     const { amperage, wireSize, material } = params;
     
-    // Wire feed speed formula varies by wire size and material
-    let baseFactor = 0;
+    // Base calculation: IPM = (Amperage / Wire Cross-sectional Area) * Material Factor
+    const wireArea = Math.PI * Math.pow(wireSize / 2, 2);
+    let materialFactor = 1.0;
     
-    switch (wireSize) {
-      case 0.8: baseFactor = 400; break;
-      case 0.9: baseFactor = 350; break;
-      case 1.0: baseFactor = 300; break;
-      case 1.2: baseFactor = 250; break;
-      case 1.6: baseFactor = 200; break;
-      default: baseFactor = 300;
+    if (material.includes('aluminum')) {
+      materialFactor = 1.3;
+    } else if (material.includes('stainless')) {
+      materialFactor = 0.9;
     }
     
-    const materialFactor = material.includes('stainless') ? 0.9 : 1.0;
-    const wireFeedSpeed = (amperage / wireSize) * (baseFactor / 1000) * materialFactor;
+    const wireSpeed = (amperage / (wireArea * 1000)) * materialFactor;
     
     return {
-      wireFeedSpeed: Math.round(wireFeedSpeed * 100) / 100,
-      unit: 'inches/minute',
-      range: {
-        min: Math.round(wireFeedSpeed * 0.85 * 100) / 100,
-        max: Math.round(wireFeedSpeed * 1.15 * 100) / 100
-      }
+      wireSpeed: Math.round(wireSpeed * 10) / 10,
+      unit: 'IPM',
+      recommendations: [
+        "Fine-tune based on arc stability",
+        "Increase speed for thicker materials",
+        "Decrease speed for better penetration"
+      ]
     };
   }
 
-  // Heat Input Calculator
   static calculateHeatInput(params: {
     voltage: number;
     amperage: number;
@@ -95,217 +91,201 @@ export class WeldingCalculators {
   }) {
     const { voltage, amperage, travelSpeed, efficiency = 0.8 } = params;
     
-    // Heat input formula: (Voltage × Amperage × Efficiency) / Travel Speed
+    // Heat Input = (Voltage × Amperage × Efficiency) / Travel Speed
     const heatInput = (voltage * amperage * efficiency) / travelSpeed;
+    
+    let classification = 'Medium';
+    if (heatInput < 1.0) classification = 'Low';
+    else if (heatInput > 2.5) classification = 'High';
     
     return {
       heatInput: Math.round(heatInput * 100) / 100,
-      unit: 'J/mm',
-      efficiency: efficiency * 100,
-      classification: heatInput < 1000 ? 'Low' : heatInput < 2000 ? 'Medium' : 'High'
+      unit: 'kJ/in',
+      classification,
+      recommendations: classification === 'High' ? [
+        "Consider preheating to reduce cooling rate",
+        "Monitor for heat affected zone changes",
+        "May require post-weld heat treatment"
+      ] : [
+        "Good heat input range for most applications",
+        "Monitor weld penetration and fusion"
+      ]
     };
   }
 
-  // Gas Flow Rate Calculator
   static calculateGasFlowRate(params: {
     process: string;
     material: string;
     thickness: number;
     position: string;
-    windConditions?: string;
+    environment: string;
   }) {
-    const { process, material, thickness, position, windConditions = 'calm' } = params;
+    const { process, material, thickness, position, environment } = params;
     
-    let baseFlowRate = 0;
+    let baseFlow = 20; // CFH
     
-    switch (process) {
-      case 'GMAW':
-        baseFlowRate = 20 + (thickness * 2);
-        break;
-      case 'GTAW':
-        baseFlowRate = 15 + (thickness * 1.5);
-        break;
-      case 'FCAW':
-        baseFlowRate = 25 + (thickness * 2.5);
-        break;
-      default:
-        baseFlowRate = 20;
+    // Adjust for material
+    if (material.includes('aluminum')) {
+      baseFlow = 25;
+    } else if (material.includes('stainless')) {
+      baseFlow = 22;
     }
     
-    // Position and environment adjustments
-    const positionFactor = position === 'overhead' ? 1.2 : 1.0;
-    const windFactor = windConditions === 'windy' ? 1.3 : windConditions === 'breezy' ? 1.15 : 1.0;
+    // Adjust for thickness
+    if (thickness > 0.5) {
+      baseFlow += 5;
+    }
     
-    const recommendedFlow = baseFlowRate * positionFactor * windFactor;
+    // Adjust for position
+    if (position === 'overhead') {
+      baseFlow += 3;
+    }
+    
+    // Adjust for environment
+    if (environment === 'windy') {
+      baseFlow += 10;
+    }
     
     return {
-      recommendedFlowRate: Math.round(recommendedFlow),
+      flowRate: baseFlow,
       unit: 'CFH',
-      range: {
-        min: Math.round(recommendedFlow * 0.8),
-        max: Math.round(recommendedFlow * 1.2)
-      },
-      gasType: process === 'GTAW' ? 'Argon' : 'Ar/CO2 mix'
-    };
-  }
-
-  // Filler Metal Consumption Calculator
-  static calculateFillerConsumption(params: {
-    weldLength: number;
-    weldSize: number;
-    jointType: string;
-    passes?: number;
-  }) {
-    const { weldLength, weldSize, jointType, passes = 1 } = params;
-    
-    // Volume calculation based on joint type
-    let volumeFactor = 0;
-    
-    switch (jointType) {
-      case 'fillet':
-        volumeFactor = 0.707 * weldSize * weldSize; // mm²
-        break;
-      case 'groove':
-        volumeFactor = weldSize * weldSize * 0.5; // Assuming V-groove
-        break;
-      case 'plug':
-        volumeFactor = Math.PI * (weldSize / 2) * (weldSize / 2);
-        break;
-      default:
-        volumeFactor = weldSize * weldSize * 0.5;
-    }
-    
-    const volume = volumeFactor * weldLength * passes; // mm³
-    const density = 7.8; // g/cm³ for steel
-    const efficiency = 0.65; // Typical deposition efficiency
-    
-    const weight = (volume / 1000) * density / efficiency; // grams
-    
-    return {
-      fillerWeight: Math.round(weight * 100) / 100,
-      unit: 'grams',
-      volume: Math.round(volume),
-      efficiency: efficiency * 100,
-      passes: passes
+      range: `${baseFlow - 5}-${baseFlow + 5} CFH`,
+      gasType: process === 'GTAW' ? 'Argon' : '75% Ar / 25% CO₂',
+      recommendations: [
+        "Start with recommended flow rate",
+        "Adjust based on weld quality",
+        "Too much flow can cause turbulence"
+      ]
     };
   }
 }
 
 export class FabricationCalculators {
-  // Metal Weight Calculator
   static calculateMetalWeight(params: {
     material: string;
     shape: string;
-    dimensions: { [key: string]: number };
-    quantity?: number;
+    dimensions: {
+      length?: number;
+      width?: number;
+      thickness?: number;
+      diameter?: number;
+      outerDiameter?: number;
+      innerDiameter?: number;
+    };
   }) {
-    const { material, shape, dimensions, quantity = 1 } = params;
+    const { material, shape, dimensions } = params;
     
-    // Density values (kg/m³)
-    const densities: { [key: string]: number } = {
-      'steel': 7850,
-      'stainless_steel': 8000,
-      'aluminum': 2700,
-      'copper': 8960,
-      'brass': 8400,
-      'titanium': 4500
+    // Material densities (lb/in³)
+    const densities: Record<string, number> = {
+      'steel': 0.284,
+      'aluminum': 0.098,
+      'stainless': 0.290,
+      'copper': 0.324,
+      'brass': 0.307
     };
     
-    const density = densities[material] || 7850;
-    let volume = 0; // m³
+    const density = densities[material.toLowerCase()] || densities.steel;
+    let volume = 0;
     
     switch (shape) {
       case 'plate':
-        volume = (dimensions.length / 1000) * (dimensions.width / 1000) * (dimensions.thickness / 1000);
+        volume = (dimensions.length || 0) * (dimensions.width || 0) * (dimensions.thickness || 0);
         break;
-      case 'round_bar':
-        const radius = (dimensions.diameter / 1000) / 2;
-        volume = Math.PI * radius * radius * (dimensions.length / 1000);
+      case 'rod':
+        volume = Math.PI * Math.pow((dimensions.diameter || 0) / 2, 2) * (dimensions.length || 0);
         break;
-      case 'square_bar':
-        volume = (dimensions.side / 1000) * (dimensions.side / 1000) * (dimensions.length / 1000);
-        break;
-      case 'angle':
-        const leg1Area = (dimensions.leg1 / 1000) * (dimensions.thickness / 1000);
-        const leg2Area = (dimensions.leg2 / 1000) * (dimensions.thickness / 1000);
-        const overlapArea = (dimensions.thickness / 1000) * (dimensions.thickness / 1000);
-        volume = (leg1Area + leg2Area - overlapArea) * (dimensions.length / 1000);
-        break;
-      case 'pipe':
-        const outerRadius = (dimensions.outerDiameter / 1000) / 2;
-        const innerRadius = (dimensions.innerDiameter / 1000) / 2;
-        volume = Math.PI * (outerRadius * outerRadius - innerRadius * innerRadius) * (dimensions.length / 1000);
+      case 'tube':
+        const outerRadius = (dimensions.outerDiameter || 0) / 2;
+        const innerRadius = (dimensions.innerDiameter || 0) / 2;
+        volume = Math.PI * (Math.pow(outerRadius, 2) - Math.pow(innerRadius, 2)) * (dimensions.length || 0);
         break;
     }
     
-    const weight = volume * density * quantity;
+    const weight = volume * density;
     
     return {
       weight: Math.round(weight * 100) / 100,
-      unit: 'kg',
-      volume: Math.round(volume * 1000000), // cm³
-      density: density,
-      quantity: quantity
+      unit: 'lbs',
+      volume: Math.round(volume * 100) / 100,
+      volumeUnit: 'in³',
+      density,
+      recommendations: [
+        "Add 5-10% for waste and cutoffs",
+        "Consider material handling requirements",
+        "Verify material specifications"
+      ]
     };
   }
 
-  // Bend Allowance Calculator
   static calculateBendAllowance(params: {
     thickness: number;
-    angle: number;
+    bendAngle: number;
     insideRadius: number;
     kFactor?: number;
   }) {
-    const { thickness, angle, insideRadius, kFactor = 0.33 } = params;
+    const { thickness, bendAngle, insideRadius, kFactor = 0.33 } = params;
     
-    // Bend allowance formula: BA = (π/180) × A × (R + K × T)
-    const angleRadians = (Math.PI / 180) * angle;
-    const bendAllowance = angleRadians * (insideRadius + kFactor * thickness);
+    // Bend Allowance = (π/180) × Bend Angle × (Inside Radius + K-Factor × Thickness)
+    const bendAllowance = (Math.PI / 180) * bendAngle * (insideRadius + kFactor * thickness);
     
-    // Bend deduction
-    const outsideSetback = (insideRadius + thickness) * Math.tan(angleRadians / 2);
-    const bendDeduction = 2 * outsideSetback - bendAllowance;
+    // Setback = (Inside Radius + Thickness) × tan(Bend Angle / 2)
+    const setback = (insideRadius + thickness) * Math.tan((bendAngle * Math.PI / 180) / 2);
     
     return {
       bendAllowance: Math.round(bendAllowance * 1000) / 1000,
-      bendDeduction: Math.round(bendDeduction * 1000) / 1000,
-      kFactor: kFactor,
-      outsideSetback: Math.round(outsideSetback * 1000) / 1000,
-      unit: 'mm'
+      setback: Math.round(setback * 1000) / 1000,
+      kFactor,
+      unit: 'in',
+      recommendations: [
+        "Test bend on scrap material first",
+        "Adjust K-factor based on material properties",
+        "Consider grain direction for best results"
+      ]
     };
   }
 
-  // Project Cost Estimator
   static calculateProjectCost(params: {
-    materials: Array<{ name: string; cost: number; quantity: number }>;
+    materials: Array<{
+      type: string;
+      quantity: number;
+      unitCost: number;
+    }>;
     laborHours: number;
     laborRate: number;
-    consumables: Array<{ name: string; cost: number }>;
     overhead?: number;
-    markup?: number;
+    profit?: number;
   }) {
-    const { materials, laborHours, laborRate, consumables, overhead = 0.1, markup = 0.2 } = params;
+    const { materials, laborHours, laborRate, overhead = 0.15, profit = 0.20 } = params;
     
-    const materialCost = materials.reduce((sum, item) => sum + (item.cost * item.quantity), 0);
+    const materialCost = materials.reduce((total, material) => {
+      return total + (material.quantity * material.unitCost);
+    }, 0);
+    
     const laborCost = laborHours * laborRate;
-    const consumableCost = consumables.reduce((sum, item) => sum + item.cost, 0);
-    
-    const subtotal = materialCost + laborCost + consumableCost;
-    const overheadCost = subtotal * overhead;
-    const totalCost = subtotal + overheadCost;
-    const finalPrice = totalCost * (1 + markup);
+    const directCosts = materialCost + laborCost;
+    const overheadCost = directCosts * overhead;
+    const totalCost = directCosts + overheadCost;
+    const profitAmount = totalCost * profit;
+    const finalPrice = totalCost + profitAmount;
     
     return {
-      breakdown: {
-        materials: Math.round(materialCost * 100) / 100,
-        labor: Math.round(laborCost * 100) / 100,
-        consumables: Math.round(consumableCost * 100) / 100,
-        overhead: Math.round(overheadCost * 100) / 100,
-        markup: Math.round((finalPrice - totalCost) * 100) / 100
-      },
+      materialCost: Math.round(materialCost * 100) / 100,
+      laborCost: Math.round(laborCost * 100) / 100,
+      overheadCost: Math.round(overheadCost * 100) / 100,
+      profitAmount: Math.round(profitAmount * 100) / 100,
       totalCost: Math.round(totalCost * 100) / 100,
       finalPrice: Math.round(finalPrice * 100) / 100,
-      profitMargin: markup * 100
+      breakdown: {
+        materials: `${((materialCost / finalPrice) * 100).toFixed(1)}%`,
+        labor: `${((laborCost / finalPrice) * 100).toFixed(1)}%`,
+        overhead: `${((overheadCost / finalPrice) * 100).toFixed(1)}%`,
+        profit: `${((profitAmount / finalPrice) * 100).toFixed(1)}%`
+      },
+      recommendations: [
+        "Add contingency for unexpected costs",
+        "Review material prices regularly",
+        "Track actual vs estimated time"
+      ]
     };
   }
 }
