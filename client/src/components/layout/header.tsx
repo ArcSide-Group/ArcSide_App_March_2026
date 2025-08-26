@@ -41,7 +41,7 @@ export default function Header() {
       >
         {href === "/" && !mobile ? (
           <img
-            src="/attached_assets/ArcSide Professional Logo_20250826_195657_0000_1756232563353.png"
+            src="/attached_assets/ArcSide%20Professional%20Logo_20250826_195657_0000_1756232563353.png"
             alt="ArcSide Professional"
             className="h-8 w-auto"
           />
@@ -63,7 +63,7 @@ export default function Header() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
               <img
-                src="/attached_assets/ArcSide Professional Logo_20250826_195657_0000_1756232563353.png"
+                src="/attached_assets/ArcSide%20Professional%20Logo_20250826_195657_0000_1756232563353.png"
                 alt="ArcSide Professional"
                 className="h-10 w-auto"
               />
@@ -89,7 +89,7 @@ export default function Header() {
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-800 pb-4">
                   <img
-                    src="/attached_assets/ArcSide Professional Logo_20250826_195657_0000_1756232563353.png"
+                    src="/attached_assets/ArcSide%20Professional%20Logo_20250826_195657_0000_1756232563353.png"
                     alt="ArcSide Professional"
                     className="h-8 w-auto"
                   />

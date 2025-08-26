@@ -64,7 +64,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <img
-                src="/attached_assets/ArcSide New and Improved BLUE LOGO (ORANGE SPARK)_20250826_195657_0001_1756232563390.png"
+                src="/attached_assets/ArcSide%20New%20and%20Improved%20BLUE%20LOGO%20%28ORANGE%20SPARK%29_20250826_195657_0001_1756232563390.png"
                 alt="ArcSide Logo"
                 className="w-16 h-16 object-contain"
               />
