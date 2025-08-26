@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Progress } from '@/components/ui/progress';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { useToast } from "@/hooks/use-toast";
 
 interface Project {
   id: string;
@@ -31,7 +30,7 @@ export default function Projects() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filter, setFilter] = useState('all');
-  
+
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -50,6 +49,8 @@ export default function Projects() {
     enabled: !!user,
   });
 
+  const { toast } = useToast();
+
   const createProjectMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch('/api/projects', {
@@ -61,13 +62,20 @@ export default function Projects() {
       return response.json();
     },
     onSuccess: () => {
-      toast.success('Project created successfully');
+      toast({
+        title: "Success",
+        description: "Project created successfully!",
+      });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setIsDialogOpen(false);
       setNewProject({ name: '', description: '', material: '', process: '', status: 'active' });
     },
     onError: () => {
-      toast.error('Failed to create project');
+      toast({
+        title: "Error",
+        description: 'Failed to create project',
+        variant: "destructive",
+      });
     }
   });
 
@@ -106,7 +114,7 @@ export default function Projects() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
@@ -120,7 +128,7 @@ export default function Projects() {
               <p className="text-xs text-muted-foreground">Manage your welding projects</p>
             </div>
           </div>
-          
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="w-8 h-8 p-0 rounded-full">
@@ -241,7 +249,7 @@ export default function Projects() {
                     <div className="w-10 h-10 bg-secondary/50 rounded-lg flex items-center justify-center">
                       <i className={`${getProcessIcon(project.process)} text-primary text-sm`}></i>
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <h3 className="font-semibold text-sm truncate">{project.name}</h3>
@@ -252,11 +260,11 @@ export default function Projects() {
                           {project.status}
                         </Badge>
                       </div>
-                      
+
                       <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                         {project.description || 'No description provided'}
                       </p>
-                      
+
                       <div className="flex items-center space-x-3 mb-2">
                         <span className="text-xs text-muted-foreground">
                           <i className="fas fa-cogs mr-1"></i>
@@ -267,7 +275,7 @@ export default function Projects() {
                           {project.material?.replace('-', ' ')}
                         </span>
                       </div>
-                      
+
                       {project.progress > 0 && (
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
@@ -277,7 +285,7 @@ export default function Projects() {
                           <Progress value={project.progress} className="h-1" />
                         </div>
                       )}
-                      
+
                       <div className="flex items-center justify-between mt-3">
                         <span className="text-xs text-muted-foreground">
                           Created {new Date(project.createdAt).toLocaleDateString()}
