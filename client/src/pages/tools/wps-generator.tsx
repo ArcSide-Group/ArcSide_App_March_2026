@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,7 @@ export default function WpsGenerator() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  if (user?.subscriptionTier !== 'premium') {
+  if ((user as User)?.subscriptionTier !== 'premium') {
     return (
       <div className="min-h-screen bg-background pb-20">
         <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">

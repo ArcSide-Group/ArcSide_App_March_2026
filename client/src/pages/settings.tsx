@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import type { User } from "@shared/schema";
 
 export default function Settings() {
   const { user, isLoading } = useAuth();
@@ -44,8 +45,8 @@ export default function Settings() {
     );
   }
 
-  const userName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Professional';
-  const userEmail = user?.email || 'professional@arcside.app';
+  const userName = `${(user as User)?.firstName || ''} ${(user as User)?.lastName || ''}`.trim() || 'Professional';
+  const userEmail = (user as User)?.email || 'professional@arcside.app';
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -72,9 +73,9 @@ export default function Settings() {
             <CardContent className="p-4">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-16 h-16 rounded-full overflow-hidden bg-primary flex items-center justify-center">
-                  {user?.profileImageUrl ? (
+                  {(user as User)?.profileImageUrl ? (
                     <img 
-                      src={user.profileImageUrl} 
+                      src={(user as User).profileImageUrl!} 
                       alt="Profile" 
                       className="w-16 h-16 object-cover"
                     />
@@ -86,7 +87,7 @@ export default function Settings() {
                   <h3 className="font-semibold">{userName}</h3>
                   <p className="text-sm text-muted-foreground">{userEmail}</p>
                   <p className="text-xs text-muted-foreground">
-                    {user?.certifications || 'CWI, AWS D1.1 Certified'}
+                    {(user as User)?.certifications || 'CWI, AWS D1.1 Certified'}
                   </p>
                 </div>
                 <Button variant="link" size="sm" className="text-primary p-0">

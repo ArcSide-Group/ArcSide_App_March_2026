@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import type { User, Project } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,22 +14,9 @@ export default function Projects() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const { data: projects, isLoading: projectsLoading } = useQuery({
+  const { data: projects, isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
     enabled: !!user,
-    onError: (error) => {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
 
   useEffect(() => {
@@ -110,7 +98,7 @@ export default function Projects() {
         {/* Projects List */}
         <div className="px-6 mb-6 space-y-4">
           {projects && projects.length > 0 ? (
-            projects.map((project: any) => (
+            (projects as Project[]).map((project: Project) => (
               <Card key={project.id} className="bg-card border-border">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
@@ -120,7 +108,7 @@ export default function Projects() {
                         {project.description || `${project.process || 'Welding'} project`}
                       </p>
                     </div>
-                    <Badge className={getStatusColor(project.status)}>
+                    <Badge className={getStatusColor(project.status || 'active')}>
                       {project.status || 'Active'}
                     </Badge>
                   </div>
@@ -155,7 +143,7 @@ export default function Projects() {
                       <div className="flex items-center space-x-1">
                         <i className="fas fa-clock text-xs text-muted-foreground"></i>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(project.updatedAt).toLocaleDateString()}
+                          {new Date(project.updatedAt || Date.now()).toLocaleDateString()}
                         </span>
                       </div>
                     </div>

@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import type { User, Project, UsageTracking } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,25 +15,12 @@ export default function Home() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const { data: projects } = useQuery({
+  const { data: projects } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
     enabled: !!user,
-    onError: (error) => {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
 
-  const { data: usage } = useQuery({
+  const { data: usage } = useQuery<UsageTracking>({
     queryKey: ["/api/usage"],
     enabled: !!user,
   });
@@ -64,8 +52,8 @@ export default function Home() {
     );
   }
 
-  const recentProjects = projects?.slice(0, 2) || [];
-  const userName = user?.firstName || 'Professional';
+  const recentProjects = (projects || []).slice(0, 2);
+  const userName = (user as User)?.firstName || 'Professional';
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -90,9 +78,9 @@ export default function Home() {
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse"></div>
             </div>
             <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-              {user?.profileImageUrl ? (
+              {(user as User)?.profileImageUrl ? (
                 <img 
-                  src={user.profileImageUrl} 
+                  src={(user as User).profileImageUrl!} 
                   alt="Profile" 
                   className="w-8 h-8 rounded-full object-cover"
                 />
@@ -115,15 +103,15 @@ export default function Home() {
               </p>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${user?.subscriptionTier === 'premium' ? 'bg-accent' : 'bg-muted-foreground'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${(user as User)?.subscriptionTier === 'premium' ? 'bg-accent' : 'bg-muted-foreground'}`}></div>
                   <span className="text-xs text-muted-foreground">
-                    {user?.subscriptionTier === 'premium' ? 'Premium Active' : 'Free Plan'}
+                    {(user as User)?.subscriptionTier === 'premium' ? 'Premium Active' : 'Free Plan'}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <i className="fas fa-clock text-xs text-muted-foreground"></i>
                   <span className="text-xs text-muted-foreground">
-                    {usage?.analysesCount || 0} analyses today
+                    {(usage as UsageTracking)?.analysesCount || 0} analyses today
                   </span>
                 </div>
               </div>
@@ -152,7 +140,7 @@ export default function Home() {
                 description="Generate welding procedures"
                 iconColor="text-accent"
                 bgColor="bg-accent/20"
-                premium={user?.subscriptionTier !== 'premium'}
+                premium={(user as User)?.subscriptionTier !== 'premium'}
               />
             </Link>
 
@@ -215,13 +203,13 @@ export default function Home() {
           
           <div className="space-y-3">
             {recentProjects.length > 0 ? (
-              recentProjects.map((project: any) => (
+              recentProjects.map((project: Project) => (
                 <Card key={project.id} className="bg-card border-border">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-sm">{project.name}</h4>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(project.updatedAt).toLocaleDateString()}
+                        {new Date(project.updatedAt || Date.now()).toLocaleDateString()}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-2">

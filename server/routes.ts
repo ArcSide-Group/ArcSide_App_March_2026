@@ -185,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       if (user?.subscriptionTier === 'free') {
         const todayUsage = await storage.getTodayUsage(userId);
-        if (todayUsage && todayUsage.analysesCount >= 5) {
+        if (todayUsage && (todayUsage.analysesCount || 0) >= 5) {
           return res.status(403).json({ 
             message: "Daily analysis limit reached. Upgrade to Premium for unlimited analyses." 
           });

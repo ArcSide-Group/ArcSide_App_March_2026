@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -85,7 +86,7 @@ export default function DefectAnalyzer() {
         </div>
 
         {/* Usage Limit Warning for Free Users */}
-        {user?.subscriptionTier === 'free' && (
+        {(user as User)?.subscriptionTier === 'free' && (
           <div className="px-6 mb-4">
             <Card className="bg-accent/10 border-accent/30">
               <CardContent className="p-3">

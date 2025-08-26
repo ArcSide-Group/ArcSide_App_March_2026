@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import type { User, UsageTracking } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,22 +14,9 @@ export default function Subscription() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const { data: usage } = useQuery({
+  const { data: usage } = useQuery<UsageTracking>({
     queryKey: ["/api/usage"],
     enabled: !!user,
-    onError: (error) => {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
 
   const upgradeMutation = useMutation({
@@ -90,7 +78,7 @@ export default function Subscription() {
     );
   }
 
-  const isPremium = user?.subscriptionTier === 'premium';
+  const isPremium = (user as User)?.subscriptionTier === 'premium';
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -161,7 +149,7 @@ export default function Subscription() {
                   <i className="fas fa-robot text-primary text-sm"></i>
                 </div>
                 <div>
-                  <span className="text-xl font-bold">{usage?.analysesCount || 0}</span>
+                  <span className="text-xl font-bold">{(usage as UsageTracking)?.analysesCount || 0}</span>
                   <span className="text-sm text-muted-foreground">
                     {isPremium ? ' / Unlimited' : ' / 150 daily'}
                   </span>
@@ -176,7 +164,7 @@ export default function Subscription() {
                   <i className="fas fa-file-alt text-accent text-sm"></i>
                 </div>
                 <div>
-                  <span className="text-xl font-bold">{usage?.wpsCount || 0}</span>
+                  <span className="text-xl font-bold">{(usage as UsageTracking)?.wpsCount || 0}</span>
                   <span className="text-sm text-muted-foreground">
                     {isPremium ? ' / Unlimited' : ' / Premium Only'}
                   </span>
@@ -193,7 +181,7 @@ export default function Subscription() {
                 <div>
                   <span className="text-xl font-bold">
                     {/* Mock project count */}
-                    {Math.floor((usage?.analysesCount || 0) / 10) + 1}
+                    {Math.floor(((usage as UsageTracking)?.analysesCount || 0) / 10) + 1}
                   </span>
                   <span className="text-sm text-muted-foreground"> / Unlimited</span>
                 </div>
@@ -207,7 +195,7 @@ export default function Subscription() {
                   <i className="fas fa-download text-chart-2 text-sm"></i>
                 </div>
                 <div>
-                  <span className="text-xl font-bold">{usage?.exportsCount || 0}</span>
+                  <span className="text-xl font-bold">{(usage as UsageTracking)?.exportsCount || 0}</span>
                   <span className="text-sm text-muted-foreground">
                     {isPremium ? ' / Unlimited' : ' / Premium Only'}
                   </span>
