@@ -281,4 +281,171 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+class MemStorage implements IStorage {
+  private users = new Map<string, User>();
+  private projects = new Map<string, Project>();
+  private analyses = new Map<string, Analysis>();
+  private wpsDocuments = new Map<string, WpsDocument>();
+  private usageTracking = new Map<string, UsageTracking>();
+  private calculations = new Map<string, any>();
+
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existing = this.users.get(userData.id!);
+    const user: User = {
+      ...existing,
+      ...userData,
+      id: userData.id || crypto.randomUUID(),
+      updatedAt: new Date(),
+      createdAt: existing?.createdAt || new Date(),
+    } as User;
+    this.users.set(user.id, user);
+    return user;
+  }
+
+  async updateUserProfile(userId: string, profileData: any): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error('User not found');
+    const updated = { ...user, ...profileData, updatedAt: new Date() };
+    this.users.set(userId, updated);
+    return updated;
+  }
+
+  async getUserProjects(userId: string): Promise<Project[]> {
+    return Array.from(this.projects.values())
+      .filter(p => p.userId === userId)
+      .sort((a, b) => b.updatedAt!.getTime() - a.updatedAt!.getTime());
+  }
+
+  async createProject(projectData: InsertProject): Promise<Project> {
+    const project: Project = {
+      ...projectData,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as Project;
+    this.projects.set(project.id, project);
+    return project;
+  }
+
+  async createAnalysis(analysisData: InsertAnalysis): Promise<Analysis> {
+    const analysis: Analysis = {
+      ...analysisData,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+    } as Analysis;
+    this.analyses.set(analysis.id, analysis);
+    return analysis;
+  }
+
+  async getUserAnalyses(userId: string): Promise<Analysis[]> {
+    return Array.from(this.analyses.values())
+      .filter(a => a.userId === userId)
+      .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async createWps(wpsData: InsertWps): Promise<WpsDocument> {
+    const wps: WpsDocument = {
+      ...wpsData,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as WpsDocument;
+    this.wpsDocuments.set(wps.id, wps);
+    return wps;
+  }
+
+  async getUserWpsDocuments(userId: string): Promise<WpsDocument[]> {
+    return Array.from(this.wpsDocuments.values())
+      .filter(w => w.userId === userId)
+      .sort((a, b) => b.updatedAt!.getTime() - a.updatedAt!.getTime());
+  }
+
+  async getTodayUsage(userId: string): Promise<UsageTracking | undefined> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Array.from(this.usageTracking.values())
+      .find(u => u.userId === userId && u.date!.getTime() >= today.getTime());
+  }
+
+  async getMonthlyUsage(userId: string): Promise<UsageTracking | undefined> {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    return Array.from(this.usageTracking.values())
+      .find(u => u.userId === userId && u.date!.getTime() >= startOfMonth.getTime());
+  }
+
+  async incrementUsage(userId: string, type: 'analyses' | 'wps' | 'exports' | 'calculations'): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let usage = await this.getTodayUsage(userId);
+    
+    if (!usage) {
+      usage = {
+        id: crypto.randomUUID(),
+        userId,
+        date: today,
+        analysesCount: 0,
+        wpsCount: 0,
+        exportsCount: 0,
+        calculationsCount: 0,
+        templatesUsed: 0,
+      } as UsageTracking;
+    }
+
+    switch (type) {
+      case 'analyses': usage.analysesCount = (usage.analysesCount || 0) + 1; break;
+      case 'wps': usage.wpsCount = (usage.wpsCount || 0) + 1; break;
+      case 'exports': usage.exportsCount = (usage.exportsCount || 0) + 1; break;
+      case 'calculations': usage.calculationsCount = (usage.calculationsCount || 0) + 1; break;
+    }
+
+    this.usageTracking.set(usage.id, usage);
+  }
+
+  async saveCalculation(data: {
+    userId: string;
+    calculatorType: string;
+    inputs: any;
+    results: any;
+    title: string;
+    projectId?: string;
+  }): Promise<any> {
+    const calculation = {
+      id: crypto.randomUUID(),
+      ...data,
+      createdAt: new Date(),
+    };
+    this.calculations.set(calculation.id, calculation);
+    return calculation;
+  }
+
+  async getUserCalculations(userId: string): Promise<any[]> {
+    return Array.from(this.calculations.values())
+      .filter(c => c.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 50);
+  }
+
+  async upgradeSubscription(userId: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error('User not found');
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    const updated = {
+      ...user,
+      subscriptionTier: 'premium' as const,
+      subscriptionStatus: 'active' as const,
+      subscriptionExpiresAt: expiresAt,
+      updatedAt: new Date(),
+    };
+    this.users.set(userId, updated);
+    return updated;
+  }
+}
+
+export const storage = new MemStorage();
