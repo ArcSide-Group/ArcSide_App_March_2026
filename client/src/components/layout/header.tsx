@@ -4,6 +4,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Home, Wrench, Bot, FolderOpen, Settings, CreditCard } from "lucide-react";
+import logoPath from "@assets/ArcSide Professional Logo_20250826_195657_0000_1764605043277.png";
 
 const navigationItems = [
   { href: "/", icon: Home, label: "Home" },
@@ -34,38 +35,30 @@ export default function Header() {
         variant="ghost"
         className={`
           ${mobile ? 'w-full justify-start gap-3 px-4 py-3 h-auto' : 'gap-2 px-3 py-2'}
-          text-white hover:bg-white/10 hover:text-white transition-colors duration-200
-          ${isActive(href) ? 'bg-white/20 text-white' : ''}
+          text-foreground hover:bg-primary/10 hover:text-primary transition-colors duration-200
+          ${isActive(href) ? 'bg-primary/20 text-primary' : ''}
         `}
         onClick={() => mobile && setIsOpen(false)}
       >
-        {href === "/" && !mobile ? (
-          <img
-            src="/attached_assets/ArcSide%20Professional%20Logo_20250826_195657_0000_1756232563353.png"
-            alt="ArcSide Professional"
-            className="h-8 w-auto"
-          />
-        ) : (
-          <>
-            <Icon className={`${mobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-            <span className={mobile ? 'text-base' : 'text-sm font-medium'}>{label}</span>
-          </>
-        )}
+        <>
+          <Icon className={`${mobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+          <span className={mobile ? 'text-base' : 'text-sm font-medium'}>{label}</span>
+        </>
       </Button>
     </Link>
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-gray-900 backdrop-blur supports-[backdrop-filter]:bg-gray-900/95">
+    <header className="header-professional">
       <div className="max-w-sm mx-auto">
         <div className="flex h-16 items-center justify-between px-4">
           {/* Logo/Home Link */}
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer">
+            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <img
-                src="/attached_assets/ArcSide%20Professional%20Logo_20250826_195657_0000_1756232563353.png"
+                src={logoPath}
                 alt="ArcSide Professional"
-                className="h-10 w-auto"
+                className="h-12 w-auto object-contain"
               />
             </div>
           </Link>
@@ -80,20 +73,24 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              >
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-gray-900 border-l border-gray-800">
+            <SheetContent side="right" className="w-[300px] bg-card border-l border-border">
               <div className="flex flex-col gap-4 mt-8">
-                <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-800 pb-4">
+                <div className="flex items-center gap-3 px-4 py-2 border-b border-border pb-4">
                   <img
-                    src="/attached_assets/ArcSide%20Professional%20Logo_20250826_195657_0000_1756232563353.png"
+                    src={logoPath}
                     alt="ArcSide Professional"
                     className="h-8 w-auto"
                   />
-                  <span className="font-semibold text-white">ArcSide™</span>
+                  <span className="font-semibold text-foreground">ArcSide™</span>
                 </div>
                 <nav className="flex flex-col space-y-2">
                   {navigationItems.map((item) => (

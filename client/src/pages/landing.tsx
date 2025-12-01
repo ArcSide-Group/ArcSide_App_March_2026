@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import logoPath from "@assets/ArcSide Professional Logo_20250826_195657_0000_1764605043277.png";
 
 export default function Landing() {
   const handleLogin = () => {
@@ -13,17 +14,17 @@ export default function Landing() {
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border relative">
         
         {/* Hero Section */}
-        <div className="text-center pt-16 pb-8 px-6">
-          <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <div className="text-primary-foreground font-bold text-3xl">A</div>
-          </div>
-          <h1 className="text-3xl font-bold mb-3">
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              ArcSide™
-            </span>
+        <div className="text-center pt-12 pb-8 px-6 hero-section">
+          <img 
+            src={logoPath}
+            alt="ArcSide™ Logo" 
+            className="h-32 w-auto mx-auto mb-6 object-contain"
+          />
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="gradient-text">ArcSide™</span>
           </h1>
-          <p className="text-muted-foreground mb-2">Professional Welding Tools</p>
-          <Badge variant="secondary" className="text-xs">
+          <p className="text-primary mb-3 text-lg font-semibold">Professional Welding Tools</p>
+          <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
             The App Made by Tradesmen for Tradesmen
           </Badge>
         </div>
