@@ -24,7 +24,8 @@ export default function VoltageAmperageCalculator() {
     thickness: '0.25',
     process: 'GMAW',
     position: 'flat',
-    wireSize: '0.035'
+    wireSize: '0.035',
+    fillerSize: '3.2'
   });
 
   const [result, setResult] = useState<CalculationResult | null>(null);
