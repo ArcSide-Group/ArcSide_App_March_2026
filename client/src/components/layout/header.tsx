@@ -51,21 +51,22 @@ export default function Header() {
   return (
     <header className="header-professional">
       <div className="max-w-sm mx-auto">
-        <div className="flex h-16 items-center justify-between px-4">
-          {/* Logo/Home Link */}
-          <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <div className="flex flex-col">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-[#4CAF50] to-blue-500 bg-clip-text text-transparent">
-                  ArcSide™
-                </h1>
-                <p className="text-xs text-muted-foreground -mt-1">Professional</p>
-              </div>
+        {/* Full Width Banner Logo */}
+        <Link href="/">
+          <div className="w-full bg-gradient-to-r from-[#4CAF50]/10 via-blue-500/10 to-[#4CAF50]/10 py-4 px-4 cursor-pointer hover:opacity-90 transition-opacity border-b border-primary/20">
+            <div className="flex flex-col items-center justify-center">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#4CAF50] to-blue-500 bg-clip-text text-transparent">
+                ArcSide™
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">Professional Welding Platform</p>
             </div>
-          </Link>
+          </div>
+        </Link>
 
+        {/* Navigation Bar */}
+        <div className="flex h-12 items-center justify-between px-4 border-b border-border">
           {/* Desktop Navigation - Hidden on mobile */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-1 flex-1">
             {navigationItems.slice(1).map((item) => (
               <NavLink key={item.href} {...item} />
             ))}
@@ -73,7 +74,7 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden">
+            <SheetTrigger asChild className="md:hidden ml-auto">
               <Button 
                 variant="ghost" 
                 size="icon" 
