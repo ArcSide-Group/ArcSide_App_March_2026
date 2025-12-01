@@ -55,11 +55,12 @@ export default function Header() {
           {/* Logo/Home Link */}
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <img
-                src={logoPath}
-                alt="ArcSide Professional"
-                className="h-12 w-auto object-contain"
-              />
+              <div className="flex flex-col">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-[#4CAF50] to-blue-500 bg-clip-text text-transparent">
+                  ArcSide™
+                </h1>
+                <p className="text-xs text-muted-foreground -mt-1">Professional</p>
+              </div>
             </div>
           </Link>
 
@@ -85,12 +86,10 @@ export default function Header() {
             <SheetContent side="right" className="w-[300px] bg-card border-l border-border">
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center gap-3 px-4 py-2 border-b border-border pb-4">
-                  <img
-                    src={logoPath}
-                    alt="ArcSide Professional"
-                    className="h-8 w-auto"
-                  />
-                  <span className="font-semibold text-foreground">ArcSide™</span>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-lg bg-gradient-to-r from-[#4CAF50] to-blue-500 bg-clip-text text-transparent">ArcSide™</span>
+                    <span className="text-xs text-muted-foreground -mt-1">Professional</span>
+                  </div>
                 </div>
                 <nav className="flex flex-col space-y-2">
                   {navigationItems.map((item) => (
