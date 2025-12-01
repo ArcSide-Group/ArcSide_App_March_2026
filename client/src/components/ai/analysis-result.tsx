@@ -5,9 +5,10 @@ interface AnalysisResultProps {
   title: string;
   result: any;
   type: 'defect-analysis' | 'material-check' | 'terminology' | 'assistant';
+  imageUrl?: string;
 }
 
-export default function AnalysisResult({ title, result, type }: AnalysisResultProps) {
+export default function AnalysisResult({ title, result, type, imageUrl }: AnalysisResultProps) {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'low': return 'bg-chart-2 text-accent-foreground';
@@ -33,6 +34,18 @@ export default function AnalysisResult({ title, result, type }: AnalysisResultPr
 
         {type === 'defect-analysis' && result && (
           <>
+            {/* Uploaded Image */}
+            {imageUrl && (
+              <div className="mb-4">
+                <img 
+                  src={imageUrl} 
+                  alt="Analyzed weld defect" 
+                  className="w-full rounded-lg max-h-48 object-cover"
+                  data-testid="img-analysis-result"
+                />
+              </div>
+            )}
+
             {/* Defect Type */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">

@@ -11,15 +11,17 @@ import { Link } from "wouter";
 import AnalysisResult from "@/components/ai/analysis-result";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { X } from "lucide-react";
 
 export default function DefectAnalyzer() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [description, setDescription] = useState("");
+  const [imageData, setImageData] = useState<string | null>(null);
+  const [additionalDetails, setAdditionalDetails] = useState("");
   const [analysis, setAnalysis] = useState<any>(null);
 
   const analyzeMutation = useMutation({
-    mutationFn: async (data: { description: string }) => {
+    mutationFn: async (data: { imageData: string; additionalDetails?: string }) => {
       const response = await apiRequest('POST', '/api/ai/analyze-defect', data);
       return response.json();
     },
@@ -50,16 +52,38 @@ export default function DefectAnalyzer() {
     },
   });
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImageData(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAnalyze = () => {
-    if (!description.trim()) {
+    if (!imageData) {
       toast({
-        title: "Missing Description",
-        description: "Please describe the defect you want to analyze",
+        title: "Missing Image",
+        description: "Please upload an image of the weld defect to analyze",
         variant: "destructive",
       });
       return;
     }
-    analyzeMutation.mutate({ description });
+    analyzeMutation.mutate({ 
+      imageData, 
+      additionalDetails: additionalDetails.trim() || undefined 
+    });
   };
 
   return (
@@ -103,29 +127,58 @@ export default function DefectAnalyzer() {
         <div className="px-6 mb-6">
           <Card className="bg-card border-border">
             <CardContent className="p-4">
-              <h3 className="font-semibold mb-3">Describe the Defect</h3>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="min-h-24 resize-none"
-                placeholder="Describe the weld defect you're observing. Include details about appearance, location, welding process, materials used, etc."
-                data-testid="textarea-defect-description"
-              />
-              
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Button variant="ghost" size="sm" className="text-sm">
-                    <i className="fas fa-camera mr-2"></i>
-                    Add Photo
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-sm">
-                    <i className="fas fa-microphone mr-2"></i>
-                    Voice Input
+              {/* Image Upload Section */}
+              {!imageData ? (
+                <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-muted rounded-lg">
+                  <label className="cursor-pointer flex flex-col items-center space-y-2">
+                    <i className="fas fa-image text-muted-foreground text-3xl"></i>
+                    <span className="text-sm font-medium">Upload Weld Image</span>
+                    <span className="text-xs text-muted-foreground">Click to select or drag and drop</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      data-testid="input-image-upload"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="relative">
+                  <img 
+                    src={imageData} 
+                    alt="Uploaded weld defect" 
+                    className="w-full rounded-lg mb-3 max-h-64 object-cover"
+                    data-testid="img-defect-preview"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 bg-background/80 hover:bg-background"
+                    onClick={() => setImageData(null)}
+                    data-testid="button-remove-image"
+                  >
+                    <X className="w-4 h-4" />
                   </Button>
                 </div>
+              )}
+
+              {/* Additional Details Section */}
+              <div className="mt-4">
+                <label className="text-sm font-medium">Additional Details (Optional)</label>
+                <Textarea
+                  value={additionalDetails}
+                  onChange={(e) => setAdditionalDetails(e.target.value)}
+                  className="min-h-20 resize-none mt-2"
+                  placeholder="Add extra details about the defect, welding process, materials, position, etc. to help with analysis"
+                  data-testid="textarea-additional-details"
+                />
+              </div>
+              
+              <div className="mt-4 flex justify-end">
                 <Button
                   onClick={handleAnalyze}
-                  disabled={analyzeMutation.isPending || !description.trim()}
+                  disabled={analyzeMutation.isPending || !imageData}
                   className="bg-primary text-primary-foreground"
                   data-testid="button-analyze"
                 >
@@ -134,7 +187,7 @@ export default function DefectAnalyzer() {
                   ) : (
                     <i className="fas fa-search mr-2"></i>
                   )}
-                  Analyze
+                  Analyze Defect
                 </Button>
               </div>
             </CardContent>
@@ -148,30 +201,28 @@ export default function DefectAnalyzer() {
               title="AI Analysis Results"
               result={analysis.result}
               type="defect-analysis"
+              imageUrl={analysis.imageData}
             />
           </div>
         )}
 
-        {/* Suggested Inputs */}
+        {/* Tips Section */}
         {!analysis && (
           <div className="px-6 mb-6">
-            <h3 className="font-semibold mb-3">Common Defect Examples</h3>
+            <h3 className="font-semibold mb-3">Tips for Best Results</h3>
             <div className="space-y-2">
               {[
-                "I notice porosity in my GMAW weld on 1/4\" mild steel",
-                "Undercut along the weld toe on overhead position",
-                "Slag inclusions in my stick weld root pass",
-                "Lack of fusion at the sidewall of my fillet weld"
-              ].map((example, index) => (
-                <Button
+                "📸 Capture the defect from multiple angles if possible",
+                "💡 Ensure good lighting to see details clearly",
+                "📐 Include reference objects for scale if available",
+                "✍️ Add details about welding process in the notes section"
+              ].map((tip, index) => (
+                <div
                   key={index}
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-left justify-start h-auto p-3 whitespace-normal"
-                  onClick={() => setDescription(example)}
+                  className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-lg"
                 >
-                  <span className="text-sm">{example}</span>
-                </Button>
+                  <span className="text-sm text-muted-foreground flex-1">{tip}</span>
+                </div>
               ))}
             </div>
           </div>

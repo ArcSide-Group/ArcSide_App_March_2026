@@ -177,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/ai/analyze-defect', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { description, projectId } = req.body;
+      const { imageData, additionalDetails, projectId } = req.body;
 
       // Check subscription limits for free users
       const user = await storage.getUser(userId);
@@ -190,14 +190,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const result = await AIService.analyzeDefect(description);
+      // Use additionalDetails or a generic description based on image
+      const analysisInput = additionalDetails || "Weld defect analysis from uploaded image";
+      const result = await AIService.analyzeDefect(analysisInput);
 
-      // Save analysis
+      // Save analysis with image data
       const analysisData = insertAnalysisSchema.parse({
         userId,
         projectId: projectId || null,
         type: 'defect-analysis',
-        input: description,
+        input: analysisInput,
+        imageData: imageData || null,
+        additionalDetails: additionalDetails || null,
         result,
         severity: result.severity,
         title: `Defect Analysis - ${result.defectType}`
@@ -206,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analysis = await storage.createAnalysis(analysisData);
       await storage.incrementUsage(userId, 'analyses');
 
-      res.json({ analysis, result });
+      res.json({ analysis, result, imageData });
     } catch (error) {
       console.error('Defect analysis error:', error);
       res.status(500).json({ message: "Failed to analyze defect" });

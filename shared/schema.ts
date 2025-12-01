@@ -74,6 +74,8 @@ export const analyses = pgTable("analyses", {
   projectId: varchar("project_id").references(() => projects.id),
   type: varchar("type").notNull(), // defect-analysis, wps-generation, material-check, terminology, assistant
   input: text("input").notNull(),
+  imageData: text("image_data"), // base64 encoded image for defect analysis
+  additionalDetails: text("additional_details"), // optional text details
   result: jsonb("result").notNull(),
   severity: varchar("severity"), // low, medium, high, critical
   title: varchar("title"),
