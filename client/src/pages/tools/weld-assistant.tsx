@@ -35,7 +35,7 @@ export default function WeldAssistant() {
   useEffect(scrollToBottom, [messages]);
 
   const sendMutation = useMutation({
-    mutationFn: async (data: { question: string }) => {
+    mutationFn: async (data: { question: string; conversationHistory: Array<{role: string; content: string}> }) => {
       const response = await apiRequest('POST', '/api/ai/ask-assistant', data);
       return response.json();
     },
@@ -78,8 +78,12 @@ export default function WeldAssistant() {
       timestamp: new Date()
     };
 
+    const history = messages
+      .filter(m => m.id !== '1')
+      .map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content }));
+
     setMessages(prev => [...prev, userMessage]);
-    sendMutation.mutate({ question: inputMessage });
+    sendMutation.mutate({ question: inputMessage, conversationHistory: history });
     setInputMessage("");
   };
 
@@ -92,7 +96,7 @@ export default function WeldAssistant() {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    sendMutation.mutate({ question });
+    sendMutation.mutate({ question, conversationHistory: [] });
   };
 
   const formatTime = (date: Date) => {

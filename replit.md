@@ -73,10 +73,13 @@ Preferred communication style: Simple, everyday language.
 - **ESBuild**: Fast JavaScript bundler for production builds
 - **Replit Plugins**: Development environment integration and error overlay
 
-### AI and Data Processing (Mock Implementation)
-- **Future AI Integration**: Architecture prepared for AI service integration
-- **Mock Services**: Simulated AI responses for defect analysis and WPS generation
+### AI and Data Processing (Live Integration)
+- **AI Provider**: Google Gemini 1.5 Flash via `@google/generative-ai` SDK
+- **AI Service**: `server/ai-service.ts` — GeminiAIService class with 5 methods
+- **Vision Support**: Gemini Vision for image-based weld defect analysis (base64 inline)
+- **Conversation Context**: Weld Assistant passes full conversation history to Gemini
 - **Data Validation**: Zod schemas for type-safe data validation
+- **API Key**: Stored as `GEMINI_API_KEY` secret
 
 ### Subscription and Usage Tracking
 - **Built-in Subscription System**: Custom subscription management with tier-based limits
