@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { 
   User, 
   Bell, 
@@ -20,191 +21,18 @@ import {
   LogOut,
   Camera,
   Mail,
-  Lock
+  Lock,
+  Sun,
+  Moon
 } from "lucide-react";
 
 export default function Settings() {
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
   const [units, setUnits] = useState("metric");
   const [language, setLanguage] = useState("english");
-
-  const settingSections = [
-    {
-      title: "Profile Settings",
-      icon: User,
-      items: [
-        {
-          title: "Profile Information",
-          description: "Update your personal information and profile picture",
-          component: (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-[#4CAF50]/20 rounded-full flex items-center justify-center">
-                  <Camera className="h-6 w-6 text-[#4CAF50]" />
-                </div>
-                <Button variant="outline" size="sm">Change Photo</Button>
-              </div>
-              <div className="grid grid-cols-1 gap-3">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue={user?.firstName || ""} />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue={user?.lastName || ""} />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue={user?.email || ""} />
-                </div>
-              </div>
-            </div>
-          )
-        }
-      ]
-    },
-    {
-      title: "Notifications",
-      icon: Bell,
-      items: [
-        {
-          title: "Push Notifications",
-          description: "Receive notifications about project updates and new features",
-          component: (
-            <Switch checked={notifications} onCheckedChange={setNotifications} />
-          )
-        },
-        {
-          title: "Email Notifications",
-          description: "Get important updates via email",
-          component: (
-            <Switch defaultChecked />
-          )
-        },
-        {
-          title: "Project Reminders",
-          description: "Remind me about project deadlines",
-          component: (
-            <Switch defaultChecked />
-          )
-        }
-      ]
-    },
-    {
-      title: "Appearance",
-      icon: Palette,
-      items: [
-        {
-          title: "Dark Mode",
-          description: "Toggle between light and dark themes",
-          component: (
-            <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-          )
-        },
-        {
-          title: "Color Theme",
-          description: "Choose your preferred color scheme",
-          component: (
-            <Select defaultValue="green">
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="green">Green</SelectItem>
-                <SelectItem value="blue">Blue</SelectItem>
-                <SelectItem value="purple">Purple</SelectItem>
-              </SelectContent>
-            </Select>
-          )
-        }
-      ]
-    },
-    {
-      title: "Preferences",
-      icon: Globe,
-      items: [
-        {
-          title: "Measurement Units",
-          description: "Choose your preferred measurement system",
-          component: (
-            <Select value={units} onValueChange={setUnits}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="metric">Metric</SelectItem>
-                <SelectItem value="imperial">Imperial</SelectItem>
-              </SelectContent>
-            </Select>
-          )
-        },
-        {
-          title: "Language",
-          description: "Select your preferred language",
-          component: (
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="english">English</SelectItem>
-                <SelectItem value="spanish">Spanish</SelectItem>
-                <SelectItem value="french">French</SelectItem>
-              </SelectContent>
-            </Select>
-          )
-        },
-        {
-          title: "Auto-save Projects",
-          description: "Automatically save project changes",
-          component: (
-            <Switch checked={autoSave} onCheckedChange={setAutoSave} />
-          )
-        }
-      ]
-    },
-    {
-      title: "Privacy & Security",
-      icon: Shield,
-      items: [
-        {
-          title: "Change Password",
-          description: "Update your account password",
-          component: (
-            <Button variant="outline" size="sm">
-              <Lock className="h-4 w-4 mr-2" />
-              Change Password
-            </Button>
-          )
-        },
-        {
-          title: "Two-Factor Authentication",
-          description: "Add an extra layer of security",
-          component: (
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-yellow-600 border-yellow-200">
-                Not Enabled
-              </Badge>
-              <Button variant="outline" size="sm">Enable</Button>
-            </div>
-          )
-        },
-        {
-          title: "Data Export",
-          description: "Download your data and projects",
-          component: (
-            <Button variant="outline" size="sm">
-              <Database className="h-4 w-4 mr-2" />
-              Export Data
-            </Button>
-          )
-        }
-      ]
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-background pt-16 pb-20">
@@ -218,11 +46,11 @@ export default function Settings() {
         </div>
 
         {/* Account Overview */}
-        <Card className="mb-6 bg-gradient-to-r from-[#4CAF50]/10 to-blue-500/10 border-[#4CAF50]/20">
+        <Card className="mb-6 bg-gradient-to-r from-primary/10 to-blue-500/10 border-primary/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-[#4CAF50] rounded-full flex items-center justify-center">
-                <User className="h-6 w-6 text-white" />
+              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                <User className="h-6 w-6 text-primary-foreground" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">{user?.firstName} {user?.lastName}</h3>
@@ -235,47 +63,228 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Settings Sections */}
         <div className="space-y-6">
-          {settingSections.map((section, sectionIndex) => (
-            <Card key={sectionIndex}>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <section.icon className="h-5 w-5 text-[#4CAF50]" />
-                  {section.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {section.items.map((item, itemIndex) => (
-                    <div key={itemIndex}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 pr-4">
-                          <h4 className="font-medium text-sm">{item.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {item.description}
-                          </p>
-                        </div>
-                        <div className="flex-shrink-0">
-                          {item.component}
-                        </div>
-                      </div>
-                      {itemIndex < section.items.length - 1 && (
-                        <Separator className="mt-4" />
-                      )}
-                    </div>
-                  ))}
+
+          {/* Profile Settings */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <User className="h-5 w-5 text-primary" />
+                Profile Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                    <Camera className="h-6 w-6 text-primary" />
+                  </div>
+                  <Button variant="outline" size="sm">Change Photo</Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input id="firstName" defaultValue={user?.firstName || ""} />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input id="lastName" defaultValue={user?.lastName || ""} />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" defaultValue={user?.email || ""} />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notifications */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Bell className="h-5 w-5 text-primary" />
+                Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Push Notifications</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Receive notifications about project updates</p>
+                  </div>
+                  <Switch checked={notifications} onCheckedChange={setNotifications} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Email Notifications</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Get important updates via email</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Project Reminders</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Remind me about project deadlines</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Appearance */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Palette className="h-5 w-5 text-primary" />
+                Appearance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                      {isDark ? "Dark Mode" : "Light Mode"}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isDark ? "Switch to light theme" : "Switch to dark theme"}
+                    </p>
+                  </div>
+                  <Switch checked={isDark} onCheckedChange={toggleTheme} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Color Theme</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Choose your preferred color scheme</p>
+                  </div>
+                  <Select defaultValue="cyan">
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cyan">Cyan</SelectItem>
+                      <SelectItem value="blue">Blue</SelectItem>
+                      <SelectItem value="green">Green</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preferences */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Globe className="h-5 w-5 text-primary" />
+                Preferences
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Measurement Units</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Choose your preferred measurement system</p>
+                  </div>
+                  <Select value={units} onValueChange={setUnits}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="metric">Metric</SelectItem>
+                      <SelectItem value="imperial">Imperial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Language</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Select your preferred language</p>
+                  </div>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="english">English</SelectItem>
+                      <SelectItem value="spanish">Spanish</SelectItem>
+                      <SelectItem value="french">French</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Auto-save Projects</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Automatically save project changes</p>
+                  </div>
+                  <Switch checked={autoSave} onCheckedChange={setAutoSave} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Privacy & Security */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="h-5 w-5 text-primary" />
+                Privacy & Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Change Password</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Update your account password</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Lock className="h-4 w-4 mr-2" />
+                    Change
+                  </Button>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Two-Factor Auth</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Add an extra layer of security</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-yellow-600 border-yellow-200 text-xs">Off</Badge>
+                    <Button variant="outline" size="sm">Enable</Button>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Export Data</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Download your data and projects</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Database className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Support & Help */}
         <Card className="mt-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <HelpCircle className="h-5 w-5 text-[#4CAF50]" />
+              <HelpCircle className="h-5 w-5 text-primary" />
               Support & Help
             </CardTitle>
           </CardHeader>
@@ -297,20 +306,22 @@ export default function Settings() {
         </Card>
 
         {/* Danger Zone */}
-        <Card className="mt-6 border-red-200">
+        <Card className="mt-6 border-destructive/30">
           <CardHeader>
-            <CardTitle className="text-lg text-red-600">Danger Zone</CardTitle>
-            <CardDescription>
-              Irreversible and destructive actions
-            </CardDescription>
+            <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
+            <CardDescription>Irreversible and destructive actions</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <Button variant="outline" className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50">
+              <Button
+                variant="outline"
+                className="w-full justify-start text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={() => window.location.href = "/api/logout"}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
-              <Button variant="outline" className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50">
+              <Button variant="outline" className="w-full justify-start text-destructive border-destructive/30 hover:bg-destructive/10">
                 Delete Account
               </Button>
             </div>

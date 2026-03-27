@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ShieldCheck, Lightbulb, BookOpen } from "lucide-react";
 
 interface AnalysisResultProps {
   title: string;
@@ -34,19 +35,18 @@ export default function AnalysisResult({ title, result, type, imageUrl }: Analys
 
         {type === 'defect-analysis' && result && (
           <>
-            {/* Uploaded Image */}
             {imageUrl && (
               <div className="mb-4">
-                <img 
-                  src={imageUrl} 
-                  alt="Analyzed weld defect" 
+                <img
+                  src={imageUrl}
+                  alt="Analyzed weld defect"
                   className="w-full rounded-lg max-h-48 object-cover"
                   data-testid="img-analysis-result"
                 />
               </div>
             )}
 
-            {/* Defect Type */}
+            {/* Defect Type & Severity */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-sm text-accent">
@@ -76,7 +76,7 @@ export default function AnalysisResult({ title, result, type, imageUrl }: Analys
               </div>
             )}
 
-            {/* Solutions */}
+            {/* Recommended Solutions */}
             {result.solutions && result.solutions.length > 0 && (
               <div className="mb-4">
                 <h4 className="font-semibold text-sm mb-2">Recommended Solutions</h4>
@@ -91,11 +91,75 @@ export default function AnalysisResult({ title, result, type, imageUrl }: Analys
               </div>
             )}
 
+            {/* Prevention Tips */}
+            {result.preventionTips && result.preventionTips.length > 0 && (
+              <div className="mb-4 bg-primary/10 border border-primary/20 rounded-lg p-3">
+                <h4 className="font-semibold text-sm mb-2 flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  Prevention Tips
+                </h4>
+                <ul className="space-y-1.5">
+                  {result.preventionTips.map((tip: string, index: number) => (
+                    <li key={index} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                      <span className="text-primary font-bold mt-0.5">•</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Standards Reference */}
             {result.standards && (
               <div className="bg-secondary/30 rounded-lg p-3">
-                <h4 className="font-semibold text-sm mb-1">Standards Reference</h4>
+                <h4 className="font-semibold text-sm mb-1 flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4" />
+                  Standards Reference
+                </h4>
                 <p className="text-xs text-muted-foreground">{result.standards}</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {type === 'terminology' && result && (
+          <>
+            <div className="mb-4">
+              <h4 className="font-semibold text-sm text-primary mb-1">{result.term}</h4>
+              <p className="text-sm text-muted-foreground">{result.definition}</p>
+            </div>
+
+            {result.example && (
+              <div className="mb-4 bg-secondary/20 rounded-lg p-3">
+                <h4 className="font-semibold text-sm mb-1 flex items-center gap-1.5">
+                  <Lightbulb className="h-4 w-4 text-accent" />
+                  Example
+                </h4>
+                <p className="text-xs text-muted-foreground">{result.example}</p>
+              </div>
+            )}
+
+            {result.tips && result.tips.length > 0 && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                <h4 className="font-semibold text-sm mb-2">Pro Tips</h4>
+                <ul className="space-y-1.5">
+                  {result.tips.map((tip: string, index: number) => (
+                    <li key={index} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                      <span className="text-primary font-bold mt-0.5">•</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {result.standard && (
+              <div className="mt-3 bg-secondary/30 rounded-lg p-3">
+                <h4 className="font-semibold text-sm mb-1 flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4" />
+                  Standard
+                </h4>
+                <p className="text-xs text-muted-foreground">{result.standard}</p>
               </div>
             )}
           </>

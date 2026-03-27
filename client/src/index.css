@@ -4,39 +4,39 @@
 @tailwind utilities;
 
 :root {
-  /* Light mode colors - matching ArcSide logo aesthetic */
-  --background: hsl(210 100% 8%);
-  --foreground: hsl(0 0% 100%);
-  --card: hsl(210 100% 12%);
-  --card-foreground: hsl(0 0% 100%);
-  --popover: hsl(210 100% 12%);
-  --popover-foreground: hsl(0 0% 100%);
-  --primary: hsl(190 100% 50%);
-  --primary-foreground: hsl(210 100% 8%);
-  --secondary: hsl(210 100% 20%);
-  --secondary-foreground: hsl(0 0% 100%);
-  --muted: hsl(210 100% 20%);
-  --muted-foreground: hsl(210 40% 80%);
+  /* Light mode */
+  --background: hsl(210 20% 98%);
+  --foreground: hsl(210 30% 10%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(210 30% 10%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(210 30% 10%);
+  --primary: hsl(190 80% 40%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(210 20% 92%);
+  --secondary-foreground: hsl(210 30% 20%);
+  --muted: hsl(210 20% 94%);
+  --muted-foreground: hsl(210 20% 45%);
   --accent: hsl(25 100% 52%);
   --accent-foreground: hsl(0 0% 100%);
   --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(210 100% 20%);
-  --input: hsl(210 100% 15%);
-  --ring: hsl(190 100% 50%);
+  --border: hsl(210 20% 88%);
+  --input: hsl(210 20% 94%);
+  --ring: hsl(190 80% 40%);
   --chart-1: hsl(12 76% 61%);
   --chart-2: hsl(173 58% 39%);
   --chart-3: hsl(197 37% 24%);
   --chart-4: hsl(43 74% 66%);
   --chart-5: hsl(27 87% 67%);
-  --sidebar: hsl(210 100% 12%);
-  --sidebar-foreground: hsl(0 0% 100%);
-  --sidebar-primary: hsl(190 100% 50%);
-  --sidebar-primary-foreground: hsl(210 100% 8%);
-  --sidebar-accent: hsl(210 100% 20%);
-  --sidebar-accent-foreground: hsl(190 100% 50%);
-  --sidebar-border: hsl(210 100% 20%);
-  --sidebar-ring: hsl(190 100% 50%);
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(210 30% 10%);
+  --sidebar-primary: hsl(190 80% 40%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(210 20% 92%);
+  --sidebar-accent-foreground: hsl(190 80% 40%);
+  --sidebar-border: hsl(210 20% 88%);
+  --sidebar-ring: hsl(190 80% 40%);
   --font-sans: "Inter", sans-serif;
   --font-serif: "Georgia", serif;
   --font-mono: "Fira Code", monospace;
@@ -44,7 +44,7 @@
 }
 
 .dark {
-  /* Dark mode colors - same as light mode since logo is already dark */
+  /* Dark mode - ArcSide deep navy brand */
   --background: hsl(210 100% 8%);
   --foreground: hsl(0 0% 100%);
   --card: hsl(210 100% 12%);
@@ -87,10 +87,6 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     overflow-x: hidden;
-  }
-
-  html {
-    @apply dark;
   }
 
   /* Typography improvements */
@@ -152,7 +148,7 @@
   .bottom-nav {
     @apply fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-50;
     @apply border-t border-border backdrop-blur;
-    background-color: hsla(210, 100%, 12%, 0.95);
+    background-color: hsl(var(--card) / 0.95);
   }
 
   /* Floating action button */
