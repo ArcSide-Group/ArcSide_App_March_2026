@@ -358,6 +358,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/calculators/preheat-temp', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculatePreheatTemperature(req.body);
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'preheat-temp',
+        inputs: req.body,
+        results: result,
+        title: 'Preheat & Interpass Temperature',
+      });
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate preheat temperature" });
+    }
+  });
+
+  app.post('/api/calculators/filler-consumption', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculateFillerConsumption(req.body);
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'filler-consumption',
+        inputs: req.body,
+        results: result,
+        title: 'Filler Metal Consumption',
+      });
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate filler consumption" });
+    }
+  });
+
+  app.post('/api/calculators/weld-time', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculateWeldTime(req.body);
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'weld-time',
+        inputs: req.body,
+        results: result,
+        title: 'Weld Time Estimate',
+      });
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate weld time" });
+    }
+  });
+
+  app.post('/api/calculators/cutting-length', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = WeldingCalculators.calculateCuttingLength(req.body);
+      const calculation = await storage.saveCalculation({
+        userId,
+        calculatorType: 'cutting-length',
+        inputs: req.body,
+        results: result,
+        title: 'Cut List Optimizer',
+      });
+      await storage.incrementUsage(userId, 'calculations');
+      res.json({ calculation, result });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate cutting length" });
+    }
+  });
+
   // User profile management
   app.get('/api/user/profile', isAuthenticated, async (req: any, res) => {
     try {

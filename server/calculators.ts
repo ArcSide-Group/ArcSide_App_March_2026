@@ -124,24 +124,20 @@ export class WeldingCalculators {
     
     let baseFlow = 20; // CFH
     
-    // Adjust for material
     if (material.includes('aluminum')) {
       baseFlow = 25;
     } else if (material.includes('stainless')) {
       baseFlow = 22;
     }
     
-    // Adjust for thickness
     if (thickness > 0.5) {
       baseFlow += 5;
     }
     
-    // Adjust for position
     if (position === 'overhead') {
       baseFlow += 3;
     }
     
-    // Adjust for environment
     if (environment === 'windy') {
       baseFlow += 10;
     }
@@ -156,6 +152,235 @@ export class WeldingCalculators {
         "Adjust based on weld quality",
         "Too much flow can cause turbulence"
       ]
+    };
+  }
+
+  static calculatePreheatTemperature(params: {
+    material: string;
+    thickness: number;
+    process: string;
+    heatInput: number;
+  }) {
+    const { material, thickness, process, heatInput } = params;
+
+    // Carbon Equivalent values by common steel grades
+    const ceMap: Record<string, number> = {
+      'a36': 0.40,
+      'a572-gr50': 0.46,
+      'a514': 0.65,
+      '4130': 0.75,
+      '4140': 0.82,
+      '1045': 0.62,
+      '1018': 0.35,
+      '1020': 0.38,
+      'a992': 0.47,
+      'dom': 0.50,
+    };
+
+    const ce = ceMap[material] ?? 0.45;
+
+    // Base preheat (°F) from CE per AWS D1.1 guidance
+    let preheatF = 0;
+    if (ce >= 0.60) preheatF = 350;
+    else if (ce >= 0.55) preheatF = 250;
+    else if (ce >= 0.45) preheatF = 150;
+    else if (ce >= 0.40) preheatF = 50;
+
+    // Thickness adjustments
+    if (thickness > 2.5) preheatF += 100;
+    else if (thickness > 1.5) preheatF += 50;
+    else if (thickness > 0.75) preheatF += 25;
+
+    // Low heat input increases cold-cracking risk
+    if (heatInput < 1.0) preheatF += 50;
+
+    // GTAW/GMAW are cleaner processes — slight reduction
+    if (process === 'GTAW' || process === 'GMAW') {
+      preheatF = Math.max(0, preheatF - 25);
+    }
+
+    preheatF = Math.round(preheatF / 25) * 25; // round to nearest 25°F
+    const preheatC = Math.round((preheatF - 32) * 5 / 9);
+    const maxInterpassF = Math.min(preheatF + 350, 500);
+    const maxInterpassC = Math.round((maxInterpassF - 32) * 5 / 9);
+    const riskLevel = ce > 0.60 ? 'High' : ce > 0.45 ? 'Moderate' : 'Low';
+
+    const recs: string[] = [];
+    if (preheatF > 0) {
+      recs.push(`Heat base metal to at least ${preheatF}°F (${preheatC}°C) before welding`);
+    } else {
+      recs.push('No preheat required under normal ambient conditions');
+    }
+    recs.push(`Maximum interpass temperature: ${maxInterpassF}°F (${maxInterpassC}°C)`);
+    if (ce > 0.60) recs.push('Post-weld heat treatment (PWHT) strongly recommended');
+    recs.push('Verify temperature using temp-sticks or contact thermocouple');
+    recs.push('Maintain preheat for at least 3" on each side of the joint');
+
+    return {
+      preheatF: Math.max(0, preheatF),
+      preheatC: Math.max(-18, preheatC),
+      maxInterpassF,
+      maxInterpassC,
+      carbonEquivalent: ce,
+      riskLevel,
+      recommendations: recs,
+    };
+  }
+
+  static calculateFillerConsumption(params: {
+    jointType: string;
+    weldLength: number;
+    legSize: number;
+    plateThickness: number;
+    grooveAngle: number;
+    passes: number;
+    process: string;
+  }) {
+    const { jointType, weldLength, legSize, plateThickness, grooveAngle, passes, process } = params;
+
+    // Deposition efficiency by process
+    const efficiency: Record<string, number> = {
+      'GMAW': 0.93,
+      'FCAW': 0.86,
+      'SMAW': 0.68,
+      'GTAW': 0.98,
+      'SAW': 0.99,
+    };
+    const depEff = efficiency[process] ?? 0.85;
+
+    // Spatter & stub loss factor (multiplier on wire/electrode needed)
+    const lossFactor = 1 / depEff;
+
+    // Steel density lb/in³
+    const density = 0.284;
+
+    // Cross-sectional area of the weld joint (in²)
+    let area = 0;
+    if (jointType === 'fillet') {
+      area = 0.5 * legSize * legSize;
+    } else if (jointType === 'butt-vgroove') {
+      const halfAngle = (grooveAngle / 2) * (Math.PI / 180);
+      area = Math.pow(plateThickness, 2) * Math.tan(halfAngle) * 0.5 + 0.0625 * plateThickness;
+    } else if (jointType === 'lap') {
+      area = legSize * legSize * 0.5;
+    }
+
+    const weldVolume = area * weldLength * passes; // in³
+    const depositedWeight = weldVolume * density; // lbs deposited
+    const fillerRequired = depositedWeight * lossFactor; // lbs of filler needed
+    const electrodesEstimate = Math.ceil(fillerRequired / 0.35); // rough 7018 electrode ~0.35lb usable
+
+    return {
+      depositedWeight: Math.round(depositedWeight * 100) / 100,
+      fillerRequired: Math.round(fillerRequired * 100) / 100,
+      weldVolume: Math.round(weldVolume * 100) / 100,
+      depositEfficiency: Math.round(depEff * 100),
+      electrodesEstimate: process === 'SMAW' ? electrodesEstimate : null,
+      unit: 'lbs',
+      recommendations: [
+        `Order at least ${Math.ceil(fillerRequired * 1.1)} lbs to account for waste`,
+        `Deposition efficiency for ${process}: ${Math.round(depEff * 100)}%`,
+        'Track actual consumption per joint to refine estimates',
+        process === 'SMAW' ? `Approx. ${electrodesEstimate} electrodes (3/32"–1/8" 7018)` : 'Use wire spool weight to plan procurement',
+      ],
+    };
+  }
+
+  static calculateWeldTime(params: {
+    weldLength: number;
+    travelSpeed: number;
+    passes: number;
+    numberOfJoints: number;
+    setupTimePerJoint: number;
+    arcEfficiency: number;
+    laborRate: number;
+  }) {
+    const { weldLength, travelSpeed, passes, numberOfJoints, setupTimePerJoint, arcEfficiency, laborRate } = params;
+
+    const arcTimePerPass = weldLength / travelSpeed; // minutes
+    const totalArcTime = arcTimePerPass * passes; // minutes
+    const totalSetupTime = numberOfJoints * setupTimePerJoint; // minutes
+    const totalOperatingTime = totalArcTime / (arcEfficiency / 100); // accounts for arc-off time
+    const totalTime = totalOperatingTime + totalSetupTime; // minutes
+    const totalHours = totalTime / 60;
+    const laborCost = totalHours * laborRate;
+
+    return {
+      arcTimeMin: Math.round(totalArcTime * 10) / 10,
+      setupTimeMin: Math.round(totalSetupTime * 10) / 10,
+      totalTimeMin: Math.round(totalTime * 10) / 10,
+      totalHours: Math.round(totalHours * 100) / 100,
+      laborCost: Math.round(laborCost * 100) / 100,
+      arcEfficiency,
+      recommendations: [
+        `Arc-on time: ${Math.round(totalArcTime)} min — operating time: ${Math.round(totalOperatingTime)} min`,
+        'Add 10–15% buffer for unforeseen delays',
+        arcEfficiency < 30 ? 'Low arc efficiency — consider workflow improvements' : 'Arc efficiency is within normal range',
+        laborRate > 0 ? `Estimated labor cost: $${laborCost.toFixed(2)} at $${laborRate}/hr` : 'Enter a labor rate to calculate cost',
+      ],
+    };
+  }
+
+  static calculateCuttingLength(params: {
+    stockLength: number;
+    parts: Array<{ length: number; quantity: number }>;
+    kerfWidth: number;
+  }) {
+    const { stockLength, parts, kerfWidth } = params;
+
+    // Greedy first-fit bin packing
+    const stocks: number[] = []; // remaining length in each stock bar
+    let totalCuts = 0;
+    let totalPartsLength = 0;
+
+    const allPieces: number[] = [];
+    for (const part of parts) {
+      for (let i = 0; i < part.quantity; i++) {
+        allPieces.push(part.length);
+        totalPartsLength += part.length;
+      }
+    }
+
+    // Sort descending for better packing
+    allPieces.sort((a, b) => b - a);
+
+    for (const piece of allPieces) {
+      let placed = false;
+      for (let i = 0; i < stocks.length; i++) {
+        const needed = piece + kerfWidth;
+        if (stocks[i] >= needed) {
+          stocks[i] -= needed;
+          totalCuts++;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        stocks.push(stockLength - piece);
+        totalCuts++;
+      }
+    }
+
+    const barsNeeded = stocks.length;
+    const totalStockLength = barsNeeded * stockLength;
+    const totalWaste = totalStockLength - totalPartsLength - (totalCuts * kerfWidth);
+    const utilization = Math.round((totalPartsLength / totalStockLength) * 100 * 10) / 10;
+    const totalCutLength = totalCuts * kerfWidth;
+
+    return {
+      barsNeeded,
+      totalCuts,
+      totalCutLength: Math.round(totalCutLength * 100) / 100,
+      totalWaste: Math.round(totalWaste * 100) / 100,
+      utilization,
+      totalStockLength,
+      recommendations: [
+        `${barsNeeded} stock bar(s) required at ${stockLength}" each`,
+        `Material utilization: ${utilization}%`,
+        utilization < 75 ? 'Consider re-nesting parts to reduce waste' : 'Good material utilization',
+        `Total kerf waste from cuts: ${Math.round(totalCutLength * 100) / 100}"`,
+        'Add 1 extra bar as buffer for defects or remeasurement',
+      ],
     };
   }
 }

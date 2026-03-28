@@ -57,6 +57,10 @@ function Router() {
             <Route path="/calculators/metal-weight" component={lazy(() => import('./pages/calculators/metal-weight'))} />
             <Route path="/calculators/bend-allowance" component={lazy(() => import('./pages/calculators/bend-allowance'))} />
             <Route path="/calculators/project-cost" component={lazy(() => import('./pages/calculators/project-cost'))} />
+            <Route path="/calculators/preheat-temp" component={lazy(() => import('./pages/calculators/preheat-temp'))} />
+            <Route path="/calculators/filler-consumption" component={lazy(() => import('./pages/calculators/filler-consumption'))} />
+            <Route path="/calculators/weld-time" component={lazy(() => import('./pages/calculators/weld-time'))} />
+            <Route path="/calculators/cutting-length" component={lazy(() => import('./pages/calculators/cutting-length'))} />
             <Route path="/calculators/history" component={lazy(() => import('./pages/calculators/history'))} />
             <Route path="/profile" component={lazy(() => import('./pages/profile'))} />
             <Route path="/projects" component={Projects} />
