@@ -22,8 +22,11 @@ export default function DefectAnalyzer() {
   const [analysis, setAnalysis] = useState<any>(null);
 
   const analyzeMutation = useMutation({
-    mutationFn: async (data: { imageData: string; additionalDetails?: string }) => {
-      const response = await apiRequest('POST', '/api/ai/analyze-defect', data);
+    mutationFn: async (data: {
+      imageData: string;
+      additionalDetails?: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/ai/analyze-defect", data);
       return response.json();
     },
     onSuccess: (data) => {
@@ -56,7 +59,7 @@ export default function DefectAnalyzer() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         toast({
           title: "Invalid File",
           description: "Please upload an image file",
@@ -81,27 +84,32 @@ export default function DefectAnalyzer() {
       });
       return;
     }
-    analyzeMutation.mutate({ 
-      imageData, 
-      additionalDetails: additionalDetails.trim() || undefined 
+    analyzeMutation.mutate({
+      imageData,
+      additionalDetails: additionalDetails.trim() || undefined,
     });
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full bg-secondary/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-8 h-8 p-0 rounded-full bg-secondary/50"
+              >
                 <i className="fas fa-arrow-left text-sm"></i>
               </Button>
             </Link>
             <div>
               <h1 className="text-lg font-bold">Defect Analyzer</h1>
-              <p className="text-xs text-muted-foreground">AI-powered weld analysis</p>
+              <p className="text-xs text-muted-foreground">
+                AI-powered weld analysis
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -111,7 +119,7 @@ export default function DefectAnalyzer() {
         </div>
 
         {/* Usage Limit Warning for Free Users */}
-        {(user as User)?.subscriptionTier === 'free' && (
+        {(user as User)?.subscriptionTier === "free" && (
           <div className="px-6 mb-4">
             <Card className="bg-accent/10 border-accent/30">
               <CardContent className="p-3">
@@ -133,8 +141,12 @@ export default function DefectAnalyzer() {
                 <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-muted rounded-lg">
                   <label className="cursor-pointer flex flex-col items-center space-y-2">
                     <i className="fas fa-image text-muted-foreground text-3xl"></i>
-                    <span className="text-sm font-medium">Upload Weld Image</span>
-                    <span className="text-xs text-muted-foreground">Click to select or drag and drop</span>
+                    <span className="text-sm font-medium">
+                      Upload Weld Image
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Click to select or drag and drop
+                    </span>
                     <input
                       type="file"
                       accept="image/*"
@@ -146,9 +158,9 @@ export default function DefectAnalyzer() {
                 </div>
               ) : (
                 <div className="relative">
-                  <img 
-                    src={imageData} 
-                    alt="Uploaded weld defect" 
+                  <img
+                    src={imageData}
+                    alt="Uploaded weld defect"
                     className="w-full rounded-lg mb-3 max-h-64 object-cover"
                     data-testid="img-defect-preview"
                   />
@@ -166,7 +178,9 @@ export default function DefectAnalyzer() {
 
               {/* Additional Details Section */}
               <div className="mt-4">
-                <label className="text-sm font-medium">Additional Details (Optional)</label>
+                <label className="text-sm font-medium">
+                  Additional Details (Optional)
+                </label>
                 <Textarea
                   value={additionalDetails}
                   onChange={(e) => setAdditionalDetails(e.target.value)}
@@ -175,7 +189,7 @@ export default function DefectAnalyzer() {
                   data-testid="textarea-additional-details"
                 />
               </div>
-              
+
               <div className="mt-4 flex justify-end">
                 <Button
                   onClick={handleAnalyze}
@@ -216,13 +230,15 @@ export default function DefectAnalyzer() {
                 "📸 Capture the defect from multiple angles if possible",
                 "💡 Ensure good lighting to see details clearly",
                 "📐 Include reference objects for scale if available",
-                "✍️ Add details about welding process in the notes section"
+                "✍️ Add details about welding process in the notes section",
               ].map((tip, index) => (
                 <div
                   key={index}
                   className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-lg"
                 >
-                  <span className="text-sm text-muted-foreground flex-1">{tip}</span>
+                  <span className="text-sm text-muted-foreground flex-1">
+                    {tip}
+                  </span>
                 </div>
               ))}
             </div>

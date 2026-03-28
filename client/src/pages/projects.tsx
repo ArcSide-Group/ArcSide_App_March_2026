@@ -71,7 +71,7 @@ export default function Projects() {
       case "completed":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "active":
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-primary" />;
       case "archived":
         return <Archive className="h-4 w-4 text-muted-foreground" />;
       default:
@@ -254,7 +254,7 @@ export default function Projects() {
 
         {/* Quick Stats */}
         {!isLoading && projects.length > 0 && (
-          <Card className="mt-6 bg-gradient-to-r from-primary/10 to-blue-500/10 border-primary/20">
+          <Card className="mt-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3">Overview</h3>
               <div className="grid grid-cols-3 gap-4 text-center mb-4">
@@ -263,7 +263,7 @@ export default function Projects() {
                   <p className="text-xs text-muted-foreground">Total</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-blue-500">
+                  <p className="text-2xl font-bold text-primary">
                     {projects.filter((p) => p.status === "active").length}
                   </p>
                   <p className="text-xs text-muted-foreground">Active</p>

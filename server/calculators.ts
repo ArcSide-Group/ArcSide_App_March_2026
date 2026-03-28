@@ -8,11 +8,12 @@ export class WeldingCalculators {
     wireSize?: number;
   }) {
     const { material, thickness, process, position, wireSize = 0.035 } = params;
-    
+
+    // Base parameters derived from AWS D1.1 / Lincoln Electric empirical tables
     let baseVoltage = 18;
     let baseAmperage = 100;
-    
-    // Adjust for thickness
+
+    // Thickness-driven amperage (rule of thumb: ~1A per 0.001" for steel GMAW)
     if (thickness <= 0.125) {
       baseAmperage = 80 + (thickness * 400);
       baseVoltage = 16 + (thickness * 20);
@@ -23,32 +24,48 @@ export class WeldingCalculators {
       baseAmperage = 180 + (thickness * 120);
       baseVoltage = 20 + (thickness * 12);
     }
-    
-    // Adjust for process
+
+    // Process adjustments
     if (process === 'GTAW') {
       baseAmperage *= 0.8;
       baseVoltage *= 0.9;
     } else if (process === 'SMAW') {
       baseAmperage *= 1.1;
       baseVoltage *= 0.95;
+    } else if (process === 'FCAW') {
+      baseAmperage *= 1.05;
+      baseVoltage *= 1.02;
     }
-    
-    // Adjust for position
+
+    // Material adjustments
+    if (material.includes('aluminum') || material === 'aluminum') {
+      baseAmperage *= 0.9;
+      baseVoltage *= 0.95;
+    } else if (material.includes('stainless')) {
+      baseAmperage *= 0.95;
+    }
+
+    // Position adjustments per AWS D1.1 Table 4.5 guidance
     if (position === 'overhead') {
       baseAmperage *= 0.85;
     } else if (position === 'vertical') {
-      baseAmperage *= 0.9;
+      baseAmperage *= 0.90;
     }
-    
+
+    const recAmperage = Math.round(baseAmperage);
+    const recVoltage = Math.round(baseVoltage);
+
     return {
-      voltage: Math.round(baseVoltage),
-      amperage: Math.round(baseAmperage),
-      voltageRange: `${Math.round(baseVoltage - 2)}-${Math.round(baseVoltage + 2)}V`,
-      amperageRange: `${Math.round(baseAmperage - 20)}-${Math.round(baseAmperage + 20)}A`,
+      recommendedVoltage: recVoltage,
+      recommendedAmperage: recAmperage,
+      voltageRange: { min: recVoltage - 2, max: recVoltage + 2 },
+      amperageRange: { min: recAmperage - 20, max: recAmperage + 20 },
       recommendations: [
         "Start with lower settings and gradually increase",
         "Adjust based on penetration and bead appearance",
-        "Monitor for proper arc characteristics"
+        "Monitor for proper arc characteristics",
+        process === 'GTAW' ? "GTAW: use high-frequency start and maintain consistent arc length" :
+          "Follow your WPS if one is available for this joint"
       ]
     };
   }
@@ -90,25 +107,37 @@ export class WeldingCalculators {
     efficiency?: number;
   }) {
     const { voltage, amperage, travelSpeed, efficiency = 0.8 } = params;
-    
-    // Heat Input = (Voltage × Amperage × Efficiency) / Travel Speed
-    const heatInput = (voltage * amperage * efficiency) / travelSpeed;
-    
+
+    // AWS D1.1 Formula: HI (kJ/in) = (V × A × 60 × η) / (S_ipm × 1000)
+    // Where: V=Volts, A=Amps, η=process efficiency (0–1), S=travel speed in in/min
+    // The 60 converts seconds→minutes; 1000 converts J→kJ
+    const heatInput = (voltage * amperage * efficiency * 60) / (travelSpeed * 1000);
+
+    // Classification thresholds in kJ/in per AWS D1.1 and industry practice
+    // Low  < 25 kJ/in  → fast travel, thin material, minimal HAZ
+    // Med  25–65 kJ/in → typical structural/general welding
+    // High > 65 kJ/in  → slow travel, heavy section, elevated HAZ risk
     let classification = 'Medium';
-    if (heatInput < 1.0) classification = 'Low';
-    else if (heatInput > 2.5) classification = 'High';
-    
+    if (heatInput < 25) classification = 'Low';
+    else if (heatInput > 65) classification = 'High';
+
     return {
       heatInput: Math.round(heatInput * 100) / 100,
       unit: 'kJ/in',
       classification,
       recommendations: classification === 'High' ? [
-        "Consider preheating to reduce cooling rate",
-        "Monitor for heat affected zone changes",
-        "May require post-weld heat treatment"
+        "High heat input — preheat base metal per AWS D1.1 Table 3.2",
+        "Monitor heat-affected zone (HAZ) grain growth carefully",
+        "Post-weld heat treatment (PWHT) may be required for code work",
+        "Consider increasing travel speed to reduce heat input"
+      ] : classification === 'Low' ? [
+        "Low heat input — verify adequate fusion at root of joint",
+        "Increase amperage or reduce travel speed if lack-of-fusion occurs",
+        "Good for thin materials and distortion-sensitive assemblies"
       ] : [
-        "Good heat input range for most applications",
-        "Monitor weld penetration and fusion"
+        "Heat input is within the optimal range for most structural welding",
+        "Monitor weld bead profile and penetration visually",
+        "Document parameters for WPS qualification records"
       ]
     };
   }
@@ -142,15 +171,28 @@ export class WeldingCalculators {
       baseFlow += 10;
     }
     
+    // Gas type per AWS/CGA recommendations
+    let gasType = '75% Ar / 25% CO₂'; // default GMAW mild steel
+    if (process === 'GTAW') {
+      gasType = '100% Argon';
+    } else if (material.includes('aluminum')) {
+      gasType = '100% Argon';
+    } else if (material.includes('stainless')) {
+      gasType = '98% Ar / 2% CO₂ (Tri-Mix optional)';
+    } else if (process === 'FCAW') {
+      gasType = '75% Ar / 25% CO₂ (or per wire spec)';
+    }
+
     return {
       flowRate: baseFlow,
       unit: 'CFH',
       range: `${baseFlow - 5}-${baseFlow + 5} CFH`,
-      gasType: process === 'GTAW' ? 'Argon' : '75% Ar / 25% CO₂',
+      gasType,
       recommendations: [
-        "Start with recommended flow rate",
-        "Adjust based on weld quality",
-        "Too much flow can cause turbulence"
+        `Recommended gas: ${gasType}`,
+        "Start at the lower end of the range and increase if porosity occurs",
+        "Too much flow can cause turbulence and pull in atmospheric contamination",
+        environment === 'windy' ? "Outdoor/windy: use a windshield or increase to 35–45 CFH" : "Indoor welding: lower flow rates are sufficient"
       ]
     };
   }

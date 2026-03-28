@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import logoPath from "@assets/ArcSide Professional Logo_20250826_195657_0000_1764605043277.png";
+import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 export default function Landing() {
   const handleLogin = () => {
@@ -17,8 +17,9 @@ export default function Landing() {
         <div className="text-center pt-12 pb-8 px-6 hero-section">
           <img 
             src={logoPath}
-            alt="ArcSide™ Logo" 
-            className="h-32 w-auto mx-auto mb-6 object-contain"
+            alt="ArcSide Mobile App" 
+            className="h-32 w-auto mx-auto mb-6 object-contain rounded-xl"
+            data-testid="img-arcside-logo-hero"
           />
           <h1 className="text-4xl font-bold mb-2">
             <span className="gradient-text">ArcSide™</span>
@@ -140,7 +141,7 @@ export default function Landing() {
         {/* Footer */}
         <div className="text-center pb-6">
           <p className="text-xs text-muted-foreground">
-            © 2024 ArcSide™ - Professional Welding Solutions
+            © 2025 ArcSide™ - Professional Welding Solutions
           </p>
         </div>
       </div>

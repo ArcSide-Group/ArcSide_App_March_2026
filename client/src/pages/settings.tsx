@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -24,8 +25,10 @@ import {
   Mail,
   Lock,
   Sun,
-  Moon
+  Moon,
+  Info
 } from "lucide-react";
+import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 export default function Settings() {
   const { user } = useAuth();
@@ -47,7 +50,7 @@ export default function Settings() {
         </div>
 
         {/* Account Overview */}
-        <Card className="mb-6 bg-gradient-to-r from-primary/10 to-blue-500/10 border-primary/20">
+        <Card className="mb-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
@@ -302,6 +305,40 @@ export default function Settings() {
               <Button variant="outline" className="w-full justify-start">
                 Give Feedback
               </Button>
+              <Link href="/disclaimer" className="block">
+                <Button variant="outline" className="w-full justify-start text-accent border-accent/30 hover:bg-accent/10">
+                  <i className="fas fa-shield-alt h-4 w-4 mr-2"></i>
+                  Liability Disclaimer
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* About */}
+        <Card className="mt-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Info className="h-5 w-5 text-primary" />
+              About ArcSide
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center gap-3 py-2">
+              <img
+                src={logoPath}
+                alt="ArcSide Mobile App"
+                className="h-12 w-auto object-contain rounded-lg"
+                data-testid="img-arcside-logo-settings"
+              />
+              <div className="text-center">
+                <h3 className="font-bold text-base text-foreground">ArcSide™ Professional</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Mobile App v1.0.0</p>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                  AI-powered welding &amp; fabrication assistant.<br />
+                  Built by tradesmen, for tradesmen.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -60,71 +60,84 @@ export default function AITools() {
   return (
     <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
+        {/* Header */}
         <div className="mb-6 text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-[#4CAF50] to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+            style={{ boxShadow: '0 8px 24px hsl(190 100% 50% / 0.25)' }}>
             <Bot className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">AI-Powered Tools</h1>
-          <p className="text-muted-foreground">
-            Advanced artificial intelligence tools for welding professionals
+          <h1 className="text-2xl font-bold mb-1">AI-Powered Tools</h1>
+          <p className="text-sm text-muted-foreground">
+            Gemini 2.0 Flash — built for welding professionals
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {aiTools.map((tool, index) => (
-            <Card key={index} className={`${tool.isPremium ? 'border-amber-200 bg-gradient-to-r from-amber-50/50 to-yellow-50/50' : ''}`}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${tool.isPremium ? 'bg-amber-100' : 'bg-[#4CAF50]/20'}`}>
-                      <tool.icon className={`h-5 w-5 ${tool.isPremium ? 'text-amber-600' : 'text-[#4CAF50]'}`} />
+            <Card
+              key={index}
+              className={`border-border ${tool.isPremium ? 'border-accent/30 bg-gradient-to-r from-accent/5 to-accent/10' : ''}`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  {/* Icon */}
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${tool.isPremium ? 'bg-accent/20' : 'bg-primary/15'}`}>
+                    <tool.icon className={`h-5 w-5 ${tool.isPremium ? 'text-accent' : 'text-primary'}`} />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="font-semibold text-sm">{tool.name}</span>
+                      {tool.isPremium && (
+                        <Badge variant="secondary" className="bg-accent/15 text-accent border-accent/30 text-xs px-2 py-0">
+                          <Crown className="h-3 w-3 mr-1" />
+                          Pro
+                        </Badge>
+                      )}
                     </div>
-                    <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        {tool.name}
-                        {tool.isPremium && (
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">
-                            <Crown className="h-3 w-3 mr-1" />
-                            Premium
-                          </Badge>
+                    <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{tool.description}</p>
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {tool.features.map((feature, fi) => (
+                        <Badge key={fi} variant="outline" className="text-[10px] px-1.5 py-0 border-border text-muted-foreground">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                    <Link href={tool.href}>
+                      <Button
+                        size="sm"
+                        className={`w-full h-10 font-semibold text-sm ${tool.isPremium
+                          ? 'bg-accent hover:bg-accent/90 text-accent-foreground'
+                          : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                        }`}
+                      >
+                        {tool.isPremium ? (
+                          <><Crown className="h-3.5 w-3.5 mr-1.5" />Try Premium Tool</>
+                        ) : (
+                          <><i className="fas fa-rocket mr-1.5 text-xs"></i>Launch Tool</>
                         )}
-                      </CardTitle>
-                    </div>
+                      </Button>
+                    </Link>
                   </div>
-                </div>
-                <CardDescription>{tool.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex flex-wrap gap-1">
-                    {tool.features.map((feature, featureIndex) => (
-                      <Badge key={featureIndex} variant="outline" className="text-xs">
-                        {feature}
-                      </Badge>
-                    ))}
-                  </div>
-                  <Link href={tool.href}>
-                    <Button 
-                      className={`w-full ${tool.isPremium ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600' : 'bg-[#4CAF50] hover:bg-[#45a049]'} text-white`}
-                    >
-                      {tool.isPremium ? 'Try Premium Tool' : 'Launch Tool'}
-                    </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <Card className="mt-6 bg-gradient-to-r from-[#4CAF50]/20 to-blue-500/20 border-[#4CAF50]/30">
-          <CardContent className="p-6 text-center">
-            <Bot className="h-12 w-12 text-[#4CAF50] mx-auto mb-3" />
-            <h3 className="font-semibold mb-2">Unlock Premium AI Tools</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Get access to advanced AI features, unlimited usage, and priority support
+        {/* Bottom CTA */}
+        <Card className="mt-5 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">
+          <CardContent className="p-5 text-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center mx-auto mb-3">
+              <Bot className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="font-semibold mb-1.5">Unlock Premium AI Tools</h3>
+            <p className="text-xs text-muted-foreground mb-4">
+              Unlimited analyses, WPS generation, and advanced AI features
             </p>
             <Link href="/subscription">
-              <Button className="bg-[#4CAF50] hover:bg-[#45a049] text-white">
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8">
                 Upgrade Now
               </Button>
             </Link>

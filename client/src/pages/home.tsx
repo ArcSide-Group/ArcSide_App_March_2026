@@ -10,6 +10,7 @@ import FloatingActionButton from "@/components/common/floating-action-button";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
@@ -59,28 +60,29 @@ export default function Home() {
     <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
 
-        {/* Hero Section with Brand */}
-        <div className="relative p-6 pb-4 bg-gradient-to-r from-[#4CAF50]/10 to-blue-500/10">
+        {/* Hero Section — Industrial palette */}
+        <div className="relative p-5 pb-4 bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <img
-                src="/attached_assets/ArcSide%20New%20and%20Improved%20BLUE%20LOGO%20%28ORANGE%20SPARK%29_20250826_195657_0001_1756232563390.png"
-                alt="ArcSide Logo"
-                className="w-16 h-16 object-contain"
+                src={logoPath}
+                alt="ArcSide Mobile App"
+                className="w-14 h-14 object-contain rounded-lg shrink-0"
+                data-testid="img-arcside-logo-home"
               />
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-[#4CAF50] to-blue-500 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   ArcSide™
                 </h1>
-                <p className="text-sm text-muted-foreground">Professional Welding Platform</p>
+                <p className="text-xs text-muted-foreground">Professional Welding Platform</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <i className="fas fa-bell text-muted-foreground cursor-pointer"></i>
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
+                <i className="fas fa-bell text-muted-foreground cursor-pointer text-sm"></i>
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse"></div>
               </div>
-              <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center border-2 border-[#4CAF50]/20">
+              <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center border-2 border-primary/20 shrink-0">
                 {(user as User)?.profileImageUrl ? (
                   <img
                     src={(user as User).profileImageUrl!}
@@ -95,26 +97,26 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Welcome Message */}
-        <div className="px-6 mb-6">
-          <Card className="bg-gradient-to-r from-[#4CAF50]/5 to-blue-500/5 border-[#4CAF50]/20">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-2 text-foreground">
+        {/* Welcome Card */}
+        <div className="px-4 pt-4 mb-5">
+          <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+            <CardContent className="p-4">
+              <h2 className="text-lg font-bold mb-1 text-foreground">
                 Welcome back, {userName}! 👋
               </h2>
-              <p className="text-muted-foreground mb-4">
-                Your professional welding companion is ready. Explore our AI-powered tools and advanced calculators to enhance your work.
+              <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                Your professional welding companion is ready. AI tools and precision calculators — built for the field.
               </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2 bg-background/50 rounded-lg p-3">
-                  <div className={`w-3 h-3 rounded-full ${(user as User)?.subscriptionTier === 'premium' ? 'bg-[#4CAF50]' : 'bg-muted-foreground'} animate-pulse`}></div>
-                  <span className="text-sm font-medium">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center space-x-2 bg-background/50 rounded-lg p-2.5">
+                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${(user as User)?.subscriptionTier === 'premium' ? 'bg-primary' : 'bg-muted-foreground'} animate-pulse`}></div>
+                  <span className="text-xs font-medium truncate">
                     {(user as User)?.subscriptionTier === 'premium' ? 'Premium Active' : 'Free Plan'}
                   </span>
                 </div>
-                <div className="flex items-center space-x-2 bg-background/50 rounded-lg p-3">
-                  <i className="fas fa-chart-line text-[#4CAF50]"></i>
-                  <span className="text-sm font-medium">
+                <div className="flex items-center space-x-2 bg-background/50 rounded-lg p-2.5">
+                  <i className="fas fa-chart-line text-accent text-xs shrink-0"></i>
+                  <span className="text-xs font-medium">
                     {(usage as UsageTracking)?.analysesCount || 0} analyses
                   </span>
                 </div>
@@ -124,45 +126,51 @@ export default function Home() {
         </div>
 
         {/* Featured Section */}
-        <div className="px-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <i className="fas fa-star text-[#4CAF50]"></i>
+        <div className="px-4 mb-5">
+          <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+            <i className="fas fa-star text-accent text-sm"></i>
             Featured Tools
           </h3>
-          <div className="grid grid-cols-1 gap-4">
-            <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30">
+          <div className="grid grid-cols-1 gap-3">
+            {/* Defect Analyzer */}
+            <Card className="bg-gradient-to-r from-primary/15 to-primary/5 border-primary/30">
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                      <i className="fas fa-robot text-white text-lg"></i>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className="w-11 h-11 bg-primary rounded-xl flex items-center justify-center shrink-0">
+                      <i className="fas fa-robot text-primary-foreground text-base"></i>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-foreground">AI Defect Analyzer</h4>
-                      <p className="text-sm text-muted-foreground">Instant weld analysis</p>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm text-foreground truncate">AI Defect Analyzer</h4>
+                      <p className="text-xs text-muted-foreground">Instant weld analysis</p>
                     </div>
                   </div>
                   <Link href="/tools/defect-analyzer">
-                    <Button size="sm" className="bg-blue-500 hover:bg-blue-600">Try Now</Button>
+                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 h-9 px-3 text-xs font-semibold">
+                      Try Now
+                    </Button>
                   </Link>
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="bg-gradient-to-r from-[#4CAF50]/20 to-emerald-500/20 border-[#4CAF50]/30">
+
+            {/* Smart Calculators */}
+            <Card className="bg-gradient-to-r from-accent/15 to-accent/5 border-accent/30">
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-[#4CAF50] rounded-xl flex items-center justify-center">
-                      <i className="fas fa-calculator text-white text-lg"></i>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center shrink-0">
+                      <i className="fas fa-calculator text-accent-foreground text-base"></i>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-foreground">Smart Calculators</h4>
-                      <p className="text-sm text-muted-foreground">Precise welding calculations</p>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm text-foreground truncate">Smart Calculators</h4>
+                      <p className="text-xs text-muted-foreground">Precise welding math</p>
                     </div>
                   </div>
-                  <Link href="/tools">
-                    <Button size="sm" className="bg-[#4CAF50] hover:bg-[#45a049]">Explore</Button>
+                  <Link href="/calculators">
+                    <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground shrink-0 h-9 px-3 text-xs font-semibold">
+                      Explore
+                    </Button>
                   </Link>
                 </div>
               </CardContent>
@@ -171,9 +179,9 @@ export default function Home() {
         </div>
 
         {/* AI Tools Grid */}
-        <div className="px-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">AI-Powered Tools</h3>
-          <div className="grid grid-cols-2 gap-4">
+        <div className="px-4 mb-5">
+          <h3 className="text-base font-semibold mb-3">AI-Powered Tools</h3>
+          <div className="grid grid-cols-2 gap-3">
             <Link href="/tools/defect-analyzer">
               <ToolCard
                 icon="fas fa-search"
@@ -188,7 +196,7 @@ export default function Home() {
               <ToolCard
                 icon="fas fa-file-alt"
                 title="WPS Generator"
-                description="Generate welding procedures"
+                description="Generate procedures"
                 iconColor="text-accent"
                 bgColor="bg-accent/20"
                 premium={(user as User)?.subscriptionTier !== 'premium'}
@@ -209,7 +217,7 @@ export default function Home() {
               <ToolCard
                 icon="fas fa-book"
                 title="Terminology"
-                description="Welding terms & definitions"
+                description="Welding terms"
                 iconColor="text-chart-1"
                 bgColor="bg-chart-1/20"
               />
@@ -218,21 +226,21 @@ export default function Home() {
         </div>
 
         {/* Calculators Section */}
-        <div className="px-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Calculators</h3>
+        <div className="px-4 mb-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold">Calculators</h3>
             <Link href="/calculators">
-              <Button variant="link" size="sm" className="text-primary p-0 h-auto">
-                View All
+              <Button variant="link" size="sm" className="text-primary p-0 h-auto text-xs">
+                View All →
               </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <Link href="/calculators/voltage-amperage">
               <ToolCard
                 icon="fas fa-bolt"
                 title="Voltage & Amperage"
-                description="Calculate weld parameters"
+                description="Weld parameters"
                 iconColor="text-primary"
                 bgColor="bg-primary/20"
               />
@@ -241,29 +249,29 @@ export default function Home() {
               <ToolCard
                 icon="fas fa-balance-scale"
                 title="Metal Weight"
-                description="Material weight calculator"
-                iconColor="text-chart-2"
-                bgColor="bg-chart-2/20"
+                description="Material weights"
+                iconColor="text-accent"
+                bgColor="bg-accent/20"
               />
             </Link>
           </div>
         </div>
 
         {/* Weld Assistant Quick Access */}
-        <div className="px-6 mb-6">
-          <Card className="bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
+        <div className="px-4 mb-5">
+          <Card className="bg-gradient-to-r from-primary/15 to-accent/10 border-primary/30">
             <CardContent className="p-4">
               <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <i className="fas fa-robot text-primary-foreground"></i>
+                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0">
+                  <i className="fas fa-robot text-primary-foreground text-sm"></i>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold mb-1">Weld Assistant</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Ask any welding question and get expert AI guidance
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold mb-1 text-sm">Weld Assistant</h4>
+                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                    Ask any welding question — get expert AI guidance powered by Gemini 2.0 Flash
                   </p>
                   <Link href="/tools/weld-assistant">
-                    <Button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium">
+                    <Button size="sm" className="bg-primary text-primary-foreground px-4 h-10 text-sm font-semibold">
                       Start Conversation
                     </Button>
                   </Link>
@@ -274,42 +282,38 @@ export default function Home() {
         </div>
 
         {/* Recent Projects */}
-        <div className="px-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Recent Projects</h3>
+        <div className="px-4 mb-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold">Recent Projects</h3>
             <Link href="/projects">
-              <Button variant="link" className="text-primary p-0 h-auto text-sm">
-                View All
+              <Button variant="link" className="text-primary p-0 h-auto text-xs">
+                View All →
               </Button>
             </Link>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recentProjects.length > 0 ? (
               recentProjects.map((project: Project) => (
                 <Card key={project.id} className="bg-card border-border">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-sm">{project.name}</h4>
-                      <span className="text-xs text-muted-foreground">
+                  <CardContent className="p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <h4 className="font-medium text-sm truncate flex-1 mr-2">{project.name}</h4>
+                      <span className="text-xs text-muted-foreground shrink-0">
                         {new Date(project.updatedAt || Date.now()).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">
+                    <p className="text-xs text-muted-foreground mb-2 truncate">
                       {project.description || `${project.process} welding project`}
                     </p>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3">
                       <div className="flex items-center space-x-1">
                         <i className={`fas ${project.status === 'completed' ? 'fa-check-circle text-primary' : 'fa-clock text-accent'} text-xs`}></i>
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {project.status}
-                        </span>
+                        <span className="text-xs text-muted-foreground capitalize">{project.status}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <i className="fas fa-file text-xs text-muted-foreground"></i>
-                        <span className="text-xs text-muted-foreground">
-                          {project.progress || 0}% complete
-                        </span>
+                        <span className="text-xs text-muted-foreground">{project.progress || 0}% complete</span>
                       </div>
                     </div>
                   </CardContent>
@@ -318,10 +322,10 @@ export default function Home() {
             ) : (
               <Card className="bg-card border-border">
                 <CardContent className="p-4 text-center">
-                  <i className="fas fa-folder-open text-2xl text-muted-foreground mb-2"></i>
-                  <p className="text-sm text-muted-foreground mb-2">No projects yet</p>
+                  <i className="fas fa-folder-open text-2xl text-muted-foreground mb-2 block"></i>
+                  <p className="text-sm text-muted-foreground mb-3">No projects yet</p>
                   <Link href="/projects">
-                    <Button variant="outline" size="sm">Create First Project</Button>
+                    <Button variant="outline" size="sm" className="h-10">Create First Project</Button>
                   </Link>
                 </CardContent>
               </Card>
@@ -329,7 +333,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Floating Action Button */}
         <FloatingActionButton />
       </div>
     </div>

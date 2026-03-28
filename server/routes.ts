@@ -84,8 +84,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ analysis, result, imageData });
     } catch (error) {
+      const status = (error as any)?.statusCode || 500;
       console.error('Defect analysis error:', error);
-      res.status(500).json({ message: "Failed to analyze defect" });
+      res.status(status).json({ message: (error as Error).message || 'Failed to analyze defect' });
     }
   });
 
@@ -121,8 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ wps, result });
     } catch (error) {
+      const status = (error as any)?.statusCode || 500;
       console.error('WPS generation error:', error);
-      res.status(500).json({ message: "Failed to generate WPS" });
+      res.status(status).json({ message: (error as Error).message || 'Failed to generate WPS' });
     }
   });
 
@@ -148,8 +150,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ analysis, result });
     } catch (error) {
+      const status = (error as any)?.statusCode || 500;
       console.error('Material compatibility error:', error);
-      res.status(500).json({ message: "Failed to check material compatibility" });
+      res.status(status).json({ message: (error as Error).message || 'Failed to check material compatibility' });
     }
   });
 
@@ -173,8 +176,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ analysis, result });
     } catch (error) {
+      const status = (error as any)?.statusCode || 500;
       console.error('Terminology search error:', error);
-      res.status(500).json({ message: "Failed to search terminology" });
+      res.status(status).json({ message: (error as Error).message || 'Failed to search terminology' });
     }
   });
 
@@ -200,8 +204,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ analysis, answer });
     } catch (error) {
+      const status = (error as any)?.statusCode || 500;
       console.error('Assistant error:', error);
-      res.status(500).json({ message: "Failed to get assistant response" });
+      res.status(status).json({ message: (error as Error).message || 'Failed to get assistant response' });
+    }
+  });
+
+  app.post('/api/ai/optimize-process', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.subscriptionTier === 'free') {
+        return res.status(403).json({
+          message: "Process Optimizer requires a Premium subscription"
+        });
+      }
+
+      const result = await GeminiAIService.optimizeProcess(req.body);
+
+      const analysisData = insertAnalysisSchema.parse({
+        userId,
+        type: 'process-optimization',
+        input: `${req.body.process} — ${req.body.material} @ ${req.body.thickness}"`,
+        result,
+        title: `Process Optimization - ${req.body.process}`
+      });
+
+      const analysis = await storage.createAnalysis(analysisData);
+      await storage.incrementUsage(userId, 'analyses');
+
+      res.json({ analysis, result });
+    } catch (error) {
+      const status = (error as any)?.statusCode || 500;
+      console.error('Process optimization error:', error);
+      res.status(status).json({ message: (error as Error).message || 'Failed to optimize process' });
     }
   });
 

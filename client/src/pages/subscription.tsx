@@ -8,7 +8,7 @@ const plans = [
     name: "Free",
     price: "$0",
     period: "forever",
-    description: "Perfect for getting started with basic welding tools",
+    description: "Get started with essential welding tools",
     features: [
       "Basic calculators access",
       "Limited AI chatbot (10 queries/day)",
@@ -24,13 +24,15 @@ const plans = [
     buttonText: "Current Plan",
     buttonVariant: "outline" as const,
     popular: false,
-    icon: Star
+    icon: Star,
+    iconBg: "bg-secondary",
+    iconColor: "text-secondary-foreground"
   },
   {
     name: "Premium",
     price: "$19.99",
     period: "per month",
-    description: "Ideal for professional welders and small fabrication shops",
+    description: "For professional welders and small fabrication shops",
     features: [
       "All calculators unlocked",
       "Unlimited AI chatbot interactions",
@@ -45,13 +47,15 @@ const plans = [
     buttonText: "Upgrade to Premium",
     buttonVariant: "default" as const,
     popular: true,
-    icon: Zap
+    icon: Zap,
+    iconBg: "bg-primary/20",
+    iconColor: "text-primary"
   },
   {
-    name: "Pro/Enterprise",
+    name: "Pro / Enterprise",
     price: "$49.99",
     period: "per month",
-    description: "Complete solution for large fabrication shops and enterprises",
+    description: "Full solution for large shops and enterprises",
     features: [
       "All Premium features",
       "Full Text-to-CAD access",
@@ -68,7 +72,9 @@ const plans = [
     buttonText: "Contact Sales",
     buttonVariant: "default" as const,
     popular: false,
-    icon: Crown
+    icon: Crown,
+    iconBg: "bg-accent/20",
+    iconColor: "text-accent"
   }
 ];
 
@@ -77,92 +83,90 @@ export default function Subscription() {
     <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2">Choose Your Plan</h1>
-          <p className="text-muted-foreground">
+        <div className="text-center mb-7">
+          <div className="w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
+            <Crown className="h-7 w-7 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold mb-1.5">Choose Your Plan</h1>
+          <p className="text-sm text-muted-foreground">
             Unlock the full potential of professional welding tools
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {plans.map((plan, index) => (
-            <Card 
-              key={index} 
-              className={`relative ${plan.popular ? 'border-[#4CAF50] shadow-lg scale-105' : ''}`}
+            <Card
+              key={index}
+              className={`relative border-border ${
+                plan.popular
+                  ? 'border-primary shadow-lg ring-1 ring-primary/30'
+                  : plan.name === 'Pro / Enterprise'
+                    ? 'border-accent/40'
+                    : ''
+              }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-[#4CAF50] text-white px-4 py-1">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                  <Badge className="bg-primary text-primary-foreground px-4 py-1 font-semibold shadow">
                     Most Popular
                   </Badge>
                 </div>
               )}
 
-              <CardHeader className="text-center pb-4">
-                <div className="flex items-center justify-center mb-2">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    plan.name === 'Free' ? 'bg-gray-100' :
-                    plan.name === 'Premium' ? 'bg-[#4CAF50]/20' : 'bg-gradient-to-r from-purple-500/20 to-amber-500/20'
-                  }`}>
-                    <plan.icon className={`h-6 w-6 ${
-                      plan.name === 'Free' ? 'text-gray-600' :
-                      plan.name === 'Premium' ? 'text-[#4CAF50]' : 'text-amber-600'
-                    }`} />
+              <CardHeader className="text-center pb-3 pt-6">
+                <div className="flex items-center justify-center mb-3">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${plan.iconBg}`}>
+                    <plan.icon className={`h-6 w-6 ${plan.iconColor}`} />
                   </div>
                 </div>
-
                 <CardTitle className="text-xl">{plan.name}</CardTitle>
-                <div className="space-y-1">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-3xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground text-sm">/{plan.period}</span>
-                  </div>
+                <div className="flex items-baseline justify-center gap-1 mt-1">
+                  <span className="text-3xl font-bold">{plan.price}</span>
+                  <span className="text-muted-foreground text-sm">/{plan.period}</span>
                 </div>
-                <CardDescription className="text-sm">
-                  {plan.description}
-                </CardDescription>
+                <CardDescription className="text-xs mt-1">{plan.description}</CardDescription>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-0">
                 {/* Features */}
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm text-foreground">What's included:</h4>
-                  <ul className="space-y-2">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-2 text-sm">
-                        <Check className="h-4 w-4 text-[#4CAF50] mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
+                <ul className="space-y-2">
+                  {plan.features.map((feature, fi) => (
+                    <li key={fi} className="flex items-start gap-2 text-sm">
+                      <Check className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                        plan.name === 'Pro / Enterprise' ? 'text-accent' : 'text-primary'
+                      }`} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Limitations */}
+                {plan.limitations.length > 0 && (
+                  <ul className="space-y-1 pt-1 border-t border-border">
+                    {plan.limitations.map((limitation, li) => (
+                      <li key={li} className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
+                        <span>{limitation}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                {/* Limitations (for Free plan) */}
-                {plan.limitations.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-sm text-muted-foreground">Limitations:</h4>
-                    <ul className="space-y-1">
-                      {plan.limitations.map((limitation, limitIndex) => (
-                        <li key={limitIndex} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <span className="w-1 h-1 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
-                          <span>{limitation}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 )}
 
-                {/* Action Button */}
-                <Button 
+                {/* CTA Button */}
+                <Button
                   variant={plan.buttonVariant}
-                  className={`w-full ${
-                    plan.buttonVariant === 'default' 
-                      ? 'bg-[#4CAF50] hover:bg-[#45a049] text-white' 
-                      : ''
-                  }`}
                   disabled={plan.name === 'Free'}
+                  className={`w-full h-11 font-semibold ${
+                    plan.buttonVariant === 'default' && plan.popular
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                      : plan.buttonVariant === 'default' && !plan.popular
+                        ? 'bg-accent hover:bg-accent/90 text-accent-foreground'
+                        : ''
+                  }`}
                 >
+                  {plan.popular && <Zap className="h-4 w-4 mr-2" />}
+                  {plan.name === 'Pro / Enterprise' && <Crown className="h-4 w-4 mr-2" />}
                   {plan.buttonText}
                 </Button>
               </CardContent>
@@ -170,34 +174,34 @@ export default function Subscription() {
           ))}
         </div>
 
-        {/* FAQ Section */}
-        <Card className="mt-8 bg-gradient-to-r from-[#4CAF50]/5 to-blue-500/5 border-[#4CAF50]/20">
-          <CardContent className="p-6">
-            <h3 className="font-semibold mb-4">Frequently Asked Questions</h3>
+        {/* FAQ */}
+        <Card className="mt-7 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+          <CardContent className="p-5">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <i className="fas fa-question-circle text-primary text-sm"></i>
+              Frequently Asked Questions
+            </h3>
             <div className="space-y-4 text-sm">
               <div>
                 <h4 className="font-medium mb-1">Can I change plans anytime?</h4>
-                <p className="text-muted-foreground">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
               </div>
               <div>
                 <h4 className="font-medium mb-1">Is there a free trial?</h4>
-                <p className="text-muted-foreground">Premium plans include a 14-day free trial. No credit card required to start.</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">Premium plans include a 14-day free trial. No credit card required to start.</p>
               </div>
               <div>
                 <h4 className="font-medium mb-1">What payment methods do you accept?</h4>
-                <p className="text-muted-foreground">We accept all major credit cards, PayPal, and corporate purchase orders for Enterprise plans.</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">We accept all major credit cards, PayPal, and corporate POs for Enterprise plans.</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Contact Support */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground mb-2">
-            Need help choosing the right plan?
-          </p>
-          <Button variant="link" className="text-[#4CAF50] p-0">
-            Contact our sales team
+        <div className="text-center mt-5">
+          <p className="text-xs text-muted-foreground mb-2">Need help choosing the right plan?</p>
+          <Button variant="link" className="text-primary p-0 text-sm">
+            Contact our sales team →
           </Button>
         </div>
       </div>

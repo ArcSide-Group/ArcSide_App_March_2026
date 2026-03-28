@@ -11,7 +11,7 @@
   --card-foreground: hsl(210 30% 10%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(210 30% 10%);
-  --primary: hsl(190 80% 40%);
+  --primary: hsl(220 88% 48%);
   --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(210 20% 92%);
   --secondary-foreground: hsl(210 30% 20%);
@@ -23,7 +23,7 @@
   --destructive-foreground: hsl(0 0% 100%);
   --border: hsl(210 20% 88%);
   --input: hsl(210 20% 94%);
-  --ring: hsl(190 80% 40%);
+  --ring: hsl(220 88% 48%);
   --chart-1: hsl(12 76% 61%);
   --chart-2: hsl(173 58% 39%);
   --chart-3: hsl(197 37% 24%);
@@ -31,12 +31,12 @@
   --chart-5: hsl(27 87% 67%);
   --sidebar: hsl(0 0% 100%);
   --sidebar-foreground: hsl(210 30% 10%);
-  --sidebar-primary: hsl(190 80% 40%);
+  --sidebar-primary: hsl(220 88% 48%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
   --sidebar-accent: hsl(210 20% 92%);
-  --sidebar-accent-foreground: hsl(190 80% 40%);
+  --sidebar-accent-foreground: hsl(220 88% 48%);
   --sidebar-border: hsl(210 20% 88%);
-  --sidebar-ring: hsl(190 80% 40%);
+  --sidebar-ring: hsl(220 88% 48%);
   --font-sans: "Inter", sans-serif;
   --font-serif: "Georgia", serif;
   --font-mono: "Fira Code", monospace;
@@ -44,39 +44,39 @@
 }
 
 .dark {
-  /* Dark mode - ArcSide deep navy brand */
-  --background: hsl(210 100% 8%);
+  /* Dark mode - ArcSide slate-navy brand */
+  --background: hsl(215 45% 11%);
   --foreground: hsl(0 0% 100%);
-  --card: hsl(210 100% 12%);
+  --card: hsl(215 40% 15%);
   --card-foreground: hsl(0 0% 100%);
-  --popover: hsl(210 100% 12%);
+  --popover: hsl(215 40% 15%);
   --popover-foreground: hsl(0 0% 100%);
-  --primary: hsl(190 100% 50%);
-  --primary-foreground: hsl(210 100% 8%);
-  --secondary: hsl(210 100% 20%);
+  --primary: hsl(215 90% 62%);
+  --primary-foreground: hsl(215 45% 11%);
+  --secondary: hsl(215 40% 22%);
   --secondary-foreground: hsl(0 0% 100%);
-  --muted: hsl(210 100% 20%);
-  --muted-foreground: hsl(210 40% 80%);
+  --muted: hsl(215 40% 22%);
+  --muted-foreground: hsl(215 40% 80%);
   --accent: hsl(25 100% 52%);
   --accent-foreground: hsl(0 0% 100%);
   --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(210 100% 20%);
-  --input: hsl(210 100% 15%);
-  --ring: hsl(190 100% 50%);
+  --border: hsl(215 40% 22%);
+  --input: hsl(215 40% 18%);
+  --ring: hsl(215 90% 62%);
   --chart-1: hsl(12 76% 61%);
   --chart-2: hsl(173 58% 39%);
   --chart-3: hsl(197 37% 24%);
   --chart-4: hsl(43 74% 66%);
   --chart-5: hsl(27 87% 67%);
-  --sidebar: hsl(210 100% 12%);
+  --sidebar: hsl(215 40% 15%);
   --sidebar-foreground: hsl(0 0% 100%);
-  --sidebar-primary: hsl(190 100% 50%);
-  --sidebar-primary-foreground: hsl(210 100% 8%);
-  --sidebar-accent: hsl(210 100% 20%);
-  --sidebar-accent-foreground: hsl(190 100% 50%);
-  --sidebar-border: hsl(210 100% 20%);
-  --sidebar-ring: hsl(190 100% 50%);
+  --sidebar-primary: hsl(215 90% 62%);
+  --sidebar-primary-foreground: hsl(215 45% 11%);
+  --sidebar-accent: hsl(215 40% 22%);
+  --sidebar-accent-foreground: hsl(215 90% 62%);
+  --sidebar-border: hsl(215 40% 22%);
+  --sidebar-ring: hsl(215 90% 62%);
 }
 
 @layer base {
@@ -117,7 +117,7 @@
   }
   
   .brand-gradient {
-    @apply bg-gradient-to-r from-primary via-cyan-400 to-blue-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-blue-400 to-blue-500 bg-clip-text text-transparent;
   }
   
   /* Card styling with professional look */
@@ -127,8 +127,8 @@
   }
   
   .tool-card:hover {
-    border-color: hsl(190 100% 50%);
-    box-shadow: 0 0 30px hsl(190 100% 50% / 0.2);
+    border-color: hsl(215 90% 62%);
+    box-shadow: 0 0 30px hsl(215 90% 62% / 0.2);
   }
 
   /* Navigation - Professional header matching logo */
@@ -159,8 +159,8 @@
   /* Brand styling with logo colors */
   .brand-card {
     @apply border;
-    background: linear-gradient(135deg, hsla(190, 100%, 50%, 0.1), hsla(25, 100%, 52%, 0.05));
-    border-color: hsl(190 100% 50% / 0.3);
+    background: linear-gradient(135deg, hsla(220, 88%, 48%, 0.1), hsla(25, 100%, 52%, 0.05));
+    border-color: hsl(220 88% 48% / 0.3);
   }
 
   /* Accent colors matching logo */
@@ -204,10 +204,10 @@
   /* Glow effect for primary elements */
   @keyframes glow {
     0%, 100% {
-      box-shadow: 0 0 10px hsl(190 100% 50% / 0.3);
+      box-shadow: 0 0 10px hsl(215 90% 62% / 0.3);
     }
     50% {
-      box-shadow: 0 0 20px hsl(190 100% 50% / 0.6);
+      box-shadow: 0 0 20px hsl(215 90% 62% / 0.6);
     }
   }
 
@@ -233,9 +233,10 @@
     @apply h-12 w-auto object-contain;
   }
 
-  /* Button variants for professional look */
+  /* Button variants — 44px min tap target for gloved/on-site use */
   .btn-primary {
-    @apply bg-primary text-primary-foreground transition-colors;
+    @apply bg-primary text-primary-foreground transition-colors font-semibold;
+    min-height: 44px;
   }
 
   .btn-primary:hover {
@@ -243,7 +244,8 @@
   }
 
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground transition-colors;
+    @apply bg-secondary text-secondary-foreground transition-colors font-medium;
+    min-height: 44px;
   }
 
   .btn-secondary:hover {
@@ -252,11 +254,44 @@
 
   .btn-outline {
     @apply border border-border text-foreground hover:bg-muted transition-colors;
+    min-height: 44px;
   }
 
-  /* Input styling */
+  /* Industrial divider — steel plate aesthetic */
+  .industrial-divider {
+    @apply my-4;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(215 90% 62% / 0.4), hsl(25 100% 52% / 0.4), transparent);
+  }
+
+  /* Calculator result value — prominent readout */
+  .result-readout {
+    @apply text-3xl font-black text-primary tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Field label with industrial style */
+  .field-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1;
+  }
+
+  /* Warning banner for high heat / risk conditions */
+  .warning-banner {
+    @apply flex items-start gap-2 rounded-lg px-3 py-2 text-xs font-medium;
+    background: hsl(25 100% 52% / 0.12);
+    border: 1px solid hsl(25 100% 52% / 0.35);
+    color: hsl(25 100% 38%);
+  }
+
+  .dark .warning-banner {
+    color: hsl(25 100% 70%);
+  }
+
+  /* Input styling — min 44px touch target for on-site use */
   .input-base {
-    @apply bg-input border border-border rounded-md px-3 py-2 text-foreground placeholder-muted-foreground transition-colors;
+    @apply bg-input border border-border rounded-md px-3 py-2.5 text-foreground placeholder-muted-foreground transition-colors;
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS zoom on focus */
   }
 
   .input-base:focus {
@@ -278,7 +313,7 @@
   }
 
   .card-list-item:hover {
-    border-color: hsl(190 100% 50% / 0.5);
+    border-color: hsl(215 90% 62% / 0.5);
   }
 
   /* Status indicators */
@@ -297,12 +332,12 @@
   /* Badges */
   .badge-primary {
     @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-medium text-primary;
-    background-color: hsl(190 100% 50% / 0.1);
+    background-color: hsl(220 88% 48% / 0.1);
   }
 
   .badge-secondary {
     @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-medium text-secondary;
-    background-color: hsl(210 100% 20% / 0.1);
+    background-color: hsl(215 40% 22% / 0.1);
   }
 
   /* Divider */
@@ -343,13 +378,13 @@
   /* Hero section with gradient */
   .hero-section {
     @apply relative overflow-hidden py-16;
-    background: linear-gradient(135deg, hsla(210, 100%, 20%, 0.5), hsla(190, 100%, 30%, 0.3));
+    background: linear-gradient(135deg, hsla(215, 45%, 20%, 0.5), hsla(220, 88%, 30%, 0.3));
   }
 
   /* Professional card with shadow */
   .card-elevated {
     @apply bg-card border border-border rounded-lg shadow-lg;
-    box-shadow: 0 10px 25px hsl(190 100% 50% / 0.2);
+    box-shadow: 0 10px 25px hsl(220 88% 48% / 0.2);
   }
 
   /* Cyan accent for primary actions */
@@ -364,7 +399,7 @@
   /* Professional header styling */
   .header-professional {
     @apply sticky top-0 z-50 w-full bg-background backdrop-blur;
-    border-bottom: 1px solid hsl(190 100% 50% / 0.2);
+    border-bottom: 1px solid hsl(220 88% 48% / 0.2);
   }
 }
 
@@ -411,7 +446,7 @@
   /* Glow utilities */
   .glow-primary {
     @apply shadow-lg;
-    box-shadow: 0 10px 25px hsl(190 100% 50% / 0.3);
+    box-shadow: 0 10px 25px hsl(215 90% 62% / 0.3);
   }
 
   .glow-accent {

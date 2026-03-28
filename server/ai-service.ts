@@ -14,7 +14,7 @@ Always provide accurate, practical, professional-grade advice.`;
 
 export class GeminiAIService {
   static async analyzeDefect(imageData: string | null, additionalDetails: string): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     let prompt = `${SYSTEM_CONTEXT}
 
@@ -75,7 +75,7 @@ Analyze this description and provide a detailed response in the following JSON f
   }
 
   static async generateWPS(params: any): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `${SYSTEM_CONTEXT}
 
@@ -125,7 +125,7 @@ Provide a complete WPS in the following JSON format (respond ONLY with valid JSO
   }
 
   static async checkMaterialCompatibility(material1: string, material2: string): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `${SYSTEM_CONTEXT}
 
@@ -162,7 +162,7 @@ Provide a thorough compatibility analysis in the following JSON format (respond 
   }
 
   static async searchTerminology(term: string): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `${SYSTEM_CONTEXT}
 
@@ -192,7 +192,7 @@ Provide a comprehensive definition in the following JSON format (respond ONLY wi
   }
 
   static async askAssistant(question: string, conversationHistory?: Array<{role: string, content: string}>): Promise<string> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     let fullPrompt = `${SYSTEM_CONTEXT}
 
