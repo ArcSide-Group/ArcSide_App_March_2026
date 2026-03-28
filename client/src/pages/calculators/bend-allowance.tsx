@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useMutation } from '@tanstack/react-query';
+import { useUnits } from '@/hooks/useUnits';
 
 interface BendAllowanceResult {
   bendAllowance: number;
@@ -17,10 +17,12 @@ interface BendAllowanceResult {
 }
 
 export default function BendAllowance() {
+  const { labels, toImperial, fromImperial, defaults } = useUnits();
+
   const [formData, setFormData] = useState({
-    thickness: '0.125',
+    thickness: defaults.materialThickness,
     bendAngle: '90',
-    insideRadius: '0.125',
+    insideRadius: defaults.insideRadius,
     kFactor: '0.33'
   });
 
@@ -37,22 +39,22 @@ export default function BendAllowance() {
   });
 
   const handleCalculate = () => {
-    const calculationData = {
-      thickness: parseFloat(formData.thickness),
+    calculateMutation.mutate({
+      thickness: toImperial.length(parseFloat(formData.thickness)),
       bendAngle: parseFloat(formData.bendAngle),
-      insideRadius: parseFloat(formData.insideRadius),
+      insideRadius: toImperial.length(parseFloat(formData.insideRadius)),
       kFactor: parseFloat(formData.kFactor)
-    };
-    calculateMutation.mutate(calculationData);
+    });
   };
 
   const result = calculateMutation.data?.result as BendAllowanceResult;
+  const displayBA = result ? fromImperial.length(result.bendAllowance) : null;
+  const displaySB = result ? fromImperial.length(result.setback) : null;
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
-        {/* Header */}
+
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
             <Link href="/calculators">
@@ -67,96 +69,57 @@ export default function BendAllowance() {
           </div>
         </div>
 
-        {/* Input Form */}
         <div className="px-6 space-y-4">
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="space-y-2">
-                <Label>Material Thickness (in)</Label>
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={formData.thickness}
-                  onChange={(e) => setFormData(prev => ({ ...prev, thickness: e.target.value }))}
-                  placeholder="Enter thickness"
-                />
+                <Label>Material Thickness ({labels.length})</Label>
+                <Input type="number" step="0.1" value={formData.thickness} onChange={(e) => setFormData(prev => ({ ...prev, thickness: e.target.value }))} placeholder={defaults.materialThickness} />
               </div>
 
               <div className="space-y-2">
-                <Label>Bend Angle (degrees)</Label>
-                <Input
-                  type="number"
-                  value={formData.bendAngle}
-                  onChange={(e) => setFormData(prev => ({ ...prev, bendAngle: e.target.value }))}
-                  placeholder="Enter bend angle"
-                />
+                <Label>Bend Angle (°)</Label>
+                <Input type="number" value={formData.bendAngle} onChange={(e) => setFormData(prev => ({ ...prev, bendAngle: e.target.value }))} placeholder="90" />
               </div>
 
               <div className="space-y-2">
-                <Label>Inside Radius (in)</Label>
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={formData.insideRadius}
-                  onChange={(e) => setFormData(prev => ({ ...prev, insideRadius: e.target.value }))}
-                  placeholder="Enter inside radius"
-                />
+                <Label>Inside Radius ({labels.length})</Label>
+                <Input type="number" step="0.1" value={formData.insideRadius} onChange={(e) => setFormData(prev => ({ ...prev, insideRadius: e.target.value }))} placeholder={defaults.insideRadius} />
               </div>
 
               <div className="space-y-2">
                 <Label>K-Factor</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.1"
-                  max="0.5"
-                  value={formData.kFactor}
-                  onChange={(e) => setFormData(prev => ({ ...prev, kFactor: e.target.value }))}
-                  placeholder="Enter K-factor (0.1-0.5)"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Typical values: Soft materials 0.33, Hard materials 0.40-0.45
-                </p>
+                <Input type="number" step="0.01" min="0.1" max="0.5" value={formData.kFactor} onChange={(e) => setFormData(prev => ({ ...prev, kFactor: e.target.value }))} placeholder="0.33" />
+                <p className="text-xs text-muted-foreground">Soft materials: 0.33 · Hard materials: 0.40–0.45</p>
               </div>
 
-              <Button 
-                onClick={handleCalculate} 
-                disabled={calculateMutation.isPending}
-                className="w-full"
-              >
+              <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full">
                 {calculateMutation.isPending ? 'Calculating...' : 'Calculate Bend Allowance'}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Results */}
-          {result && (
+          {result && displayBA !== null && (
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Bend Allowance Results</h3>
-                  <Badge variant="secondary">
-                    <i className="fas fa-check mr-1"></i>
-                    Calculated
-                  </Badge>
+                  <Badge variant="secondary"><i className="fas fa-check mr-1"></i>Calculated</Badge>
                 </div>
-                
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background rounded-lg p-3">
-                    <div className="text-lg font-bold text-primary">{result.bendAllowance} {result.unit}</div>
+                    <div className="text-lg font-bold text-primary">{displayBA} {labels.length}</div>
                     <div className="text-sm text-muted-foreground">Bend Allowance</div>
                   </div>
                   <div className="bg-background rounded-lg p-3">
-                    <div className="text-lg font-bold text-chart-1">{result.setback} {result.unit}</div>
+                    <div className="text-lg font-bold text-chart-1">{displaySB} {labels.length}</div>
                     <div className="text-sm text-muted-foreground">Setback</div>
                   </div>
                 </div>
-
                 <div className="bg-background rounded-lg p-3">
                   <div className="text-sm font-semibold">K-Factor: {result.kFactor}</div>
                   <div className="text-sm text-muted-foreground">Material constant used</div>
                 </div>
-
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Recommendations:</h4>
                   <ul className="space-y-1">

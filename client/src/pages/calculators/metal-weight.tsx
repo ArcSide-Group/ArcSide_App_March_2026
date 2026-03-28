@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useMutation } from '@tanstack/react-query';
+import { useUnits } from '@/hooks/useUnits';
 
 interface MetalWeightResult {
   weight: number;
@@ -19,15 +19,17 @@ interface MetalWeightResult {
 }
 
 export default function MetalWeight() {
+  const { labels, toImperial, fromImperial, defaults } = useUnits();
+
   const [formData, setFormData] = useState({
     material: 'steel',
     shape: 'plate',
-    length: '12',
-    width: '6',
-    thickness: '0.25',
-    diameter: '1',
-    outerDiameter: '2',
-    innerDiameter: '1.5'
+    length: defaults.length,
+    width: defaults.length,
+    thickness: defaults.thickness,
+    diameter: defaults.weldLength === '1500' ? '25' : '1',
+    outerDiameter: defaults.weldLength === '1500' ? '50' : '2',
+    innerDiameter: defaults.weldLength === '1500' ? '40' : '1.5',
   });
 
   const calculateMutation = useMutation({
@@ -44,35 +46,29 @@ export default function MetalWeight() {
 
   const handleCalculate = () => {
     const dimensions: any = {};
-    
     if (formData.shape === 'plate') {
-      dimensions.length = parseFloat(formData.length);
-      dimensions.width = parseFloat(formData.width);
-      dimensions.thickness = parseFloat(formData.thickness);
+      dimensions.length = toImperial.length(parseFloat(formData.length));
+      dimensions.width = toImperial.length(parseFloat(formData.width));
+      dimensions.thickness = toImperial.length(parseFloat(formData.thickness));
     } else if (formData.shape === 'rod') {
-      dimensions.diameter = parseFloat(formData.diameter);
-      dimensions.length = parseFloat(formData.length);
+      dimensions.diameter = toImperial.length(parseFloat(formData.diameter));
+      dimensions.length = toImperial.length(parseFloat(formData.length));
     } else if (formData.shape === 'tube') {
-      dimensions.outerDiameter = parseFloat(formData.outerDiameter);
-      dimensions.innerDiameter = parseFloat(formData.innerDiameter);
-      dimensions.length = parseFloat(formData.length);
+      dimensions.outerDiameter = toImperial.length(parseFloat(formData.outerDiameter));
+      dimensions.innerDiameter = toImperial.length(parseFloat(formData.innerDiameter));
+      dimensions.length = toImperial.length(parseFloat(formData.length));
     }
-
-    const calculationData = {
-      material: formData.material,
-      shape: formData.shape,
-      dimensions
-    };
-    calculateMutation.mutate(calculationData);
+    calculateMutation.mutate({ material: formData.material, shape: formData.shape, dimensions });
   };
 
   const result = calculateMutation.data?.result as MetalWeightResult;
+  const displayWeight = result ? fromImperial.weight(result.weight) : null;
+  const displayVolume = result ? fromImperial.volume(result.volume) : null;
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
-        {/* Header */}
+
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
             <Link href="/calculators">
@@ -87,16 +83,13 @@ export default function MetalWeight() {
           </div>
         </div>
 
-        {/* Input Form */}
         <div className="px-6 space-y-4">
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label>Material</Label>
                 <Select value={formData.material} onValueChange={(value) => setFormData(prev => ({ ...prev, material: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="steel">Steel</SelectItem>
                     <SelectItem value="aluminum">Aluminum</SelectItem>
@@ -110,13 +103,11 @@ export default function MetalWeight() {
               <div className="space-y-2">
                 <Label>Shape</Label>
                 <Select value={formData.shape} onValueChange={(value) => setFormData(prev => ({ ...prev, shape: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="plate">Plate</SelectItem>
-                    <SelectItem value="rod">Rod/Bar</SelectItem>
-                    <SelectItem value="tube">Tube/Pipe</SelectItem>
+                    <SelectItem value="rod">Rod / Bar</SelectItem>
+                    <SelectItem value="tube">Tube / Pipe</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -125,35 +116,17 @@ export default function MetalWeight() {
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label>Length (in)</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={formData.length}
-                        onChange={(e) => setFormData(prev => ({ ...prev, length: e.target.value }))}
-                        placeholder="Length"
-                      />
+                      <Label>Length ({labels.length})</Label>
+                      <Input type="number" step="0.1" value={formData.length} onChange={(e) => setFormData(prev => ({ ...prev, length: e.target.value }))} placeholder="Length" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Width (in)</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={formData.width}
-                        onChange={(e) => setFormData(prev => ({ ...prev, width: e.target.value }))}
-                        placeholder="Width"
-                      />
+                      <Label>Width ({labels.length})</Label>
+                      <Input type="number" step="0.1" value={formData.width} onChange={(e) => setFormData(prev => ({ ...prev, width: e.target.value }))} placeholder="Width" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Thickness (in)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.thickness}
-                      onChange={(e) => setFormData(prev => ({ ...prev, thickness: e.target.value }))}
-                      placeholder="Thickness"
-                    />
+                    <Label>Thickness ({labels.length})</Label>
+                    <Input type="number" step="0.1" value={formData.thickness} onChange={(e) => setFormData(prev => ({ ...prev, thickness: e.target.value }))} placeholder="Thickness" />
                   </div>
                 </>
               )}
@@ -161,24 +134,12 @@ export default function MetalWeight() {
               {formData.shape === 'rod' && (
                 <>
                   <div className="space-y-2">
-                    <Label>Diameter (in)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.diameter}
-                      onChange={(e) => setFormData(prev => ({ ...prev, diameter: e.target.value }))}
-                      placeholder="Diameter"
-                    />
+                    <Label>Diameter ({labels.length})</Label>
+                    <Input type="number" step="0.1" value={formData.diameter} onChange={(e) => setFormData(prev => ({ ...prev, diameter: e.target.value }))} placeholder="Diameter" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Length (in)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.length}
-                      onChange={(e) => setFormData(prev => ({ ...prev, length: e.target.value }))}
-                      placeholder="Length"
-                    />
+                    <Label>Length ({labels.length})</Label>
+                    <Input type="number" step="0.1" value={formData.length} onChange={(e) => setFormData(prev => ({ ...prev, length: e.target.value }))} placeholder="Length" />
                   </div>
                 </>
               )}
@@ -187,77 +148,44 @@ export default function MetalWeight() {
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label>Outer Ø (in)</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={formData.outerDiameter}
-                        onChange={(e) => setFormData(prev => ({ ...prev, outerDiameter: e.target.value }))}
-                        placeholder="Outer diameter"
-                      />
+                      <Label>Outer Ø ({labels.length})</Label>
+                      <Input type="number" step="0.1" value={formData.outerDiameter} onChange={(e) => setFormData(prev => ({ ...prev, outerDiameter: e.target.value }))} placeholder="OD" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Inner Ø (in)</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={formData.innerDiameter}
-                        onChange={(e) => setFormData(prev => ({ ...prev, innerDiameter: e.target.value }))}
-                        placeholder="Inner diameter"
-                      />
+                      <Label>Inner Ø ({labels.length})</Label>
+                      <Input type="number" step="0.1" value={formData.innerDiameter} onChange={(e) => setFormData(prev => ({ ...prev, innerDiameter: e.target.value }))} placeholder="ID" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Length (in)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.length}
-                      onChange={(e) => setFormData(prev => ({ ...prev, length: e.target.value }))}
-                      placeholder="Length"
-                    />
+                    <Label>Length ({labels.length})</Label>
+                    <Input type="number" step="0.1" value={formData.length} onChange={(e) => setFormData(prev => ({ ...prev, length: e.target.value }))} placeholder="Length" />
                   </div>
                 </>
               )}
 
-              <Button 
-                onClick={handleCalculate} 
-                disabled={calculateMutation.isPending}
-                className="w-full"
-              >
+              <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full">
                 {calculateMutation.isPending ? 'Calculating...' : 'Calculate Weight'}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Results */}
-          {result && (
+          {result && displayWeight !== null && (
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Weight Results</h3>
-                  <Badge variant="secondary">
-                    <i className="fas fa-check mr-1"></i>
-                    Calculated
-                  </Badge>
+                  <Badge variant="secondary"><i className="fas fa-check mr-1"></i>Calculated</Badge>
                 </div>
-                
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background rounded-lg p-3">
-                    <div className="text-xl font-bold text-primary">{result.weight} {result.unit}</div>
+                    <div className="text-xl font-bold text-primary">{displayWeight} {labels.weight}</div>
                     <div className="text-sm text-muted-foreground">Total Weight</div>
                   </div>
                   <div className="bg-background rounded-lg p-3">
-                    <div className="text-sm font-semibold">{result.volume} {result.volumeUnit}</div>
+                    <div className="text-sm font-semibold">{displayVolume} {labels.volume}</div>
                     <div className="text-sm text-muted-foreground">Volume</div>
                   </div>
                 </div>
-
-                <div className="bg-background rounded-lg p-3">
-                  <div className="text-sm font-semibold">{result.density} lb/in³</div>
-                  <div className="text-sm text-muted-foreground">Material Density</div>
-                </div>
-
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Recommendations:</h4>
                   <ul className="space-y-1">

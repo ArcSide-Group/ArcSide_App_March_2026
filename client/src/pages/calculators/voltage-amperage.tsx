@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-
+import { useUnits } from "@/hooks/useUnits";
 
 interface CalculationResult {
   recommendedAmperage: number;
@@ -19,9 +19,11 @@ interface CalculationResult {
 
 export default function VoltageAmperageCalculator() {
   const { toast } = useToast();
+  const { labels, toImperial, defaults } = useUnits();
+
   const [formData, setFormData] = useState({
     material: 'mild-steel',
-    thickness: '0.25',
+    thickness: defaults.thickness,
     process: 'GMAW',
     position: 'flat',
     wireSize: '0.035',
@@ -42,48 +44,31 @@ export default function VoltageAmperageCalculator() {
     },
     onSuccess: (data) => {
       setResult(data.result);
-      toast({
-        title: "Calculation Complete",
-        description: "Voltage and amperage parameters calculated successfully",
-      });
+      toast({ title: "Calculation Complete", description: "Parameters calculated successfully" });
     },
     onError: () => {
-      toast({
-        title: "Calculation Failed",
-        description: "Please check your inputs and try again",
-        variant: "destructive",
-      });
+      toast({ title: "Calculation Failed", description: "Please check your inputs and try again", variant: "destructive" });
     }
   });
 
   const handleCalculate = () => {
     if (!formData.thickness) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter material thickness",
-        variant: "destructive",
-      });
+      toast({ title: "Missing Information", description: "Please enter material thickness", variant: "destructive" });
       return;
     }
-
-    const calculationData = {
+    calculateMutation.mutate({
       ...formData,
-      thickness: parseFloat(formData.thickness),
+      thickness: toImperial.length(parseFloat(formData.thickness)),
       wireSize: formData.wireSize ? parseFloat(formData.wireSize) : undefined
-    };
-
-    calculateMutation.mutate(calculationData);
+    });
   };
 
-  const updateFormData = (key: string, value: string) => {
-    setFormData(prev => ({ ...prev, [key]: value }));
-  };
+  const updateFormData = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
 
-        {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
             <Link href="/calculators">
@@ -96,10 +81,8 @@ export default function VoltageAmperageCalculator() {
               <p className="text-xs text-muted-foreground">Calculate welding parameters</p>
             </div>
           </div>
-          <i className="fas fa-bookmark text-muted-foreground cursor-pointer"></i>
         </div>
 
-        {/* Input Form */}
         <div className="px-6 mb-6 space-y-4">
           <Card className="bg-card border-border">
             <CardContent className="p-4 space-y-4">
@@ -107,12 +90,7 @@ export default function VoltageAmperageCalculator() {
                 <Label>Welding Process</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   {["GMAW", "SMAW", "GTAW", "FCAW"].map((process) => (
-                    <Button
-                      key={process}
-                      variant={formData.process === process ? "default" : "secondary"}
-                      size="sm"
-                      onClick={() => updateFormData('process', process)}
-                    >
+                    <Button key={process} variant={formData.process === process ? "default" : "secondary"} size="sm" onClick={() => updateFormData('process', process)}>
                       {process}
                     </Button>
                   ))}
@@ -123,13 +101,7 @@ export default function VoltageAmperageCalculator() {
                 <Label>Base Material</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   {["steel", "stainless", "aluminum", "other"].map((material) => (
-                    <Button
-                      key={material}
-                      variant={formData.material === material ? "default" : "secondary"}
-                      size="sm"
-                      onClick={() => updateFormData('material', material)}
-                      className="capitalize"
-                    >
+                    <Button key={material} variant={formData.material === material ? "default" : "secondary"} size="sm" onClick={() => updateFormData('material', material)} className="capitalize">
                       {material}
                     </Button>
                   ))}
@@ -137,14 +109,14 @@ export default function VoltageAmperageCalculator() {
               </div>
 
               <div>
-                <Label htmlFor="thickness">Material Thickness (mm)</Label>
+                <Label htmlFor="thickness">Material Thickness ({labels.length})</Label>
                 <Input
                   id="thickness"
                   type="number"
                   step="0.1"
                   value={formData.thickness}
                   onChange={(e) => updateFormData('thickness', e.target.value)}
-                  placeholder="Enter thickness"
+                  placeholder={`Enter thickness in ${labels.length}`}
                   className="mt-2"
                 />
               </div>
@@ -158,132 +130,77 @@ export default function VoltageAmperageCalculator() {
                     { value: "vertical", label: "Vertical (3G)" },
                     { value: "overhead", label: "Overhead (4G)" }
                   ].map((position) => (
-                    <Button
-                      key={position.value}
-                      variant={formData.position === position.value ? "default" : "secondary"}
-                      size="sm"
-                      onClick={() => updateFormData('position', position.value)}
-                      className="text-xs"
-                    >
+                    <Button key={position.value} variant={formData.position === position.value ? "default" : "secondary"} size="sm" onClick={() => updateFormData('position', position.value)} className="text-xs">
                       {position.label}
                     </Button>
                   ))}
                 </div>
               </div>
-              
+
               {formData.process === 'SMAW' && (
                 <div>
                   <Label htmlFor="fillerSize">Electrode Size (mm)</Label>
-                  <Input
-                    id="fillerSize"
-                    type="number"
-                    step="0.1"
-                    value={formData.fillerSize}
-                    onChange={(e) => updateFormData('fillerSize', e.target.value)}
-                    placeholder="Enter electrode diameter"
-                    className="mt-2"
-                  />
+                  <Input id="fillerSize" type="number" step="0.1" value={formData.fillerSize} onChange={(e) => updateFormData('fillerSize', e.target.value)} placeholder="Enter electrode diameter" className="mt-2" />
                 </div>
               )}
 
-              {formData.process === 'GMAW' || formData.process === 'FCAW' && (
+              {(formData.process === 'GMAW' || formData.process === 'FCAW') && (
                 <div className="space-y-2">
-                  <Label>Wire Size (inches)</Label>
+                  <Label>Wire Size</Label>
                   <Select value={formData.wireSize} onValueChange={(value) => updateFormData('wireSize', value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0.023">0.023"</SelectItem>
-                      <SelectItem value="0.030">0.030"</SelectItem>
-                      <SelectItem value="0.035">0.035"</SelectItem>
-                      <SelectItem value="0.045">0.045"</SelectItem>
-                      <SelectItem value="0.052">0.052"</SelectItem>
-                      <SelectItem value="0.0625">1/16"</SelectItem>
+                      <SelectItem value="0.023">0.023" (0.6mm)</SelectItem>
+                      <SelectItem value="0.030">0.030" (0.8mm)</SelectItem>
+                      <SelectItem value="0.035">0.035" (0.9mm)</SelectItem>
+                      <SelectItem value="0.045">0.045" (1.2mm)</SelectItem>
+                      <SelectItem value="0.052">0.052" (1.4mm)</SelectItem>
+                      <SelectItem value="0.0625">1/16" (1.6mm)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
 
-              <Button 
-                onClick={handleCalculate}
-                disabled={calculateMutation.isPending}
-                className="w-full bg-primary text-primary-foreground"
-              >
-                {calculateMutation.isPending ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin mr-2"></i>
-                    Calculating...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-calculator mr-2"></i>
-                    Calculate Parameters
-                  </>
-                )}
+              <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full bg-primary text-primary-foreground">
+                {calculateMutation.isPending ? <><i className="fas fa-spinner fa-spin mr-2"></i>Calculating...</> : <><i className="fas fa-calculator mr-2"></i>Calculate Parameters</>}
               </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* Results */}
         {result && (
           <div className="px-6 mb-6">
             <Card className="bg-card border-border">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-sm">Recommended Parameters</h3>
-                  <Badge className="bg-chart-2 text-accent-foreground">
-                    <i className="fas fa-check mr-1"></i>
-                    Calculated
-                  </Badge>
+                  <Badge className="bg-chart-2 text-accent-foreground"><i className="fas fa-check mr-1"></i>Calculated</Badge>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="text-center p-3 bg-primary/10 rounded-lg">
                     <div className="text-2xl font-bold text-primary">{result.recommendedAmperage}</div>
                     <div className="text-xs text-muted-foreground">Amperage (A)</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Range: {result.amperageRange.min}-{result.amperageRange.max}A
-                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Range: {result.amperageRange.min}–{result.amperageRange.max}A</div>
                   </div>
                   <div className="text-center p-3 bg-accent/10 rounded-lg">
                     <div className="text-2xl font-bold text-accent">{result.recommendedVoltage}</div>
                     <div className="text-xs text-muted-foreground">Voltage (V)</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Range: {result.voltageRange.min}-{result.voltageRange.max}V
-                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Range: {result.voltageRange.min}–{result.voltageRange.max}V</div>
                   </div>
                 </div>
-
                 <div className="bg-muted/50 rounded-lg p-3">
                   <div className="flex items-start space-x-2">
                     <i className="fas fa-info-circle text-primary text-sm mt-0.5"></i>
-                    <div>
-                      <div className="text-xs font-medium mb-1">Parameters based on:</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formData.process} process, {formData.material} material, {formData.thickness}mm thickness, {formData.position} position
-                      </div>
+                    <div className="text-xs text-muted-foreground">
+                      {formData.process} · {formData.material} · {formData.thickness}{labels.length} · {formData.position}
                     </div>
                   </div>
-                </div>
-
-                <div className="flex space-x-2 mt-4">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <i className="fas fa-save mr-2"></i>
-                    Save
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <i className="fas fa-share mr-2"></i>
-                    Share
-                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Tips */}
         <div className="px-6 mb-6">
           <Card className="bg-gradient-to-r from-secondary/20 to-muted/20 border-secondary/30">
             <CardContent className="p-4">
@@ -296,7 +213,6 @@ export default function VoltageAmperageCalculator() {
                   <ul className="text-xs text-muted-foreground space-y-1">
                     <li>• Start with recommended settings and adjust based on bead appearance</li>
                     <li>• Lower settings for out-of-position welding</li>
-                    <li>• Consider material thickness and joint configuration</li>
                     <li>• Always follow your WPS if available</li>
                   </ul>
                 </div>

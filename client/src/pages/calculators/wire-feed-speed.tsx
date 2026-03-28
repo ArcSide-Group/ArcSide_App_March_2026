@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useMutation } from '@tanstack/react-query';
+import { useUnits } from '@/hooks/useUnits';
 
 interface WireFeedSpeedResult {
   wireSpeed: number;
@@ -16,6 +16,8 @@ interface WireFeedSpeedResult {
 }
 
 export default function WireFeedSpeed() {
+  const { labels, fromImperial } = useUnits();
+
   const [formData, setFormData] = useState({
     amperage: '150',
     wireSize: '0.035',
@@ -35,21 +37,20 @@ export default function WireFeedSpeed() {
   });
 
   const handleCalculate = () => {
-    const calculationData = {
+    calculateMutation.mutate({
       amperage: parseFloat(formData.amperage),
       wireSize: parseFloat(formData.wireSize),
       material: formData.material
-    };
-    calculateMutation.mutate(calculationData);
+    });
   };
 
   const result = calculateMutation.data?.result as WireFeedSpeedResult;
+  const displaySpeed = result ? fromImperial.speed(result.wireSpeed) : null;
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
-        
-        {/* Header */}
+
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-3">
             <Link href="/calculators">
@@ -64,33 +65,25 @@ export default function WireFeedSpeed() {
           </div>
         </div>
 
-        {/* Input Form */}
         <div className="px-6 space-y-4">
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label>Amperage (A)</Label>
-                <Input
-                  type="number"
-                  value={formData.amperage}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amperage: e.target.value }))}
-                  placeholder="Enter amperage"
-                />
+                <Input type="number" value={formData.amperage} onChange={(e) => setFormData(prev => ({ ...prev, amperage: e.target.value }))} placeholder="Enter amperage" />
               </div>
 
               <div className="space-y-2">
-                <Label>Wire Size (inches)</Label>
+                <Label>Wire Size</Label>
                 <Select value={formData.wireSize} onValueChange={(value) => setFormData(prev => ({ ...prev, wireSize: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0.023">0.023"</SelectItem>
-                    <SelectItem value="0.030">0.030"</SelectItem>
-                    <SelectItem value="0.035">0.035"</SelectItem>
-                    <SelectItem value="0.045">0.045"</SelectItem>
-                    <SelectItem value="0.052">0.052"</SelectItem>
-                    <SelectItem value="1/16">1/16"</SelectItem>
+                    <SelectItem value="0.023">0.023" (0.6mm)</SelectItem>
+                    <SelectItem value="0.030">0.030" (0.8mm)</SelectItem>
+                    <SelectItem value="0.035">0.035" (0.9mm)</SelectItem>
+                    <SelectItem value="0.045">0.045" (1.2mm)</SelectItem>
+                    <SelectItem value="0.052">0.052" (1.4mm)</SelectItem>
+                    <SelectItem value="0.0625">1/16" (1.6mm)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -98,9 +91,7 @@ export default function WireFeedSpeed() {
               <div className="space-y-2">
                 <Label>Material</Label>
                 <Select value={formData.material} onValueChange={(value) => setFormData(prev => ({ ...prev, material: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="mild-steel">Mild Steel</SelectItem>
                     <SelectItem value="stainless-steel">Stainless Steel</SelectItem>
@@ -110,35 +101,23 @@ export default function WireFeedSpeed() {
                 </Select>
               </div>
 
-              <Button 
-                onClick={handleCalculate} 
-                disabled={calculateMutation.isPending}
-                className="w-full"
-              >
+              <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full">
                 {calculateMutation.isPending ? 'Calculating...' : 'Calculate Wire Speed'}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Results */}
-          {result && (
+          {result && displaySpeed !== null && (
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Wire Feed Speed</h3>
-                  <Badge variant="secondary">
-                    <i className="fas fa-check mr-1"></i>
-                    Calculated
-                  </Badge>
+                  <Badge variant="secondary"><i className="fas fa-check mr-1"></i>Calculated</Badge>
                 </div>
-                
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="bg-background rounded-lg p-3">
-                    <div className="text-2xl font-bold text-primary">{result.wireSpeed} {result.unit}</div>
-                    <div className="text-sm text-muted-foreground">Wire Feed Speed</div>
-                  </div>
+                <div className="bg-background rounded-lg p-3">
+                  <div className="text-2xl font-bold text-primary">{displaySpeed} {labels.speed}</div>
+                  <div className="text-sm text-muted-foreground">Wire Feed Speed</div>
                 </div>
-
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Recommendations:</h4>
                   <ul className="space-y-1">

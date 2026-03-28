@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMutation } from '@tanstack/react-query';
 import { Thermometer } from 'lucide-react';
+import { useUnits } from '@/hooks/useUnits';
 
 interface PreheatResult {
   preheatF: number;
@@ -20,11 +21,13 @@ interface PreheatResult {
 }
 
 export default function PreheatTemp() {
+  const { isMetric, labels, toImperial, defaults } = useUnits();
+
   const [formData, setFormData] = useState({
     material: 'a36',
-    thickness: '0.5',
+    thickness: defaults.thickness,
     process: 'SMAW',
-    heatInput: '1.5',
+    heatInput: defaults.heatInput,
   });
 
   const calculateMutation = useMutation({
@@ -42,19 +45,20 @@ export default function PreheatTemp() {
   const handleCalculate = () => {
     calculateMutation.mutate({
       material: formData.material,
-      thickness: parseFloat(formData.thickness),
+      thickness: toImperial.length(parseFloat(formData.thickness)),
       process: formData.process,
-      heatInput: parseFloat(formData.heatInput),
+      heatInput: isMetric
+        ? parseFloat(formData.heatInput) * 25.4
+        : parseFloat(formData.heatInput),
     });
   };
 
   const result = calculateMutation.data?.result as PreheatResult | undefined;
 
-  const riskColor = result?.riskLevel === 'High'
-    ? 'destructive'
-    : result?.riskLevel === 'Moderate'
-    ? 'secondary'
-    : 'outline';
+  const riskColor = result?.riskLevel === 'High' ? 'destructive' : result?.riskLevel === 'Moderate' ? 'secondary' : 'outline';
+
+  const preheat = result ? (isMetric ? result.preheatC : result.preheatF) : null;
+  const maxInterpass = result ? (isMetric ? result.maxInterpassC : result.maxInterpassF) : null;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -78,7 +82,6 @@ export default function PreheatTemp() {
         <div className="px-6 space-y-4">
           <Card>
             <CardContent className="p-4 space-y-4">
-
               <div className="space-y-2">
                 <Label>Base Material / Grade</Label>
                 <Select value={formData.material} onValueChange={(v) => setFormData(p => ({ ...p, material: v }))}>
@@ -99,15 +102,8 @@ export default function PreheatTemp() {
               </div>
 
               <div className="space-y-2">
-                <Label>Material Thickness (inches)</Label>
-                <Input
-                  type="number"
-                  step="0.0625"
-                  min="0.0625"
-                  value={formData.thickness}
-                  onChange={(e) => setFormData(p => ({ ...p, thickness: e.target.value }))}
-                  placeholder="e.g. 0.5"
-                />
+                <Label>Material Thickness ({labels.length})</Label>
+                <Input type="number" step="0.5" min="0.5" value={formData.thickness} onChange={(e) => setFormData(p => ({ ...p, thickness: e.target.value }))} placeholder={`e.g. ${defaults.thickness}`} />
               </div>
 
               <div className="space-y-2">
@@ -125,15 +121,8 @@ export default function PreheatTemp() {
               </div>
 
               <div className="space-y-2">
-                <Label>Expected Heat Input (kJ/in)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="0.1"
-                  value={formData.heatInput}
-                  onChange={(e) => setFormData(p => ({ ...p, heatInput: e.target.value }))}
-                  placeholder="e.g. 1.5"
-                />
+                <Label>Expected Heat Input ({isMetric ? 'kJ/mm' : 'kJ/in'})</Label>
+                <Input type="number" step="0.1" min="0.1" value={formData.heatInput} onChange={(e) => setFormData(p => ({ ...p, heatInput: e.target.value }))} placeholder={`e.g. ${defaults.heatInput}`} />
               </div>
 
               <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full">
@@ -142,35 +131,23 @@ export default function PreheatTemp() {
             </CardContent>
           </Card>
 
-          {result && (
+          {result && preheat !== null && maxInterpass !== null && (
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Temperature Results</h3>
-                  <Badge variant={riskColor as any}>
-                    {result.riskLevel} Risk
-                  </Badge>
+                  <Badge variant={riskColor as any}>{result.riskLevel} Risk</Badge>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background rounded-lg p-3 text-center">
                     <Thermometer className="h-5 w-5 text-orange-400 mx-auto mb-1" />
-                    <div className="text-xl font-bold text-primary">
-                      {result.preheatF}°F
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {result.preheatC}°C
-                    </div>
+                    <div className="text-xl font-bold text-primary">{preheat}{labels.temp}</div>
                     <div className="text-xs text-muted-foreground mt-1">Min Preheat</div>
                   </div>
                   <div className="bg-background rounded-lg p-3 text-center">
                     <Thermometer className="h-5 w-5 text-red-400 mx-auto mb-1" />
-                    <div className="text-xl font-bold text-destructive">
-                      {result.maxInterpassF}°F
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {result.maxInterpassC}°C
-                    </div>
+                    <div className="text-xl font-bold text-destructive">{maxInterpass}{labels.temp}</div>
                     <div className="text-xs text-muted-foreground mt-1">Max Interpass</div>
                   </div>
                 </div>

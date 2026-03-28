@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useMutation } from '@tanstack/react-query';
 import { Plus, Trash2, Scissors } from 'lucide-react';
+import { useUnits } from '@/hooks/useUnits';
 
 interface Part {
   length: string;
@@ -24,11 +25,13 @@ interface CuttingResult {
 }
 
 export default function CuttingLength() {
-  const [stockLength, setStockLength] = useState('240');
-  const [kerfWidth, setKerfWidth] = useState('0.125');
+  const { labels, toImperial, fromImperial, defaults } = useUnits();
+
+  const [stockLength, setStockLength] = useState(defaults.stockLength);
+  const [kerfWidth, setKerfWidth] = useState('3');
   const [parts, setParts] = useState<Part[]>([
-    { length: '36', quantity: '4' },
-    { length: '24', quantity: '6' },
+    { length: defaults.weldLength === '1500' ? '900' : '36', quantity: '4' },
+    { length: defaults.weldLength === '1500' ? '600' : '24', quantity: '6' },
   ]);
 
   const addPart = () => setParts(p => [...p, { length: '', quantity: '1' }]);
@@ -52,13 +55,13 @@ export default function CuttingLength() {
   const handleCalculate = () => {
     const validParts = parts
       .filter(p => p.length && p.quantity && parseFloat(p.length) > 0 && parseInt(p.quantity) > 0)
-      .map(p => ({ length: parseFloat(p.length), quantity: parseInt(p.quantity) }));
+      .map(p => ({ length: toImperial.length(parseFloat(p.length)), quantity: parseInt(p.quantity) }));
 
     if (!validParts.length) return;
 
     calculateMutation.mutate({
-      stockLength: parseFloat(stockLength),
-      kerfWidth: parseFloat(kerfWidth),
+      stockLength: toImperial.length(parseFloat(stockLength)),
+      kerfWidth: toImperial.length(parseFloat(kerfWidth)),
       parts: validParts,
     });
   };
@@ -87,26 +90,14 @@ export default function CuttingLength() {
         <div className="px-6 space-y-4">
           <Card>
             <CardContent className="p-4 space-y-4">
-
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Stock Length (in)</Label>
-                  <Input
-                    type="number"
-                    value={stockLength}
-                    onChange={(e) => setStockLength(e.target.value)}
-                    placeholder="e.g. 240"
-                  />
+                  <Label>Stock Length ({labels.length})</Label>
+                  <Input type="number" value={stockLength} onChange={(e) => setStockLength(e.target.value)} placeholder={defaults.stockLength} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Kerf Width (in)</Label>
-                  <Input
-                    type="number"
-                    step="0.0625"
-                    value={kerfWidth}
-                    onChange={(e) => setKerfWidth(e.target.value)}
-                    placeholder="0.125"
-                  />
+                  <Label>Kerf Width ({labels.length})</Label>
+                  <Input type="number" step="0.5" value={kerfWidth} onChange={(e) => setKerfWidth(e.target.value)} placeholder="3" />
                 </div>
               </div>
 
@@ -117,38 +108,17 @@ export default function CuttingLength() {
                     <Plus className="h-3 w-3 mr-1" /> Add Part
                   </Button>
                 </div>
-
                 <div className="space-y-2">
                   <div className="grid grid-cols-5 gap-2 text-xs text-muted-foreground px-1">
-                    <span className="col-span-2">Length (in)</span>
+                    <span className="col-span-2">Length ({labels.length})</span>
                     <span className="col-span-2">Qty</span>
                     <span></span>
                   </div>
                   {parts.map((part, i) => (
                     <div key={i} className="grid grid-cols-5 gap-2 items-center">
-                      <Input
-                        className="col-span-2 h-8 text-sm"
-                        type="number"
-                        step="0.0625"
-                        value={part.length}
-                        onChange={(e) => updatePart(i, 'length', e.target.value)}
-                        placeholder="36"
-                      />
-                      <Input
-                        className="col-span-2 h-8 text-sm"
-                        type="number"
-                        min="1"
-                        value={part.quantity}
-                        onChange={(e) => updatePart(i, 'quantity', e.target.value)}
-                        placeholder="1"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-destructive"
-                        onClick={() => removePart(i)}
-                        disabled={parts.length === 1}
-                      >
+                      <Input className="col-span-2 h-8 text-sm" type="number" step="0.5" value={part.length} onChange={(e) => updatePart(i, 'length', e.target.value)} placeholder="length" />
+                      <Input className="col-span-2 h-8 text-sm" type="number" min="1" value={part.quantity} onChange={(e) => updatePart(i, 'quantity', e.target.value)} placeholder="1" />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => removePart(i)} disabled={parts.length === 1}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
@@ -166,32 +136,29 @@ export default function CuttingLength() {
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4 space-y-4">
                 <h3 className="font-semibold">Cut List Results</h3>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background rounded-lg p-3 text-center">
                     <Scissors className="h-5 w-5 text-primary mx-auto mb-1" />
                     <div className="text-2xl font-bold text-primary">{result.barsNeeded}</div>
-                    <div className="text-xs text-muted-foreground">
-                      bars needed ({result.totalStockLength}")
-                    </div>
+                    <div className="text-xs text-muted-foreground">bars needed</div>
                   </div>
                   <div className="bg-background rounded-lg p-3 text-center">
                     <div className="text-2xl font-bold text-chart-1">{result.utilization}%</div>
                     <div className="text-xs text-muted-foreground">material used</div>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background rounded-lg p-3 text-center">
                     <div className="text-lg font-bold">{result.totalCuts}</div>
                     <div className="text-xs text-muted-foreground">total cuts</div>
                   </div>
                   <div className="bg-background rounded-lg p-3 text-center">
-                    <div className="text-lg font-bold text-destructive">{result.totalWaste}"</div>
+                    <div className="text-lg font-bold text-destructive">
+                      {fromImperial.length(result.totalWaste)}{labels.length}
+                    </div>
                     <div className="text-xs text-muted-foreground">waste</div>
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Summary:</h4>
                   <ul className="space-y-1">

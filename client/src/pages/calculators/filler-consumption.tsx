@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMutation } from '@tanstack/react-query';
 import { Weight } from 'lucide-react';
+import { useUnits } from '@/hooks/useUnits';
 
 interface FillerResult {
   depositedWeight: number;
@@ -19,11 +20,13 @@ interface FillerResult {
 }
 
 export default function FillerConsumption() {
+  const { labels, toImperial, fromImperial, defaults } = useUnits();
+
   const [formData, setFormData] = useState({
     jointType: 'fillet',
-    weldLength: '60',
-    legSize: '0.25',
-    plateThickness: '0.5',
+    weldLength: defaults.weldLength,
+    legSize: defaults.legSize,
+    plateThickness: defaults.plateThickness,
     grooveAngle: '60',
     passes: '1',
     process: 'GMAW',
@@ -44,9 +47,9 @@ export default function FillerConsumption() {
   const handleCalculate = () => {
     calculateMutation.mutate({
       jointType: formData.jointType,
-      weldLength: parseFloat(formData.weldLength),
-      legSize: parseFloat(formData.legSize),
-      plateThickness: parseFloat(formData.plateThickness),
+      weldLength: toImperial.length(parseFloat(formData.weldLength)),
+      legSize: toImperial.length(parseFloat(formData.legSize)),
+      plateThickness: toImperial.length(parseFloat(formData.plateThickness)),
       grooveAngle: parseFloat(formData.grooveAngle),
       passes: parseInt(formData.passes),
       process: formData.process,
@@ -54,6 +57,9 @@ export default function FillerConsumption() {
   };
 
   const result = calculateMutation.data?.result as FillerResult | undefined;
+  const displayRequired = result ? fromImperial.weight(result.fillerRequired) : null;
+  const displayDeposited = result ? fromImperial.weight(result.depositedWeight) : null;
+
   const isButt = formData.jointType === 'butt-vgroove';
 
   return (
@@ -75,7 +81,6 @@ export default function FillerConsumption() {
         <div className="px-6 space-y-4">
           <Card>
             <CardContent className="p-4 space-y-4">
-
               <div className="space-y-2">
                 <Label>Joint Type</Label>
                 <Select value={formData.jointType} onValueChange={(v) => setFormData(p => ({ ...p, jointType: v }))}>
@@ -103,59 +108,31 @@ export default function FillerConsumption() {
               </div>
 
               <div className="space-y-2">
-                <Label>Total Weld Length (inches)</Label>
-                <Input
-                  type="number"
-                  value={formData.weldLength}
-                  onChange={(e) => setFormData(p => ({ ...p, weldLength: e.target.value }))}
-                  placeholder="e.g. 60"
-                />
+                <Label>Total Weld Length ({labels.length})</Label>
+                <Input type="number" value={formData.weldLength} onChange={(e) => setFormData(p => ({ ...p, weldLength: e.target.value }))} placeholder={defaults.weldLength} />
               </div>
 
               {isButt ? (
                 <>
                   <div className="space-y-2">
-                    <Label>Plate Thickness (inches)</Label>
-                    <Input
-                      type="number"
-                      step="0.0625"
-                      value={formData.plateThickness}
-                      onChange={(e) => setFormData(p => ({ ...p, plateThickness: e.target.value }))}
-                      placeholder="e.g. 0.5"
-                    />
+                    <Label>Plate Thickness ({labels.length})</Label>
+                    <Input type="number" step="0.5" value={formData.plateThickness} onChange={(e) => setFormData(p => ({ ...p, plateThickness: e.target.value }))} placeholder={defaults.plateThickness} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Groove Angle (degrees)</Label>
-                    <Input
-                      type="number"
-                      value={formData.grooveAngle}
-                      onChange={(e) => setFormData(p => ({ ...p, grooveAngle: e.target.value }))}
-                      placeholder="e.g. 60"
-                    />
+                    <Label>Groove Angle (°)</Label>
+                    <Input type="number" value={formData.grooveAngle} onChange={(e) => setFormData(p => ({ ...p, grooveAngle: e.target.value }))} placeholder="60" />
                   </div>
                 </>
               ) : (
                 <div className="space-y-2">
-                  <Label>Fillet Leg Size (inches)</Label>
-                  <Input
-                    type="number"
-                    step="0.0625"
-                    value={formData.legSize}
-                    onChange={(e) => setFormData(p => ({ ...p, legSize: e.target.value }))}
-                    placeholder="e.g. 0.25"
-                  />
+                  <Label>Fillet Leg Size ({labels.length})</Label>
+                  <Input type="number" step="0.5" value={formData.legSize} onChange={(e) => setFormData(p => ({ ...p, legSize: e.target.value }))} placeholder={defaults.legSize} />
                 </div>
               )}
 
               <div className="space-y-2">
                 <Label>Number of Passes</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={formData.passes}
-                  onChange={(e) => setFormData(p => ({ ...p, passes: e.target.value }))}
-                  placeholder="e.g. 1"
-                />
+                <Input type="number" min="1" value={formData.passes} onChange={(e) => setFormData(p => ({ ...p, passes: e.target.value }))} placeholder="1" />
               </div>
 
               <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full">
@@ -164,24 +141,22 @@ export default function FillerConsumption() {
             </CardContent>
           </Card>
 
-          {result && (
+          {result && displayRequired !== null && (
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4 space-y-4">
                 <h3 className="font-semibold">Filler Metal Results</h3>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background rounded-lg p-3 text-center">
                     <Weight className="h-5 w-5 text-primary mx-auto mb-1" />
-                    <div className="text-2xl font-bold text-primary">{result.fillerRequired}</div>
-                    <div className="text-xs text-muted-foreground">lbs required</div>
+                    <div className="text-2xl font-bold text-primary">{displayRequired}</div>
+                    <div className="text-xs text-muted-foreground">{labels.weight} required</div>
                   </div>
                   <div className="bg-background rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-chart-1">{result.depositedWeight}</div>
-                    <div className="text-xs text-muted-foreground">lbs deposited</div>
-                    <div className="text-xs text-muted-foreground">{result.depositEfficiency}% efficiency</div>
+                    <div className="text-2xl font-bold text-chart-1">{displayDeposited}</div>
+                    <div className="text-xs text-muted-foreground">{labels.weight} deposited</div>
+                    <div className="text-xs text-muted-foreground">{result.depositEfficiency}% eff.</div>
                   </div>
                 </div>
-
                 {result.electrodesEstimate && (
                   <div className="bg-background rounded-lg p-3">
                     <div className="text-sm text-muted-foreground">Estimated Electrodes</div>
@@ -189,7 +164,6 @@ export default function FillerConsumption() {
                     <div className="text-xs text-muted-foreground">3/32"–1/8" 7018 sticks</div>
                   </div>
                 )}
-
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Recommendations:</h4>
                   <ul className="space-y-1">

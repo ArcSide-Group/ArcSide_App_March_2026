@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { useUnits } from "@/hooks/useUnits";
 import { 
   User, 
   Bell, 
@@ -29,9 +30,9 @@ import {
 export default function Settings() {
   const { user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { units, setUnits } = useUnits();
   const [notifications, setNotifications] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
-  const [units, setUnits] = useState("metric");
   const [language, setLanguage] = useState("english");
 
   return (
@@ -194,13 +195,13 @@ export default function Settings() {
                     <h4 className="font-medium text-sm">Measurement Units</h4>
                     <p className="text-xs text-muted-foreground mt-1">Choose your preferred measurement system</p>
                   </div>
-                  <Select value={units} onValueChange={setUnits}>
+                  <Select value={units} onValueChange={(v) => setUnits(v as 'imperial' | 'metric')}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="metric">Metric</SelectItem>
                       <SelectItem value="imperial">Imperial</SelectItem>
+                      <SelectItem value="metric">Metric</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

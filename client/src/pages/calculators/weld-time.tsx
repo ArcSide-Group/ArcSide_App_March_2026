@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMutation } from '@tanstack/react-query';
 import { Clock, DollarSign } from 'lucide-react';
+import { useUnits } from '@/hooks/useUnits';
 
 interface WeldTimeResult {
   arcTimeMin: number;
@@ -20,9 +21,11 @@ interface WeldTimeResult {
 }
 
 export default function WeldTime() {
+  const { labels, toImperial, defaults } = useUnits();
+
   const [formData, setFormData] = useState({
-    weldLength: '120',
-    travelSpeed: '8',
+    weldLength: defaults.weldLength,
+    travelSpeed: defaults.travelSpeed,
     passes: '1',
     numberOfJoints: '4',
     setupTimePerJoint: '10',
@@ -44,8 +47,8 @@ export default function WeldTime() {
 
   const handleCalculate = () => {
     calculateMutation.mutate({
-      weldLength: parseFloat(formData.weldLength),
-      travelSpeed: parseFloat(formData.travelSpeed),
+      weldLength: toImperial.length(parseFloat(formData.weldLength)),
+      travelSpeed: toImperial.speed(parseFloat(formData.travelSpeed)),
       passes: parseInt(formData.passes),
       numberOfJoints: parseInt(formData.numberOfJoints),
       setupTimePerJoint: parseFloat(formData.setupTimePerJoint),
@@ -55,7 +58,6 @@ export default function WeldTime() {
   };
 
   const result = calculateMutation.data?.result as WeldTimeResult | undefined;
-
   const hours = result ? Math.floor(result.totalTimeMin / 60) : 0;
   const minutes = result ? Math.round(result.totalTimeMin % 60) : 0;
 
@@ -81,59 +83,30 @@ export default function WeldTime() {
         <div className="px-6 space-y-4">
           <Card>
             <CardContent className="p-4 space-y-4">
-
               <div className="space-y-2">
-                <Label>Total Weld Length (inches)</Label>
-                <Input
-                  type="number"
-                  value={formData.weldLength}
-                  onChange={(e) => setFormData(p => ({ ...p, weldLength: e.target.value }))}
-                  placeholder="e.g. 120"
-                />
+                <Label>Total Weld Length ({labels.length})</Label>
+                <Input type="number" value={formData.weldLength} onChange={(e) => setFormData(p => ({ ...p, weldLength: e.target.value }))} placeholder={defaults.weldLength} />
               </div>
 
               <div className="space-y-2">
-                <Label>Travel Speed (in/min)</Label>
-                <Input
-                  type="number"
-                  step="0.5"
-                  value={formData.travelSpeed}
-                  onChange={(e) => setFormData(p => ({ ...p, travelSpeed: e.target.value }))}
-                  placeholder="e.g. 8"
-                />
+                <Label>Travel Speed ({labels.speed})</Label>
+                <Input type="number" step="0.5" value={formData.travelSpeed} onChange={(e) => setFormData(p => ({ ...p, travelSpeed: e.target.value }))} placeholder={defaults.travelSpeed} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Passes</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={formData.passes}
-                    onChange={(e) => setFormData(p => ({ ...p, passes: e.target.value }))}
-                    placeholder="1"
-                  />
+                  <Input type="number" min="1" value={formData.passes} onChange={(e) => setFormData(p => ({ ...p, passes: e.target.value }))} placeholder="1" />
                 </div>
                 <div className="space-y-2">
                   <Label>Joints / Setups</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={formData.numberOfJoints}
-                    onChange={(e) => setFormData(p => ({ ...p, numberOfJoints: e.target.value }))}
-                    placeholder="4"
-                  />
+                  <Input type="number" min="1" value={formData.numberOfJoints} onChange={(e) => setFormData(p => ({ ...p, numberOfJoints: e.target.value }))} placeholder="4" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>Setup Time per Joint (min)</Label>
-                <Input
-                  type="number"
-                  value={formData.setupTimePerJoint}
-                  onChange={(e) => setFormData(p => ({ ...p, setupTimePerJoint: e.target.value }))}
-                  placeholder="e.g. 10"
-                />
+                <Input type="number" value={formData.setupTimePerJoint} onChange={(e) => setFormData(p => ({ ...p, setupTimePerJoint: e.target.value }))} placeholder="10" />
               </div>
 
               <div className="space-y-2">
@@ -152,12 +125,7 @@ export default function WeldTime() {
 
               <div className="space-y-2">
                 <Label>Labor Rate ($/hr) — optional</Label>
-                <Input
-                  type="number"
-                  value={formData.laborRate}
-                  onChange={(e) => setFormData(p => ({ ...p, laborRate: e.target.value }))}
-                  placeholder="e.g. 45"
-                />
+                <Input type="number" value={formData.laborRate} onChange={(e) => setFormData(p => ({ ...p, laborRate: e.target.value }))} placeholder="45" />
               </div>
 
               <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full">
@@ -170,7 +138,6 @@ export default function WeldTime() {
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4 space-y-4">
                 <h3 className="font-semibold">Time Estimate</h3>
-
                 <div className="bg-background rounded-lg p-4 text-center">
                   <Clock className="h-6 w-6 text-primary mx-auto mb-2" />
                   <div className="text-3xl font-bold text-primary">
@@ -178,7 +145,6 @@ export default function WeldTime() {
                   </div>
                   <div className="text-sm text-muted-foreground">Total estimated time</div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-background rounded-lg p-3 text-center">
                     <div className="text-lg font-bold text-chart-1">{result.arcTimeMin} min</div>
@@ -189,7 +155,6 @@ export default function WeldTime() {
                     <div className="text-xs text-muted-foreground">Setup time</div>
                   </div>
                 </div>
-
                 {result.laborCost > 0 && (
                   <div className="bg-background rounded-lg p-3 flex items-center gap-3">
                     <DollarSign className="h-5 w-5 text-green-500" />
@@ -199,7 +164,6 @@ export default function WeldTime() {
                     </div>
                   </div>
                 )}
-
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Notes:</h4>
                   <ul className="space-y-1">
