@@ -52,7 +52,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Use additionalDetails or a generic description based on image
       const analysisInput = additionalDetails || "Weld defect analysis from uploaded image";
-      const result = await GeminiAIService.analyzeDefect(imageData || null, analysisInput);
+      const unitPreference = req.body.unitPreference || 'metric';
+      const result = await GeminiAIService.analyzeDefect(imageData || null, analysisInput, unitPreference);
 
       // Save analysis with image data
       const analysisData = insertAnalysisSchema.parse({
@@ -173,10 +174,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/ai/ask-assistant', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const { question, projectId } = req.body;
+      const { question, projectId, conversationHistory, unitPreference } = req.body;
 
-      const { conversationHistory } = req.body;
-      const answer = await GeminiAIService.askAssistant(question, conversationHistory);
+      const answer = await GeminiAIService.askAssistant(question, conversationHistory, unitPreference || 'metric');
 
       // Save conversation
       const analysisData = insertAnalysisSchema.parse({

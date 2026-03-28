@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useUnits } from "@/hooks/useUnits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ interface Message {
 
 export default function WeldAssistant() {
   const { toast } = useToast();
+  const { units } = useUnits();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -83,7 +85,7 @@ export default function WeldAssistant() {
       .map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content }));
 
     setMessages(prev => [...prev, userMessage]);
-    sendMutation.mutate({ question: inputMessage, conversationHistory: history });
+    sendMutation.mutate({ question: inputMessage, conversationHistory: history, unitPreference: units });
     setInputMessage("");
   };
 
@@ -96,7 +98,7 @@ export default function WeldAssistant() {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    sendMutation.mutate({ question, conversationHistory: [] });
+    sendMutation.mutate({ question, conversationHistory: [], unitPreference: units });
   };
 
   const formatTime = (date: Date) => {

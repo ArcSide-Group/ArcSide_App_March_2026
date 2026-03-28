@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnits } from "@/hooks/useUnits";
 import { useMutation } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -16,6 +17,7 @@ import { exportDefectAnalysisPdf } from "@/lib/pdf-export";
 
 export default function DefectAnalyzer() {
   const { user } = useAuth();
+  const { units } = useUnits();
   const { toast } = useToast();
   const [imageData, setImageData] = useState<string | null>(null);
   const [additionalDetails, setAdditionalDetails] = useState("");
@@ -26,7 +28,10 @@ export default function DefectAnalyzer() {
       imageData: string;
       additionalDetails?: string;
     }) => {
-      const response = await apiRequest("POST", "/api/ai/analyze-defect", data);
+      const response = await apiRequest("POST", "/api/ai/analyze-defect", {
+        ...data,
+        unitPreference: units
+      });
       return response.json();
     },
     onSuccess: (data) => {

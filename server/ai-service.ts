@@ -10,13 +10,20 @@ You have deep knowledge of:
 - Welding Procedure Specifications (WPS)
 - Material metallurgy and compatibility
 - Welding safety and best practices
-Always provide accurate, practical, professional-grade advice.`;
+Always provide accurate, practical, professional-grade advice.
+IMPORTANT: Always provide measurements in the user's preferred units. If Metric is selected, use mm for thickness/length and Celsius for temperature. If Imperial is selected, use inches and Fahrenheit.`;
 
 export class GeminiAIService {
-  static async analyzeDefect(imageData: string | null, additionalDetails: string): Promise<any> {
+  static async analyzeDefect(imageData: string | null, additionalDetails: string, unitPreference: 'metric' | 'imperial' = 'metric'): Promise<any> {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+    const unitNote = unitPreference === 'metric' 
+      ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
+      : 'UNIT PREFERENCE: User prefers Imperial units (inches, lbs, °F). Please provide all measurements in these units.';
+    
     let prompt = `${SYSTEM_CONTEXT}
+
+${unitNote}
 
 You are analyzing a weld defect. ${additionalDetails ? `Additional context from the welder: ${additionalDetails}` : ""}
 
@@ -191,10 +198,16 @@ Provide a comprehensive definition in the following JSON format (respond ONLY wi
     }
   }
 
-  static async askAssistant(question: string, conversationHistory?: Array<{role: string, content: string}>): Promise<string> {
+  static async askAssistant(question: string, conversationHistory?: Array<{role: string, content: string}>, unitPreference: 'metric' | 'imperial' = 'metric'): Promise<string> {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+    const unitNote = unitPreference === 'metric' 
+      ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
+      : 'UNIT PREFERENCE: User prefers Imperial units (inches, lbs, °F). Please provide all measurements in these units.';
+
     let fullPrompt = `${SYSTEM_CONTEXT}
+
+${unitNote}
 
 You are a friendly, expert welding assistant. Give practical, accurate answers. Use bullet points and clear formatting where helpful. Keep responses focused and professional but conversational.
 
