@@ -6,7 +6,7 @@ import { Check, Crown, Zap, Star } from "lucide-react";
 const plans = [
   {
     name: "Free",
-    price: "$0",
+    price: "R 0.00",
     period: "forever",
     description: "Get started with essential welding tools",
     features: [
@@ -30,7 +30,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "$19.99",
+    price: "R 399.00",
     period: "per month",
     description: "For professional welders and small fabrication shops",
     features: [
@@ -53,7 +53,7 @@ const plans = [
   },
   {
     name: "Pro / Enterprise",
-    price: "$49.99",
+    price: "R 999.00",
     period: "per month",
     description: "Full solution for large shops and enterprises",
     features: [
@@ -192,7 +192,7 @@ export default function Subscription() {
               </div>
               <div>
                 <h4 className="font-medium mb-1">What payment methods do you accept?</h4>
-                <p className="text-muted-foreground text-xs leading-relaxed">We accept all major credit cards, PayPal, and corporate POs for Enterprise plans.</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">We accept all major credit cards, Snapscan, EFT transfers, and corporate POs for Enterprise plans. All prices in South African Rands (ZAR).</p>
               </div>
             </div>
           </CardContent>

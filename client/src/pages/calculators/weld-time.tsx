@@ -30,7 +30,7 @@ export default function WeldTime() {
     numberOfJoints: '4',
     setupTimePerJoint: '10',
     arcEfficiency: '35',
-    laborRate: '45',
+    laborRate: '500',
   });
 
   const calculateMutation = useMutation({
@@ -124,8 +124,8 @@ export default function WeldTime() {
               </div>
 
               <div className="space-y-2">
-                <Label>Labor Rate ($/hr) — optional</Label>
-                <Input type="number" value={formData.laborRate} onChange={(e) => setFormData(p => ({ ...p, laborRate: e.target.value }))} placeholder="45" />
+                <Label>Labor Rate (R/hr) — optional</Label>
+                <Input type="number" value={formData.laborRate} onChange={(e) => setFormData(p => ({ ...p, laborRate: e.target.value }))} placeholder="500" />
               </div>
 
               <Button onClick={handleCalculate} disabled={calculateMutation.isPending} className="w-full">

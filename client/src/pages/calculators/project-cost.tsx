@@ -33,13 +33,13 @@ interface Material {
 export default function ProjectCost() {
   const [formData, setFormData] = useState({
     laborHours: '40',
-    laborRate: '50',
+    laborRate: '550',
     overhead: '0.15',
     profit: '0.20'
   });
 
   const [materials, setMaterials] = useState<Material[]>([
-    { type: 'Steel Plate', quantity: 10, unitCost: 25 }
+    { type: 'Steel Plate', quantity: 10, unitCost: 250 }
   ]);
 
   const calculateMutation = useMutation({
@@ -145,7 +145,7 @@ export default function ProjectCost() {
                     />
                     <Input
                       type="number"
-                      placeholder="Unit cost ($)"
+                      placeholder="Unit cost (R)"
                       value={material.unitCost}
                       onChange={(e) => updateMaterial(index, 'unitCost', parseFloat(e.target.value) || 0)}
                     />
@@ -171,12 +171,12 @@ export default function ProjectCost() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Rate ($/hr)</Label>
+                  <Label>Rate (R/hr)</Label>
                   <Input
                     type="number"
                     value={formData.laborRate}
                     onChange={(e) => setFormData(prev => ({ ...prev, laborRate: e.target.value }))}
-                    placeholder="Rate"
+                    placeholder="550"
                   />
                 </div>
               </div>
@@ -228,25 +228,25 @@ export default function ProjectCost() {
                 
                 <div className="space-y-3">
                   <div className="bg-background rounded-lg p-3">
-                    <div className="text-2xl font-bold text-primary">${result.finalPrice}</div>
+                    <div className="text-2xl font-bold text-primary">R {result.finalPrice.toFixed(2)}</div>
                     <div className="text-sm text-muted-foreground">Total Project Price</div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="bg-background rounded p-2">
-                      <div className="font-semibold">${result.materialCost}</div>
+                      <div className="font-semibold">R {result.materialCost.toFixed(2)}</div>
                       <div className="text-muted-foreground">Materials ({result.breakdown.materials})</div>
                     </div>
                     <div className="bg-background rounded p-2">
-                      <div className="font-semibold">${result.laborCost}</div>
+                      <div className="font-semibold">R {result.laborCost.toFixed(2)}</div>
                       <div className="text-muted-foreground">Labor ({result.breakdown.labor})</div>
                     </div>
                     <div className="bg-background rounded p-2">
-                      <div className="font-semibold">${result.overheadCost}</div>
+                      <div className="font-semibold">R {result.overheadCost.toFixed(2)}</div>
                       <div className="text-muted-foreground">Overhead ({result.breakdown.overhead})</div>
                     </div>
                     <div className="bg-background rounded p-2">
-                      <div className="font-semibold">${result.profitAmount}</div>
+                      <div className="font-semibold">R {result.profitAmount.toFixed(2)}</div>
                       <div className="text-muted-foreground">Profit ({result.breakdown.profit})</div>
                     </div>
                   </div>
