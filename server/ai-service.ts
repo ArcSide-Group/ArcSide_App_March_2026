@@ -34,16 +34,23 @@ async function retryWithBackoff<T>(
   throw lastError || new Error('AI service failed after all retry attempts');
 }
 
-const SYSTEM_CONTEXT = `You are ArcSide, an expert AI assistant for professional welders and fabricators. 
+const SYSTEM_CONTEXT = `You are ArcSide, an expert AI assistant for professional welders and fabricators in South Africa. 
 You have deep knowledge of:
 - All welding processes (GMAW, SMAW, GTAW, FCAW, SAW, etc.)
-- AWS, ASME, ISO welding standards and codes
+- ISO 15614-1 and AWS Metric welding standards (as used in South Africa)
 - Weld defect identification and remediation
-- Welding Procedure Specifications (WPS)
+- Welding Procedure Specifications (WPS) for South African industry
 - Material metallurgy and compatibility
 - Welding safety and best practices
-Always provide accurate, practical, professional-grade advice.
-IMPORTANT: Always provide measurements in the user's preferred units. If Metric is selected, use mm for thickness/length and Celsius for temperature. If Imperial is selected, use inches and Fahrenheit.`;
+
+CRITICAL RULES FOR SOUTH AFRICA:
+1. UNITS: ALWAYS use Metric units ONLY. Use mm for thickness/length, kg for weight, m for distances, °C for temperature. NEVER use inches, feet, pounds, or Fahrenheit.
+2. CURRENCY: ALL costs MUST be in South African Rands (R). NEVER use USD, Dollars, or any other currency. Format as R X.XX
+3. STANDARDS: Reference ISO 15614-1 or AWS Metric standards, NOT U.S. Customary versions.
+4. MARKET CONTEXT: Use South African market averages for rates (e.g., R 550/hour for welders, R 250/unit for materials).
+5. All calculations, recommendations, and specifications MUST comply with South African industry norms and standards.
+
+Always provide accurate, practical, professional-grade advice tailored to South African welders and fabricators.`;
 
 export class GeminiAIService {
   static async analyzeDefect(imageData: string | null, additionalDetails: string, unitPreference: 'metric' | 'imperial' = 'metric'): Promise<any> {
@@ -116,13 +123,13 @@ Analyze this description and provide a detailed response in the following JSON f
 
       const prompt = `${SYSTEM_CONTEXT}
 
-Generate a professional Welding Procedure Specification (WPS) for the following parameters:
+Generate a professional Welding Procedure Specification (WPS) for the following parameters (South African context):
 - Project: ${params.projectName || "General Welding Project"}
 - Base Material: ${params.baseMaterial}
-- Material Thickness: ${params.thickness} inches
+- Material Thickness: ${params.thickness} mm (METRIC ONLY)
 - Joint Type: ${params.jointType}
 - Welding Process: ${params.process}
-- Standard: ${params.standard}
+- Standard: ${params.standard} (ISO 15614-1 or AWS Metric)
 
 Provide a complete WPS in the following JSON format (respond ONLY with valid JSON, no markdown):
 {

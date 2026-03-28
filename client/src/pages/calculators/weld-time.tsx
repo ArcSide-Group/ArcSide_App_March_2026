@@ -159,7 +159,7 @@ export default function WeldTime() {
                   <div className="bg-background rounded-lg p-3 flex items-center gap-3">
                     <DollarSign className="h-5 w-5 text-green-500" />
                     <div>
-                      <div className="text-xl font-bold text-green-500">${result.laborCost.toFixed(2)}</div>
+                      <div className="text-xl font-bold text-green-500">R {result.laborCost.toFixed(2)}</div>
                       <div className="text-xs text-muted-foreground">Estimated labor cost</div>
                     </div>
                   </div>

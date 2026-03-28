@@ -97,7 +97,7 @@ export function exportWpsPdf(wpsResult: any, formData: any) {
     head: [["Parameter", "Value"]],
     body: [
       ["Base Material", formData.baseMaterial || "N/A"],
-      ["Thickness", formData.thickness ? `${formData.thickness}"` : "N/A"],
+      ["Thickness", formData.thickness ? `${formData.thickness} mm` : "N/A"],
       ["Joint Type", formData.jointType || "N/A"],
       ["Welding Process", formData.process || "N/A"],
     ],
