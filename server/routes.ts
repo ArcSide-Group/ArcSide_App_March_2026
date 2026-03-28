@@ -532,6 +532,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Beta feedback submission
+  app.post('/api/beta-feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { navigationRating, accuracyRating, aiQualityRating, performanceRating, technicalNotes } = req.body;
+      
+      // Validate ratings
+      if (![navigationRating, accuracyRating, aiQualityRating, performanceRating].every(r => r >= 1 && r <= 5)) {
+        return res.status(400).json({ message: "All ratings must be between 1 and 5" });
+      }
+      
+      // Calculate average score
+      const averageScore = (navigationRating + accuracyRating + aiQualityRating + performanceRating) / 4;
+      
+      const feedback = await storage.submitBetaFeedback({
+        userId,
+        navigationRating,
+        accuracyRating,
+        aiQualityRating,
+        performanceRating,
+        technicalNotes: technicalNotes || null,
+        averageScore: parseFloat(averageScore.toFixed(2)),
+      });
+      
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      res.status(500).json({ message: "Failed to submit feedback" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -6,6 +6,7 @@ import {
   usageTracking,
   calculatorResults,
   weldLogEntries,
+  betaFeedback,
   type User,
   type UpsertUser,
   type InsertProject,
@@ -17,6 +18,8 @@ import {
   type UsageTracking,
   type InsertWeldLog,
   type WeldLogEntry,
+  type InsertBetaFeedback,
+  type BetaFeedback,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
@@ -63,6 +66,9 @@ export interface IStorage {
 
   // Subscription operations
   upgradeSubscription(userId: string): Promise<User>;
+
+  // Beta feedback operations
+  submitBetaFeedback(feedback: InsertBetaFeedback): Promise<BetaFeedback>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -498,6 +504,19 @@ class MemStorage implements IStorage {
     this.users.set(userId, updated);
     return updated;
   }
+
+  async submitBetaFeedback(feedback: InsertBetaFeedback): Promise<BetaFeedback> {
+    const id = Math.random().toString(36).substring(7);
+    const feedbackEntry: BetaFeedback = {
+      id,
+      ...feedback,
+      createdAt: new Date(),
+    };
+    this.feedbackData.set(id, feedbackEntry);
+    return feedbackEntry;
+  }
+
+  private feedbackData = new Map<string, BetaFeedback>();
 }
 
 export const storage = new MemStorage();

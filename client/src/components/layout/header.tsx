@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Home, Wrench, Bot, FolderOpen, Settings, CreditCard } from "lucide-react";
+import { Menu, Home, Wrench, Bot, FolderOpen, Settings, CreditCard, MessageSquare } from "lucide-react";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 const navigationItems = [
@@ -11,6 +11,7 @@ const navigationItems = [
   { href: "/tools", icon: Wrench, label: "Tools" },
   { href: "/ai-tools", icon: Bot, label: "AI Tools" },
   { href: "/projects", icon: FolderOpen, label: "Projects" },
+  { href: "/beta-feedback", icon: MessageSquare, label: "Beta Feedback" },
   { href: "/settings", icon: Settings, label: "Settings" },
   { href: "/subscription", icon: CreditCard, label: "Subscription" },
 ];

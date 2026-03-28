@@ -28,6 +28,7 @@ const Subscription = lazy(() => import("@/pages/subscription"));
 const Settings = lazy(() => import("@/pages/settings"));
 const Disclaimer = lazy(() => import("@/pages/disclaimer"));
 const Profile = lazy(() => import("@/pages/profile"));
+const BetaFeedback = lazy(() => import("@/pages/beta-feedback").then(m => ({ default: m.BetaFeedback })));
 
 // AI Tool pages
 const DefectAnalyzer = lazy(() => import("@/pages/tools/defect-analyzer"));
@@ -102,6 +103,7 @@ function Router() {
             <Route path="/profile" component={Profile} />
             <Route path="/subscription" component={Subscription} />
             <Route path="/settings" component={Settings} />
+            <Route path="/beta-feedback" component={BetaFeedback} />
             <Route path="/disclaimer" component={Disclaimer} />
             <Route component={NotFound} />
           </Switch>

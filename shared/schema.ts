@@ -160,6 +160,18 @@ export const weldLogEntries = pgTable("weld_log_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const betaFeedback = pgTable("beta_feedback", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  navigationRating: integer("navigation_rating").notNull(),
+  accuracyRating: integer("accuracy_rating").notNull(),
+  aiQualityRating: integer("ai_quality_rating").notNull(),
+  performanceRating: integer("performance_rating").notNull(),
+  technicalNotes: text("technical_notes"),
+  averageScore: decimal("average_score", { precision: 3, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projects),
@@ -212,8 +224,15 @@ export const insertWeldLogSchema = createInsertSchema(weldLogEntries).omit({
   createdAt: true,
 });
 
+export const insertBetaFeedbackSchema = createInsertSchema(betaFeedback).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertWeldLog = z.infer<typeof insertWeldLogSchema>;
 export type WeldLogEntry = typeof weldLogEntries.$inferSelect;
+export type InsertBetaFeedback = z.infer<typeof insertBetaFeedbackSchema>;
+export type BetaFeedback = typeof betaFeedback.$inferSelect;
 
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true, 
