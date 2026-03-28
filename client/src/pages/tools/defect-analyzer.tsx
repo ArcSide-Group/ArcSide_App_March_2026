@@ -11,7 +11,8 @@ import { Link } from "wouter";
 import AnalysisResult from "@/components/ai/analysis-result";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { X } from "lucide-react";
+import { X, Download } from "lucide-react";
+import { exportDefectAnalysisPdf } from "@/lib/pdf-export";
 
 export default function DefectAnalyzer() {
   const { user } = useAuth();
@@ -236,8 +237,14 @@ export default function DefectAnalyzer() {
                 <i className="fas fa-save mr-2"></i>
                 Save Analysis
               </Button>
-              <Button className="bg-primary text-primary-foreground h-12">
-                <i className="fas fa-share mr-2"></i>
+              <Button
+                className="bg-primary text-primary-foreground h-12"
+                onClick={() => {
+                  exportDefectAnalysisPdf(analysis, analysis.imageData);
+                  toast({ title: "PDF Downloaded", description: "Your analysis report has been saved." });
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
                 Export Report
               </Button>
             </div>

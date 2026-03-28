@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { Download } from "lucide-react";
+import { exportMaterialCheckPdf } from "@/lib/pdf-export";
 
 const materials = [
   "A36 Carbon Steel",
@@ -247,6 +249,18 @@ export default function MaterialChecker() {
                     </ul>
                   </div>
                 )}
+
+                {/* Export Button */}
+                <Button
+                  className="w-full bg-primary text-primary-foreground mt-4"
+                  onClick={() => {
+                    exportMaterialCheckPdf(result, material1, material2);
+                    toast({ title: "PDF Downloaded", description: "Your compatibility report has been saved." });
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF Report
+                </Button>
               </CardContent>
             </Card>
           </div>

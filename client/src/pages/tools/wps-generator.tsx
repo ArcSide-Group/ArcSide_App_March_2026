@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { Download } from "lucide-react";
+import { exportWpsPdf } from "@/lib/pdf-export";
 
 export default function WpsGenerator() {
   const { user } = useAuth();
@@ -305,8 +307,15 @@ export default function WpsGenerator() {
                     <i className="fas fa-edit mr-2"></i>
                     Edit Details
                   </Button>
-                  <Button size="sm" className="bg-primary text-primary-foreground">
-                    <i className="fas fa-download mr-2"></i>
+                  <Button
+                    size="sm"
+                    className="bg-primary text-primary-foreground"
+                    onClick={() => {
+                      exportWpsPdf(wpsResult, formData);
+                      toast({ title: "PDF Downloaded", description: "Your WPS document has been saved." });
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
                     Export PDF
                   </Button>
                 </div>
