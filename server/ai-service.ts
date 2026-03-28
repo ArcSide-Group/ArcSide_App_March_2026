@@ -2,6 +2,38 @@ import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
+// Retry utility with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  initialDelayMs: number = 2000
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      console.log(`[AI] Attempt ${attempt}/${maxAttempts}`);
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      const errorStatus = (error as any)?.status || 500;
+      
+      // Check if error is retryable (5xx errors, rate limiting)
+      const isRetryable = errorStatus >= 500 || errorStatus === 429;
+      
+      if (isRetryable && attempt < maxAttempts) {
+        const delayMs = initialDelayMs * Math.pow(2, attempt - 1);
+        console.warn(`[AI] Attempt ${attempt} failed (status ${errorStatus}), retrying in ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else if (!isRetryable || attempt === maxAttempts) {
+        break;
+      }
+    }
+  }
+  
+  throw lastError || new Error('AI service failed after all retry attempts');
+}
+
 const SYSTEM_CONTEXT = `You are ArcSide, an expert AI assistant for professional welders and fabricators. 
 You have deep knowledge of:
 - All welding processes (GMAW, SMAW, GTAW, FCAW, SAW, etc.)
@@ -15,13 +47,14 @@ IMPORTANT: Always provide measurements in the user's preferred units. If Metric 
 
 export class GeminiAIService {
   static async analyzeDefect(imageData: string | null, additionalDetails: string, unitPreference: 'metric' | 'imperial' = 'metric'): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    return retryWithBackoff(async () => {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const unitNote = unitPreference === 'metric' 
-      ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
-      : 'UNIT PREFERENCE: User prefers Imperial units (inches, lbs, °F). Please provide all measurements in these units.';
-    
-    let prompt = `${SYSTEM_CONTEXT}
+      const unitNote = unitPreference === 'metric' 
+        ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
+        : 'UNIT PREFERENCE: User prefers Imperial units (inches, lbs, °F). Please provide all measurements in these units.';
+      
+      let prompt = `${SYSTEM_CONTEXT}
 
 ${unitNote}
 
@@ -38,7 +71,6 @@ Analyze this weld and provide a detailed response in the following JSON format (
   "preventionTips": ["tip1", "tip2"]
 }`;
 
-    try {
       let result;
 
       if (imageData) {
@@ -75,16 +107,14 @@ Analyze this description and provide a detailed response in the following JSON f
       const text = result.response.text().trim();
       const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return JSON.parse(cleaned);
-    } catch (error) {
-      console.error("Gemini defect analysis error:", error);
-      throw new Error("AI analysis failed. Please try again.");
-    }
+    });
   }
 
   static async generateWPS(params: any): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    return retryWithBackoff(async () => {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `${SYSTEM_CONTEXT}
+      const prompt = `${SYSTEM_CONTEXT}
 
 Generate a professional Welding Procedure Specification (WPS) for the following parameters:
 - Project: ${params.projectName || "General Welding Project"}
@@ -120,21 +150,18 @@ Provide a complete WPS in the following JSON format (respond ONLY with valid JSO
   "safetyNotes": ["safety note 1", "safety note 2"]
 }`;
 
-    try {
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim();
       const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return JSON.parse(cleaned);
-    } catch (error) {
-      console.error("Gemini WPS generation error:", error);
-      throw new Error("WPS generation failed. Please try again.");
-    }
+    });
   }
 
   static async checkMaterialCompatibility(material1: string, material2: string): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    return retryWithBackoff(async () => {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `${SYSTEM_CONTEXT}
+      const prompt = `${SYSTEM_CONTEXT}
 
 Analyze the welding compatibility between these two materials:
 - Material 1: ${material1}
@@ -157,21 +184,18 @@ Provide a thorough compatibility analysis in the following JSON format (respond 
   "notes": "any additional important notes"
 }`;
 
-    try {
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim();
       const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return JSON.parse(cleaned);
-    } catch (error) {
-      console.error("Gemini material check error:", error);
-      throw new Error("Material compatibility check failed. Please try again.");
-    }
+    });
   }
 
   static async searchTerminology(term: string): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    return retryWithBackoff(async () => {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `${SYSTEM_CONTEXT}
+      const prompt = `${SYSTEM_CONTEXT}
 
 Define and explain the welding/fabrication term: "${term}"
 
@@ -187,25 +211,22 @@ Provide a comprehensive definition in the following JSON format (respond ONLY wi
   "tips": ["practical tip 1", "practical tip 2"]
 }`;
 
-    try {
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim();
       const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return JSON.parse(cleaned);
-    } catch (error) {
-      console.error("Gemini terminology search error:", error);
-      throw new Error("Terminology search failed. Please try again.");
-    }
+    });
   }
 
   static async askAssistant(question: string, conversationHistory?: Array<{role: string, content: string}>, unitPreference: 'metric' | 'imperial' = 'metric'): Promise<string> {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    return retryWithBackoff(async () => {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const unitNote = unitPreference === 'metric' 
-      ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
-      : 'UNIT PREFERENCE: User prefers Imperial units (inches, lbs, °F). Please provide all measurements in these units.';
+      const unitNote = unitPreference === 'metric' 
+        ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
+        : 'UNIT PREFERENCE: User prefers Imperial units (inches, lbs, °F). Please provide all measurements in these units.';
 
-    let fullPrompt = `${SYSTEM_CONTEXT}
+      let fullPrompt = `${SYSTEM_CONTEXT}
 
 ${unitNote}
 
@@ -213,22 +234,18 @@ You are a friendly, expert welding assistant. Give practical, accurate answers. 
 
 `;
 
-    if (conversationHistory && conversationHistory.length > 0) {
-      fullPrompt += "Previous conversation:\n";
-      conversationHistory.slice(-6).forEach(msg => {
-        fullPrompt += `${msg.role === 'user' ? 'Welder' : 'ArcSide'}: ${msg.content}\n`;
-      });
-      fullPrompt += "\n";
-    }
+      if (conversationHistory && conversationHistory.length > 0) {
+        fullPrompt += "Previous conversation:\n";
+        conversationHistory.slice(-6).forEach(msg => {
+          fullPrompt += `${msg.role === 'user' ? 'Welder' : 'ArcSide'}: ${msg.content}\n`;
+        });
+        fullPrompt += "\n";
+      }
 
-    fullPrompt += `Welder's question: ${question}\n\nArcSide:`;
+      fullPrompt += `Welder's question: ${question}\n\nArcSide:`;
 
-    try {
       const result = await model.generateContent(fullPrompt);
       return result.response.text().trim();
-    } catch (error) {
-      console.error("Gemini assistant error:", error);
-      throw new Error("Assistant query failed. Please try again.");
-    }
+    });
   }
 }

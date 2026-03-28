@@ -52,12 +52,13 @@ export default function ProcessOptimizer() {
         setTimeout(() => { window.location.href = "/api/login"; }, 500);
         return;
       }
-      const isRateLimit = error?.message?.includes("rate limit") || error?.message?.includes("429");
+      const errorMsg = (error as Error).message || '';
+      const isAIServiceError = errorMsg.includes('failed') || errorMsg.includes('capacity') || errorMsg.includes('retry');
       toast({
-        title: isRateLimit ? "Rate Limit Reached" : "Optimization Failed",
-        description: isRateLimit
-          ? "Gemini free-tier quota hit. Wait a moment and try again."
-          : (error as Error).message,
+        title: isAIServiceError ? "AI Service Busy" : "Optimization Failed",
+        description: isAIServiceError 
+          ? "Google AI Services are currently over capacity. Retrying in a moment..."
+          : errorMsg,
         variant: "destructive",
       });
     },

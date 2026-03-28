@@ -52,9 +52,13 @@ export default function WpsGenerator() {
         }, 500);
         return;
       }
+      const errorMsg = (error as Error).message || '';
+      const isAIServiceError = errorMsg.includes('failed') || errorMsg.includes('capacity') || errorMsg.includes('retry');
       toast({
-        title: "Generation Failed",
-        description: (error as Error).message,
+        title: isAIServiceError ? "AI Service Busy" : "Generation Failed",
+        description: isAIServiceError 
+          ? "Google AI Services are currently over capacity. Retrying in a moment..."
+          : errorMsg,
         variant: "destructive",
       });
     },
