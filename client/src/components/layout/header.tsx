@@ -52,6 +52,14 @@ export default function Header() {
   return (
     <header className="header-professional">
       <div className="max-w-sm mx-auto">
+        {/* Beta Testing Mode Banner */}
+        <div className="bg-gradient-to-r from-accent/20 to-accent/10 border-b border-accent/30 px-4 py-2">
+          <p className="text-xs font-semibold text-accent flex items-center gap-2">
+            <i className="fas fa-flask"></i>
+            Beta Testing Mode: All Premium Features Unlocked for a Limited Time
+          </p>
+        </div>
+
         {/* Single Navigation Bar — logo left, menu right */}
         <div className="flex h-14 items-center justify-between px-4 border-b border-border">
           {/* Logo — left side of nav bar */}

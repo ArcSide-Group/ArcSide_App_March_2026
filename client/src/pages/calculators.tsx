@@ -17,7 +17,8 @@ interface CalculatorCardProps {
 
 function CalculatorCard({ icon, title, description, href, isPremium, category }: CalculatorCardProps) {
   const { user } = useAuth();
-  const canAccess = !isPremium || user?.subscriptionTier !== 'free';
+  const BETA_MODE = true;
+  const canAccess = BETA_MODE || !isPremium || user?.subscriptionTier !== 'free';
   
   const categoryColors = {
     welding: 'text-primary',

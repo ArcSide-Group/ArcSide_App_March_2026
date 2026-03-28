@@ -76,7 +76,8 @@ export default function WpsGenerator() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  if ((user as User)?.subscriptionTier !== 'premium') {
+  const BETA_MODE = true;
+  if (!BETA_MODE && (user as User)?.subscriptionTier !== 'premium') {
     return (
       <div className="min-h-screen bg-background pb-20">
         <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">

@@ -118,8 +118,8 @@ export default function DefectAnalyzer() {
           </div>
         </div>
 
-        {/* Usage Limit Warning for Free Users */}
-        {(user as User)?.subscriptionTier === "free" && (
+        {/* Usage Limit Warning for Free Users — Hidden in Beta Mode */}
+        {false && (user as User)?.subscriptionTier === "free" && (
           <div className="px-6 mb-4">
             <Card className="bg-accent/10 border-accent/30">
               <CardContent className="p-3">
