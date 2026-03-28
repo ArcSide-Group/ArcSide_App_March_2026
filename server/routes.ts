@@ -11,22 +11,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
   // Projects routes
   app.get('/api/projects', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const projects = await storage.getUserProjects(userId);
       res.json(projects);
     } catch (error) {
@@ -36,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/projects', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const projectData = { ...req.body, userId };
       const project = await storage.createProject(projectData);
       res.json(project);
@@ -48,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Tools routes
   app.post('/api/ai/analyze-defect', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { imageData, additionalDetails, projectId } = req.body;
 
       // Check subscription limits for free users
@@ -92,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/ai/generate-wps', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (user?.subscriptionTier === 'free') {
@@ -130,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/ai/check-compatibility', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { material1, material2, projectId } = req.body;
 
       const result = await GeminiAIService.checkMaterialCompatibility(material1, material2);
@@ -158,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/ai/search-terminology', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { term } = req.body;
 
       const result = await GeminiAIService.searchTerminology(term);
@@ -184,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/ai/ask-assistant', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { question, projectId } = req.body;
 
       const { conversationHistory } = req.body;
@@ -212,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/ai/optimize-process', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (user?.subscriptionTier === 'free') {
@@ -245,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Usage tracking
   app.get('/api/usage', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const usage = await storage.getTodayUsage(userId);
       res.json(usage || { analysesCount: 0, wpsCount: 0, exportsCount: 0 });
     } catch (error) {
@@ -256,7 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Calculator routes
   app.post('/api/calculators/voltage-amperage', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculateVoltageAmperage(req.body);
 
       // Save calculation
@@ -277,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/wire-feed-speed', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculateWireFeedSpeed(req.body);
 
       const calculation = await storage.saveCalculation({
@@ -297,7 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/heat-input', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculateHeatInput(req.body);
 
       const calculation = await storage.saveCalculation({
@@ -317,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/gas-flow', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculateGasFlowRate(req.body);
 
       const calculation = await storage.saveCalculation({
@@ -337,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/metal-weight', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = FabricationCalculators.calculateMetalWeight(req.body);
 
       const calculation = await storage.saveCalculation({
@@ -357,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/bend-allowance', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = FabricationCalculators.calculateBendAllowance(req.body);
 
       const calculation = await storage.saveCalculation({
@@ -377,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/project-cost', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = FabricationCalculators.calculateProjectCost(req.body);
 
       const calculation = await storage.saveCalculation({
@@ -397,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/preheat-temp', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculatePreheatTemperature(req.body);
       const calculation = await storage.saveCalculation({
         userId,
@@ -415,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/filler-consumption', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculateFillerConsumption(req.body);
       const calculation = await storage.saveCalculation({
         userId,
@@ -433,7 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/weld-time', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculateWeldTime(req.body);
       const calculation = await storage.saveCalculation({
         userId,
@@ -451,7 +439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/calculators/cutting-length', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const result = WeldingCalculators.calculateCuttingLength(req.body);
       const calculation = await storage.saveCalculation({
         userId,
@@ -470,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User profile management
   app.get('/api/user/profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -480,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/user/profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const updatedUser = await storage.updateUserProfile(userId, req.body);
       res.json(updatedUser);
     } catch (error) {
@@ -491,7 +479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Calculator history
   app.get('/api/calculators/history', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const calculations = await storage.getUserCalculations(userId);
       res.json(calculations);
     } catch (error) {
@@ -502,7 +490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Weld Log routes
   app.get('/api/weld-log', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const projectId = req.query.projectId as string | undefined;
       const entries = await storage.getUserWeldLogEntries(userId, projectId);
       res.json(entries);
@@ -513,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/weld-log', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const entryData = insertWeldLogSchema.parse({ ...req.body, userId });
       const entry = await storage.createWeldLogEntry(entryData);
       res.json(entry);
@@ -524,7 +512,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/weld-log/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       await storage.deleteWeldLogEntry(req.params.id, userId);
       res.json({ message: "Entry deleted" });
     } catch (error) {
@@ -535,7 +523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management
   app.post('/api/subscription/upgrade', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       // Mock payment processing
       await storage.upgradeSubscription(userId);
       res.json({ message: "Subscription upgraded successfully" });
