@@ -48,7 +48,7 @@ IMPORTANT: Always provide measurements in the user's preferred units. If Metric 
 export class GeminiAIService {
   static async analyzeDefect(imageData: string | null, additionalDetails: string, unitPreference: 'metric' | 'imperial' = 'metric'): Promise<any> {
     return retryWithBackoff(async () => {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const unitNote = unitPreference === 'metric' 
         ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
@@ -112,7 +112,7 @@ Analyze this description and provide a detailed response in the following JSON f
 
   static async generateWPS(params: any): Promise<any> {
     return retryWithBackoff(async () => {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const prompt = `${SYSTEM_CONTEXT}
 
@@ -159,7 +159,7 @@ Provide a complete WPS in the following JSON format (respond ONLY with valid JSO
 
   static async checkMaterialCompatibility(material1: string, material2: string): Promise<any> {
     return retryWithBackoff(async () => {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const prompt = `${SYSTEM_CONTEXT}
 
@@ -193,7 +193,7 @@ Provide a thorough compatibility analysis in the following JSON format (respond 
 
   static async searchTerminology(term: string): Promise<any> {
     return retryWithBackoff(async () => {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const prompt = `${SYSTEM_CONTEXT}
 
@@ -220,7 +220,7 @@ Provide a comprehensive definition in the following JSON format (respond ONLY wi
 
   static async askAssistant(question: string, conversationHistory?: Array<{role: string, content: string}>, unitPreference: 'metric' | 'imperial' = 'metric'): Promise<string> {
     return retryWithBackoff(async () => {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const unitNote = unitPreference === 'metric' 
         ? 'UNIT PREFERENCE: User prefers Metric units (mm, kg, °C). Please provide all measurements in these units.'
@@ -251,7 +251,7 @@ You are a friendly, expert welding assistant. Give practical, accurate answers. 
 
   static async optimizeProcess(params: any): Promise<any> {
     return retryWithBackoff(async () => {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const prompt = `${SYSTEM_CONTEXT}
 
