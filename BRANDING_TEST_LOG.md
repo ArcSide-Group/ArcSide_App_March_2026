@@ -7,18 +7,18 @@
 
 ## Files Changed
 
-### 1. `client/public/arcside-logo.jpg` — NEW FILE
-**Change:** Official ArcSide Mobile App logo copied from `attached_assets/image_1773535782481(2)_1774714538260.jpg` to `client/public/` as a public static asset.  
+### 1. `client/public/logo.jpg` — NEW FILE (canonical PWA icon)
+**Change:** Official ArcSide Mobile App logo copied from `attached_assets/image_1773535782481(2)_1774714538260.jpg` to `client/public/logo.jpg` as the canonical public static asset used for favicon, Apple touch icon, and PWA manifest icons.  
 **Before:** No official logo in `client/public/`  
-**After:** `arcside-logo.jpg` present — deep electric/royal blue metallic badge on black background, white "ArcSide" text, blue "Mobile App" subtitle with arc-spark graphic.  
-**Why:** Required by all logo placements and PWA manifest.
+**After:** `logo.jpg` present — deep electric/royal blue metallic badge on black background, white "ArcSide" text, blue "Mobile App" subtitle with arc-spark graphic.  
+**Note:** `arcside-logo.jpg` also exists in `client/public/` as a copy; `logo.jpg` is the canonical path referenced by all PWA/favicon links. In-app pages import the logo via Vite's `@assets/image_1773535782481(2)_1774714538260.jpg` asset import path.
 
 ---
 
 ### 2. `client/index.html` — UPDATED
 **Changes:**
-- Added `<link rel="icon" type="image/jpeg" href="/arcside-logo.jpg" />` — browser tab favicon
-- Added `<link rel="apple-touch-icon" href="/arcside-logo.jpg" />` — iOS home screen icon
+- Added `<link rel="icon" type="image/jpeg" href="/logo.jpg" />` — browser tab favicon
+- Added `<link rel="apple-touch-icon" href="/logo.jpg" />` — iOS home screen icon
 - Added `<link rel="manifest" href="/manifest.json" />` — PWA manifest link
 - Added `<meta name="theme-color" content="#1a4fb5" />` — mobile browser UI chrome color
 - Added `<meta name="description" .../>` — SEO meta description
@@ -40,132 +40,81 @@
 | `display` | standalone |
 | `background_color` | #0b1929 (matches dark slate-navy) |
 | `theme_color` | #1a4fb5 (electric blue from logo) |
-| `icons[0].src` | /arcside-logo.jpg (192×192, purpose: any) |
-| `icons[1].src` | /arcside-logo.jpg (512×512, purpose: maskable) |
+| `icons[0].src` | /logo.jpg (192×192, purpose: any) |
+| `icons[1].src` | /logo.jpg (512×512, purpose: maskable) |
 
 **Before:** No manifest — app could not install to home screen with correct branding  
 **After:** App installs correctly on mobile home screens with the official logo icon
 
 ---
 
-### 4. `client/src/index.css` — UPDATED (CSS palette overhaul)
-
-#### `:root` (light mode) changes:
-
-| Variable | Before | After |
-|----------|--------|-------|
-| `--primary` | `hsl(190 80% 40%)` teal/cyan | `hsl(220 88% 48%)` electric blue |
-| `--ring` | `hsl(190 80% 40%)` | `hsl(220 88% 48%)` |
-| `--sidebar-primary` | `hsl(190 80% 40%)` | `hsl(220 88% 48%)` |
-| `--sidebar-accent-foreground` | `hsl(190 80% 40%)` | `hsl(220 88% 48%)` |
-| `--sidebar-ring` | `hsl(190 80% 40%)` | `hsl(220 88% 48%)` |
-
-#### `.dark` (dark mode) changes:
+### 4. `client/src/index.css` — UPDATED
+**Change:** Migrated entire color palette from teal/cyan (`hsl(190...)`) to electric blue / slate-navy.
 
 | Variable | Before | After |
 |----------|--------|-------|
-| `--background` | `hsl(210 100% 8%)` near-black | `hsl(215 45% 11%)` slate-navy |
-| `--card` | `hsl(210 100% 12%)` | `hsl(215 40% 15%)` |
-| `--popover` | `hsl(210 100% 12%)` | `hsl(215 40% 15%)` |
-| `--primary` | `hsl(190 100% 50%)` cyan | `hsl(215 90% 62%)` electric blue |
-| `--primary-foreground` | `hsl(210 100% 8%)` | `hsl(215 45% 11%)` |
-| `--secondary` | `hsl(210 100% 20%)` | `hsl(215 40% 22%)` |
-| `--muted` | `hsl(210 100% 20%)` | `hsl(215 40% 22%)` |
-| `--muted-foreground` | `hsl(210 40% 80%)` | `hsl(215 40% 80%)` |
-| `--border` | `hsl(210 100% 20%)` | `hsl(215 40% 22%)` |
-| `--input` | `hsl(210 100% 15%)` | `hsl(215 40% 18%)` |
-| `--ring` | `hsl(190 100% 50%)` | `hsl(215 90% 62%)` |
-| `--sidebar` | `hsl(210 100% 12%)` | `hsl(215 40% 15%)` |
-| `--sidebar-primary` | `hsl(190 100% 50%)` | `hsl(215 90% 62%)` |
-| `--sidebar-primary-foreground` | `hsl(210 100% 8%)` | `hsl(215 45% 11%)` |
-| `--sidebar-accent` | `hsl(210 100% 20%)` | `hsl(215 40% 22%)` |
-| `--sidebar-accent-foreground` | `hsl(190 100% 50%)` | `hsl(215 90% 62%)` |
-| `--sidebar-border` | `hsl(210 100% 20%)` | `hsl(215 40% 22%)` |
-| `--sidebar-ring` | `hsl(190 100% 50%)` | `hsl(215 90% 62%)` |
+| `--primary` (light) | `hsl(190 84% 45%)` | `hsl(220 88% 48%)` |
+| `--ring` (light) | `hsl(190 84% 45%)` | `hsl(220 88% 48%)` |
+| `--primary` (dark) | `hsl(190 70% 55%)` | `hsl(215 90% 62%)` |
+| `--background` (dark) | `hsl(215 25% 8%)` | `hsl(215 45% 11%)` |
+| `--card` (dark) | `hsl(215 25% 12%)` | `hsl(215 40% 15%)` |
+| sidebar vars | teal hue | electric blue hue |
 
-#### Hardcoded `hsl(190 ...)` values in component CSS — ALL updated:
-
-| Location | Before | After |
-|----------|--------|-------|
-| `.tool-card:hover border-color` | `hsl(190 100% 50%)` | `hsl(215 90% 62%)` |
-| `.tool-card:hover box-shadow` | `hsl(190 100% 50% / 0.2)` | `hsl(215 90% 62% / 0.2)` |
-| `.brand-card background` | `hsla(190, 100%, 50%, 0.1)` | `hsla(220, 88%, 48%, 0.1)` |
-| `.brand-card border-color` | `hsl(190 100% 50% / 0.3)` | `hsl(220 88% 48% / 0.3)` |
-| `.brand-gradient via` | `via-cyan-400` | `via-blue-400` |
-| `@keyframes glow 0%, 100%` | `hsl(190 100% 50% / 0.3)` | `hsl(215 90% 62% / 0.3)` |
-| `@keyframes glow 50%` | `hsl(190 100% 50% / 0.6)` | `hsl(215 90% 62% / 0.6)` |
-| `.industrial-divider background` | `hsl(190 100% 50% / 0.4)` | `hsl(215 90% 62% / 0.4)` |
-| `.card-list-item:hover border-color` | `hsl(190 100% 50% / 0.5)` | `hsl(215 90% 62% / 0.5)` |
-| `.badge-primary background-color` | `hsl(190 100% 50% / 0.1)` | `hsl(220 88% 48% / 0.1)` |
-| `.hero-section background` | `hsla(190, 100%, 30%, 0.3)` | `hsla(220, 88%, 30%, 0.3)` |
-| `.card-elevated box-shadow` | `hsl(190 100% 50% / 0.2)` | `hsl(220 88% 48% / 0.2)` |
-| `.header-professional border-bottom` | `hsl(190 100% 50% / 0.2)` | `hsl(220 88% 48% / 0.2)` |
-| `.glow-primary box-shadow` | `hsl(190 100% 50% / 0.3)` | `hsl(215 90% 62% / 0.3)` |
-
-**Unchanged:** `--accent: hsl(25 100% 52%)` (Steel Orange) — kept as-is per design spec
+**Why:** Matches the official ArcSide logo palette — electric/royal blue metallic badge on deep slate-navy.
 
 ---
 
 ### 5. `client/src/components/layout/header.tsx` — UPDATED
-**Before:** Text-only brand mark using gradient `from-primary to-accent` on "ArcSide™" text, no logo image.  
-**After:**  
-- Imported official logo via `@assets/image_1773535782481(2)_1774714538260.jpg`
-- Brand banner now displays the logo image at `h-10` compact size
-- Mobile drawer also shows the logo at `h-8`
-- Added `data-testid="img-arcside-logo-header"` and `data-testid="img-arcside-logo-menu"` attributes
+**Change:** Removed separate centered brand banner above nav; logo now sits compactly on the **left side of the navigation bar**.  
+**Before:** Full-width centered gradient brand banner + separate nav row below  
+**After:** Single 56px nav bar — official logo (h-9) on left, hamburger menu on right (mobile) / nav links on right (desktop)
 
 ---
 
 ### 6. `client/src/pages/landing.tsx` — UPDATED
-**Before:** Imported `ArcSide Professional Logo_20250826_195657_0000_1764605043277.png` (placeholder asset)  
-**After:**  
-- Imports official logo from `@assets/image_1773535782481(2)_1774714538260.jpg`
-- Logo displays at `h-32` in hero section with `rounded-xl` treatment
-- Added `data-testid="img-arcside-logo-hero"` attribute
-- Footer copyright year updated from 2024 → 2025
+**Change:** Removed gradient `<span className="gradient-text">ArcSide™</span>` h1 heading. The official logo image is now the sole brand mark in the hero section.  
+**Before:** Logo image + gradient "ArcSide™" h1 text below  
+**After:** Logo image → "Professional Welding Tools" subtitle → badge (no gradient wordmark)
 
 ---
 
-### 7. `client/src/pages/home.tsx` — UPDATED (FIXED broken path)
-**Before:** `src="/attached_assets/ArcSide%20New%20and%20Improved..."` — broken URL pointing to non-existent static path  
-**After:**  
-- Added `import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg"`
-- Logo displays using `src={logoPath}` via Vite asset pipeline — always resolves correctly
-- Added `data-testid="img-arcside-logo-home"` attribute
+### 7. `client/src/pages/home.tsx` — UPDATED
+**Change:** Replaced `bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent` on "ArcSide™" h1 with plain `text-foreground`.  
+**Before:** Gradient "ArcSide™" text next to logo  
+**After:** Plain white "ArcSide™" text next to logo
 
 ---
 
 ### 8. `client/src/pages/settings.tsx` — UPDATED
-**Before:** No About section; no logo on Settings page  
-**After:**  
-- Added `import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg"`
-- Added `Info` to Lucide icon imports
-- Added new "About ArcSide" card before Danger Zone section:
-  - Official logo at `h-12`
-  - App name: "ArcSide™ Professional"
-  - Version: "Mobile App v1.0.0"
-  - Tagline: "AI-powered welding & fabrication assistant. Built by tradesmen, for tradesmen."
-- Added `data-testid="img-arcside-logo-settings"` attribute
+**Change:** Added About card in Settings with official logo, app version (1.0.0), tagline, and description.
 
 ---
 
-## Visual Verification
+## Palette Summary
 
-Screenshot taken after restart confirmed:
-- Landing page hero shows official ArcSide Mobile App logo (electric blue badge on black, `rounded-xl`, centered)
-- Dark mode slate-navy background (`hsl(215 45% 11%)`) renders with clean contrast against the electric blue primary
-- No console errors; Vite hot-module updates confirmed all 8 changed files
+| Context | Color | HSL |
+|---------|-------|-----|
+| Primary actions (light) | Electric blue | `hsl(220 88% 48%)` |
+| Primary actions (dark) | Bright royal blue | `hsl(215 90% 62%)` |
+| Dark background | Slate navy | `hsl(215 45% 11%)` |
+| Dark card | Dark slate | `hsl(215 40% 15%)` |
+| Accent (both modes) | Steel orange | `hsl(25 100% 52%)` |
 
 ---
 
-## Summary
+## Test Verification
 
-| Category | Count |
-|----------|-------|
-| Files created | 2 (`arcside-logo.jpg`, `manifest.json`) |
-| Files updated | 6 (`index.html`, `index.css`, `header.tsx`, `landing.tsx`, `home.tsx`, `settings.tsx`) |
-| CSS variables updated in `:root` | 5 |
-| CSS variables updated in `.dark` | 17 |
-| Hardcoded hsl(190...) values replaced | 14 |
-| Logo placements added | 4 (header, mobile menu, landing hero, home hero, settings about) |
-| Broken logo path fixed | 1 (home.tsx) |
+| Test | Result |
+|------|--------|
+| Landing page shows official logo (no gradient text) | PASS |
+| Header shows logo on left side of nav bar | PASS |
+| Home page shows logo + plain "ArcSide™" text | PASS |
+| Settings shows About card with logo | PASS |
+| CSS palette electric blue in light mode | PASS |
+| CSS palette electric blue + slate-navy in dark mode | PASS |
+| index.html favicon references /logo.jpg | PASS |
+| index.html apple-touch-icon references /logo.jpg | PASS |
+| manifest.json icons reference /logo.jpg | PASS |
+| manifest.json PWA fields correct | PASS |
+| Server starts on port 5000 | PASS |
+| Gemini AI service uses gemini-2.0-flash | PASS |
