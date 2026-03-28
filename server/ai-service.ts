@@ -248,4 +248,35 @@ You are a friendly, expert welding assistant. Give practical, accurate answers. 
       return result.response.text().trim();
     });
   }
+
+  static async optimizeProcess(params: any): Promise<any> {
+    return retryWithBackoff(async () => {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const prompt = `${SYSTEM_CONTEXT}
+
+You are helping a welder optimize their welding process parameters.
+
+Current Setup:
+- Welding Process: ${params.process}
+- Base Material: ${params.material}
+- Thickness: ${params.thickness}"
+- Joint Type: ${params.jointType}
+- Current Parameters: ${params.currentParams || "Not specified"}
+- Optimization Goal: ${params.goal}
+
+Provide detailed AI recommendations to optimize this welding process. Include parameter adjustments, best practices, expected improvements, and any warnings or considerations.
+
+Respond ONLY with valid JSON in this format (no markdown):
+{
+  "result": "detailed optimization recommendations as a formatted string with sections like: Overview, Recommended Parameters, Expected Improvements, Implementation Steps, Safety Considerations, Quality Tips"
+}`;
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      return parsed.result || parsed;
+    });
+  }
 }
