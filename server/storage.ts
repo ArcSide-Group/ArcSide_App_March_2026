@@ -5,6 +5,7 @@ import {
   wpsDocuments,
   usageTracking,
   calculatorResults,
+  weldLogEntries,
   type User,
   type UpsertUser,
   type InsertProject,
@@ -14,6 +15,8 @@ import {
   type InsertWps,
   type WpsDocument,
   type UsageTracking,
+  type InsertWeldLog,
+  type WeldLogEntry,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
@@ -52,6 +55,11 @@ export interface IStorage {
     projectId?: string;
   }): Promise<any>;
   getUserCalculations(userId: string): Promise<any[]>;
+
+  // Weld log operations
+  createWeldLogEntry(entry: InsertWeldLog): Promise<WeldLogEntry>;
+  getUserWeldLogEntries(userId: string, projectId?: string): Promise<WeldLogEntry[]>;
+  deleteWeldLogEntry(id: string, userId: string): Promise<void>;
 
   // Subscription operations
   upgradeSubscription(userId: string): Promise<User>;
@@ -261,6 +269,28 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  // Weld log operations
+  async createWeldLogEntry(entryData: InsertWeldLog): Promise<WeldLogEntry> {
+    const [entry] = await db.insert(weldLogEntries).values(entryData).returning();
+    return entry;
+  }
+
+  async getUserWeldLogEntries(userId: string, projectId?: string): Promise<WeldLogEntry[]> {
+    const conditions = [eq(weldLogEntries.userId, userId)];
+    if (projectId) conditions.push(eq(weldLogEntries.projectId, projectId));
+    return await db
+      .select()
+      .from(weldLogEntries)
+      .where(and(...conditions))
+      .orderBy(desc(weldLogEntries.entryDate));
+  }
+
+  async deleteWeldLogEntry(id: string, userId: string): Promise<void> {
+    await db
+      .delete(weldLogEntries)
+      .where(and(eq(weldLogEntries.id, id), eq(weldLogEntries.userId, userId)));
+  }
+
   // Subscription operations
   async upgradeSubscription(userId: string): Promise<User> {
     const expiresAt = new Date();
@@ -288,6 +318,7 @@ class MemStorage implements IStorage {
   private wpsDocuments = new Map<string, WpsDocument>();
   private usageTracking = new Map<string, UsageTracking>();
   private calculations = new Map<string, any>();
+  private weldLog = new Map<string, WeldLogEntry>();
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
@@ -429,6 +460,27 @@ class MemStorage implements IStorage {
       .filter(c => c.userId === userId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 50);
+  }
+
+  async createWeldLogEntry(entryData: InsertWeldLog): Promise<WeldLogEntry> {
+    const entry: WeldLogEntry = {
+      ...entryData,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+    } as WeldLogEntry;
+    this.weldLog.set(entry.id, entry);
+    return entry;
+  }
+
+  async getUserWeldLogEntries(userId: string, projectId?: string): Promise<WeldLogEntry[]> {
+    return Array.from(this.weldLog.values())
+      .filter(e => e.userId === userId && (!projectId || e.projectId === projectId))
+      .sort((a, b) => new Date(b.entryDate!).getTime() - new Date(a.entryDate!).getTime());
+  }
+
+  async deleteWeldLogEntry(id: string, userId: string): Promise<void> {
+    const entry = this.weldLog.get(id);
+    if (entry && entry.userId === userId) this.weldLog.delete(id);
   }
 
   async upgradeSubscription(userId: string): Promise<User> {

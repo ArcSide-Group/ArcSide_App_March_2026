@@ -207,6 +207,14 @@ export const usageTrackingRelations = relations(usageTracking, ({ one }) => ({
 }));
 
 // Schemas for validation
+export const insertWeldLogSchema = createInsertSchema(weldLogEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertWeldLog = z.infer<typeof insertWeldLogSchema>;
+export type WeldLogEntry = typeof weldLogEntries.$inferSelect;
+
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true, 
   createdAt: true, 

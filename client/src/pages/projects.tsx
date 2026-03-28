@@ -14,9 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, FolderOpen, Clock, CheckCircle, Archive, Filter } from "lucide-react";
+import { Plus, FolderOpen, Clock, CheckCircle, Archive, Filter, BookOpen } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import type { Project } from "@shared/schema";
 
 const createProjectSchema = z.object({
@@ -256,7 +257,7 @@ export default function Projects() {
           <Card className="mt-6 bg-gradient-to-r from-primary/10 to-blue-500/10 border-primary/20">
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3">Overview</h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-3 gap-4 text-center mb-4">
                 <div>
                   <p className="text-2xl font-bold text-primary">{projects.length}</p>
                   <p className="text-xs text-muted-foreground">Total</p>
@@ -274,6 +275,12 @@ export default function Projects() {
                   <p className="text-xs text-muted-foreground">Done</p>
                 </div>
               </div>
+              <Link href="/weld-log">
+                <Button variant="outline" className="w-full">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Open Weld Log
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         )}

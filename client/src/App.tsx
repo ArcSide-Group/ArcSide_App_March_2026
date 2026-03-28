@@ -20,6 +20,7 @@ import WeldAssistant from "@/pages/tools/weld-assistant";
 import Calculators from "@/pages/calculators";
 import VoltageAmperageCalculator from "@/pages/calculators/voltage-amperage";
 import Projects from "@/pages/projects";
+import WeldLog from "@/pages/weld-log";
 import Subscription from "@/pages/subscription";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
@@ -59,6 +60,7 @@ function Router() {
             <Route path="/calculators/history" component={lazy(() => import('./pages/calculators/history'))} />
             <Route path="/profile" component={lazy(() => import('./pages/profile'))} />
             <Route path="/projects" component={Projects} />
+            <Route path="/weld-log" component={WeldLog} />
             <Route path="/subscription" component={Subscription} />
             <Route path="/settings" component={Settings} />
             {isAuthenticated && !isLoading && <BottomNavigation />}

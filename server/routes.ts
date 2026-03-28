@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema } from "@shared/schema";
+import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema, insertWeldLogSchema } from "@shared/schema";
 import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
 import { z } from "zod";
@@ -387,6 +387,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(calculations);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch calculation history" });
+    }
+  });
+
+  // Weld Log routes
+  app.get('/api/weld-log', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const projectId = req.query.projectId as string | undefined;
+      const entries = await storage.getUserWeldLogEntries(userId, projectId);
+      res.json(entries);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch weld log entries" });
+    }
+  });
+
+  app.post('/api/weld-log', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const entryData = insertWeldLogSchema.parse({ ...req.body, userId });
+      const entry = await storage.createWeldLogEntry(entryData);
+      res.json(entry);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create weld log entry" });
+    }
+  });
+
+  app.delete('/api/weld-log/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.deleteWeldLogEntry(req.params.id, userId);
+      res.json({ message: "Entry deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete entry" });
     }
   });
 
