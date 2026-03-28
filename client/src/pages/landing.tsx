@@ -21,9 +21,6 @@ export default function Landing() {
             className="h-32 w-auto mx-auto mb-6 object-contain rounded-xl"
             data-testid="img-arcside-logo-hero"
           />
-          <h1 className="text-4xl font-bold mb-2">
-            <span className="gradient-text">ArcSide™</span>
-          </h1>
           <p className="text-primary mb-3 text-lg font-semibold">Professional Welding Tools</p>
           <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
             The App Made by Tradesmen for Tradesmen

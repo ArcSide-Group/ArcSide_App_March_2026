@@ -51,22 +51,20 @@ export default function Header() {
   return (
     <header className="header-professional">
       <div className="max-w-sm mx-auto">
-        {/* Brand Banner — Official ArcSide logo */}
-        <Link href="/">
-          <div className="w-full bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 py-2 px-4 cursor-pointer hover:opacity-90 transition-opacity border-b border-primary/20 flex items-center justify-center">
+        {/* Single Navigation Bar — logo left, menu right */}
+        <div className="flex h-14 items-center justify-between px-4 border-b border-border">
+          {/* Logo — left side of nav bar */}
+          <Link href="/">
             <img
               src={logoPath}
               alt="ArcSide Mobile App"
-              className="h-10 w-auto object-contain rounded-md"
+              className="h-9 w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity"
               data-testid="img-arcside-logo-header"
             />
-          </div>
-        </Link>
+          </Link>
 
-        {/* Navigation Bar */}
-        <div className="flex h-12 items-center justify-between px-4 border-b border-border">
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1 flex-1">
+          <nav className="hidden md:flex items-center space-x-1">
             {navigationItems.slice(1).map((item) => (
               <NavLink key={item.href} {...item} />
             ))}
@@ -74,7 +72,7 @@ export default function Header() {
 
           {/* Mobile Menu Button — 44px tap target */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden ml-auto">
+            <SheetTrigger asChild className="md:hidden">
               <Button
                 variant="ghost"
                 size="icon"

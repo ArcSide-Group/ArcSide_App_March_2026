@@ -9,13 +9,13 @@
   "theme_color": "#1a4fb5",
   "icons": [
     {
-      "src": "/arcside-logo.jpg",
+      "src": "/logo.jpg",
       "sizes": "192x192",
       "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/arcside-logo.jpg",
+      "src": "/logo.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "maskable"

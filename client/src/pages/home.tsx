@@ -71,7 +71,7 @@ export default function Home() {
                 data-testid="img-arcside-logo-home"
               />
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold text-foreground">
                   ArcSide™
                 </h1>
                 <p className="text-xs text-muted-foreground">Professional Welding Platform</p>
