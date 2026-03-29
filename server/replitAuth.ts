@@ -107,10 +107,12 @@ export function setupAuth(app: Express) {
       console.log(`[AUTH] Deserializing user from session: id=${id}`);
       const user = await storage.getUser(id);
       console.log(`[AUTH] Deserialized user:`, user);
-      done(null, user);
+      // If user doesn't exist, pass null (unauthenticated) instead of error
+      done(null, user || null);
     } catch (error) {
       console.error("[AUTH] Deserialization error:", error);
-      done(error);
+      // On error, treat as unauthenticated instead of propagating error
+      done(null, null);
     }
   });
 
@@ -118,6 +120,20 @@ export function setupAuth(app: Express) {
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Session error recovery middleware
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    // If user was expected to be deserialized but is null/undefined, clear session
+    if (!req.user && req.session && Object.keys(req.session).length > 1) {
+      console.log(`[AUTH] Session exists but user is null. Clearing session.`);
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("[AUTH] Session destroy error:", err);
+        }
+      });
+    }
+    next();
+  });
 
   // Login route — redirect to Google
   app.get("/api/login", (req, res, next) => {
