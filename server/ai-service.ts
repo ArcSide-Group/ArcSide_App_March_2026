@@ -97,7 +97,13 @@ Every single measurement in your response MUST be in Metric units:
   • Heat input                  → kJ/mm
   • Cost                        → R (South African Rands)
 DO NOT use inches, feet, lbs, pounds, Fahrenheit, psi, or any other Imperial unit anywhere in your response.
-If you are tempted to write an Imperial value, convert it to Metric first.`;
+If you are tempted to write an Imperial value, convert it to Metric first.
+
+CRITICAL TABLE FORMATTING RULE:
+When presenting technical data (rod sizes, amperage ranges, voltage, costs), ALWAYS output a clean Markdown table with separators.
+NEVER use multiple dashes (---) to separate lines of data.
+Table format: | Header | Header | → | --- | --- | → | Data | Data |
+Use only standard punctuation: commas, periods, semicolons. No dashes outside table format.`;
 
 // ─── AI Service ───────────────────────────────────────────────────────────────
 export class GeminiAIService {

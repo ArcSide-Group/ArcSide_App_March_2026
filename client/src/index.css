@@ -195,8 +195,14 @@
     color: #ffffff !important;
   }
   .btn-primary:hover { 
-    opacity: 0.9;
+    opacity: 0.85;
     box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+    transform: translateY(-2px);
+  }
+  .btn-primary:active {
+    opacity: 0.75;
+    transform: translateY(0);
+    box-shadow: 0 2px 6px hsl(var(--primary) / 0.3);
   }
 
   .btn-secondary {
@@ -237,13 +243,16 @@
   }
 
   .input-base {
-    @apply bg-input border-2 border-border rounded-md px-3 py-2.5 text-foreground placeholder:text-muted-foreground transition-all;
+    @apply bg-input border rounded-md px-3 py-2.5 text-foreground placeholder:text-muted-foreground transition-all;
+    border: 1px solid hsl(var(--border));
     min-height: 44px;
     font-size: 16px;
   }
   .input-base:focus {
-    @apply outline-none border-primary ring-2 ring-primary ring-opacity-50;
+    @apply outline-none;
     border-color: hsl(var(--primary));
+    border-width: 2px;
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
   }
 
   .section-padding { @apply px-4 py-6; }
