@@ -181,12 +181,16 @@ export default function VoltageAmperageCalculator() {
                   <div className="text-center p-3 bg-primary/10 rounded-lg">
                     <div className="text-2xl font-bold text-primary">{result.recommendedAmperage}</div>
                     <div className="text-xs text-muted-foreground">Amperage (A)</div>
-                    <div className="text-xs text-muted-foreground mt-1">Range: {result.amperageRange.min}–{result.amperageRange.max}A</div>
+                    <div className="text-sm font-bold text-foreground mt-1">
+                      {result.amperageRange.min}–{result.amperageRange.max}A
+                    </div>
                   </div>
                   <div className="text-center p-3 bg-accent/10 rounded-lg">
                     <div className="text-2xl font-bold text-accent">{result.recommendedVoltage}</div>
                     <div className="text-xs text-muted-foreground">Voltage (V)</div>
-                    <div className="text-xs text-muted-foreground mt-1">Range: {result.voltageRange.min}–{result.voltageRange.max}V</div>
+                    <div className="text-sm font-bold text-foreground mt-1">
+                      {result.voltageRange.min}–{result.voltageRange.max}V
+                    </div>
                   </div>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">

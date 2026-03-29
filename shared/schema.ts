@@ -51,6 +51,7 @@ export const users = pgTable("users", {
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
   preferences: jsonb("preferences").default({}),
   lastLoginAt: timestamp("last_login_at"),
+  disclaimerAcceptedAt: timestamp("disclaimer_accepted_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

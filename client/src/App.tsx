@@ -1,6 +1,6 @@
 
 import { Switch, Route } from "wouter";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useKeepAlive } from "@/hooks/useKeepAlive";
 import { ErrorBoundary, PageSuspenseFallback } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import DisclaimerModal from "@/components/common/disclaimer-modal";
 
 // Eagerly-loaded pages (critical path)
 import Landing from "@/pages/landing";
@@ -55,7 +56,8 @@ const CuttingLength = lazy(() => import("@/pages/calculators/cutting-length"));
 const CalculatorHistory = lazy(() => import("@/pages/calculators/history"));
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
   
   // Keep app alive with periodic pings
   useKeepAlive();
@@ -104,8 +106,14 @@ function Router() {
     );
   }
 
+  // Show disclaimer modal if user hasn't accepted yet
+  const needsDisclaimer = isAuthenticated && !disclaimerDismissed && user && !(user as any).disclaimerAcceptedAt;
+
   return (
     <MobileContainer>
+      {needsDisclaimer && (
+        <DisclaimerModal onAccepted={() => setDisclaimerDismissed(true)} />
+      )}
       <Header />
       <ErrorBoundary>
         <Suspense fallback={<PageSuspenseFallback />}>

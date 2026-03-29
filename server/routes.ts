@@ -488,6 +488,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/user/accept-disclaimer', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.updateUserProfile(userId, { disclaimerAcceptedAt: new Date() });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Accept disclaimer error:', error);
+      res.status(500).json({ message: "Failed to record disclaimer acceptance" });
+    }
+  });
+
   app.post('/api/user/profile-photo', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
