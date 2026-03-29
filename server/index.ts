@@ -7,6 +7,14 @@ const app = express();
 // Trust proxy headers (required for Replit's infrastructure)
 app.set('trust proxy', 1);
 
+// Security headers
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
 // CRITICAL: Increase server timeout to 120 seconds for long AI tasks
 app.use((req: Request, res: Response, next: NextFunction) => {
   req.setTimeout(120000); // 120 seconds for individual request

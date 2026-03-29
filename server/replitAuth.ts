@@ -35,7 +35,7 @@ export function getSession() {
     cookie: {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: sessionTtl,
     },
   });
@@ -137,10 +137,19 @@ export function setupAuth(app: Express) {
       next();
     },
     passport.authenticate("google", { failureRedirect: "/" }),
-    (req, res) => {
+    async (req: any, res) => {
       console.log(`[AUTH] After auth - req.user:`, req.user);
       console.log(`[AUTH] req.isAuthenticated():`, req.isAuthenticated());
       console.log(`[AUTH] Session ID after auth:`, req.sessionID);
+
+      // Check if user is approved beta tester
+      if (req.user?.id) {
+        const user = await storage.getUser(req.user.id);
+        if (!user?.isApprovedBetaTester) {
+          console.log(`[AUTH] User ${req.user.id} is not approved. Redirecting to /request-access`);
+          return res.redirect("/?status=access_request");
+        }
+      }
       
       // Save session explicitly before redirect
       req.session.save((err) => {

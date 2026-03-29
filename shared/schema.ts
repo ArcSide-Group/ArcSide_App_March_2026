@@ -52,6 +52,7 @@ export const users = pgTable("users", {
   preferences: jsonb("preferences").default({}),
   lastLoginAt: timestamp("last_login_at"),
   disclaimerAcceptedAt: timestamp("disclaimer_accepted_at"),
+  isApprovedBetaTester: boolean("is_approved_beta_tester").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
