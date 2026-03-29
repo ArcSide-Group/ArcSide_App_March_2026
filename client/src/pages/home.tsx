@@ -132,22 +132,44 @@ export default function Home() {
             Featured Tools
           </h3>
           <div className="grid grid-cols-1 gap-3">
-            {/* Defect Analyzer */}
+            {/* AI Defect Analyzer */}
             <Card className="bg-gradient-to-r from-primary/15 to-primary/5 border-primary/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center space-x-3 min-w-0">
                     <div className="w-11 h-11 bg-primary rounded-xl flex items-center justify-center shrink-0">
-                      <i className="fas fa-robot text-primary-foreground text-base"></i>
+                      <i className="fas fa-camera text-primary-foreground text-base"></i>
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">AI Defect Analyzer</h4>
-                      <p className="text-xs text-muted-foreground">Instant weld analysis</p>
+                      <p className="text-xs text-muted-foreground">Photo → instant weld diagnosis</p>
                     </div>
                   </div>
                   <Link href="/tools/defect-analyzer">
                     <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 h-9 px-3 text-xs font-semibold">
-                      Try Now
+                      Analyze
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* WPS Generator */}
+            <Card className="bg-gradient-to-r from-accent/15 to-accent/5 border-accent/30">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center shrink-0">
+                      <i className="fas fa-file-contract text-accent-foreground text-base"></i>
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm text-foreground truncate">WPS Generator</h4>
+                      <p className="text-xs text-muted-foreground">ISO/AWS welding procedures</p>
+                    </div>
+                  </div>
+                  <Link href="/tools/wps-generator">
+                    <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground shrink-0 h-9 px-3 text-xs font-semibold">
+                      Generate
                     </Button>
                   </Link>
                 </div>
@@ -155,20 +177,20 @@ export default function Home() {
             </Card>
 
             {/* Smart Calculators */}
-            <Card className="bg-gradient-to-r from-accent/15 to-accent/5 border-accent/30">
+            <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center space-x-3 min-w-0">
-                    <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center shrink-0">
-                      <i className="fas fa-calculator text-accent-foreground text-base"></i>
+                    <div className="w-11 h-11 bg-secondary rounded-xl flex items-center justify-center shrink-0">
+                      <i className="fas fa-calculator text-primary text-base"></i>
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">Smart Calculators</h4>
-                      <p className="text-xs text-muted-foreground">Precise welding math</p>
+                      <p className="text-xs text-muted-foreground">Metric precision welding math</p>
                     </div>
                   </div>
                   <Link href="/calculators">
-                    <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground shrink-0 h-9 px-3 text-xs font-semibold">
+                    <Button size="sm" variant="outline" className="shrink-0 h-9 px-3 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10">
                       Explore
                     </Button>
                   </Link>
@@ -184,9 +206,9 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-3">
             <Link href="/tools/defect-analyzer">
               <ToolCard
-                icon="fas fa-search"
+                icon="fas fa-camera"
                 title="Defect Analyzer"
-                description="AI weld defect analysis"
+                description="Photo weld diagnosis"
                 iconColor="text-primary"
                 bgColor="bg-primary/20"
               />
@@ -194,9 +216,9 @@ export default function Home() {
 
             <Link href="/tools/wps-generator">
               <ToolCard
-                icon="fas fa-file-alt"
+                icon="fas fa-file-contract"
                 title="WPS Generator"
-                description="Generate procedures"
+                description="ISO/AWS procedures"
                 iconColor="text-accent"
                 bgColor="bg-accent/20"
                 premium={(user as User)?.subscriptionTier !== 'premium'}
@@ -205,21 +227,42 @@ export default function Home() {
 
             <Link href="/tools/material-checker">
               <ToolCard
-                icon="fas fa-layer-group"
+                icon="fas fa-atom"
                 title="Material Check"
                 description="Compatibility analysis"
-                iconColor="text-secondary-foreground"
-                bgColor="bg-secondary/60"
+                iconColor="text-primary"
+                bgColor="bg-primary/15"
               />
             </Link>
 
             <Link href="/tools/terminology">
               <ToolCard
-                icon="fas fa-book"
+                icon="fas fa-book-open"
                 title="Terminology"
-                description="Welding terms"
-                iconColor="text-chart-1"
-                bgColor="bg-chart-1/20"
+                description="Welding definitions"
+                iconColor="text-accent"
+                bgColor="bg-accent/15"
+              />
+            </Link>
+
+            <Link href="/tools/weld-assistant">
+              <ToolCard
+                icon="fas fa-comment-dots"
+                title="Weld Assistant"
+                description="AI Q&A expert"
+                iconColor="text-primary"
+                bgColor="bg-primary/20"
+              />
+            </Link>
+
+            <Link href="/tools/process-optimizer">
+              <ToolCard
+                icon="fas fa-sliders-h"
+                title="Optimizer"
+                description="Process parameters"
+                iconColor="text-accent"
+                bgColor="bg-accent/20"
+                premium={(user as User)?.subscriptionTier !== 'premium'}
               />
             </Link>
           </div>
@@ -238,20 +281,38 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-3">
             <Link href="/calculators/voltage-amperage">
               <ToolCard
-                icon="fas fa-bolt"
-                title="Voltage & Amperage"
-                description="Weld parameters"
+                icon="fas fa-plug"
+                title="Voltage & Amps"
+                description="GMAW/SMAW/GTAW"
                 iconColor="text-primary"
                 bgColor="bg-primary/20"
               />
             </Link>
-            <Link href="/calculators/metal-weight">
+            <Link href="/calculators/heat-input">
               <ToolCard
-                icon="fas fa-balance-scale"
-                title="Metal Weight"
-                description="Material weights"
+                icon="fas fa-fire-alt"
+                title="Heat Input"
+                description="kJ/mm per ISO 13916"
                 iconColor="text-accent"
                 bgColor="bg-accent/20"
+              />
+            </Link>
+            <Link href="/calculators/wire-feed-speed">
+              <ToolCard
+                icon="fas fa-tachometer-alt"
+                title="Wire Feed Speed"
+                description="mm/min for MIG/FCAW"
+                iconColor="text-primary"
+                bgColor="bg-primary/15"
+              />
+            </Link>
+            <Link href="/calculators/metal-weight">
+              <ToolCard
+                icon="fas fa-weight-hanging"
+                title="Metal Weight"
+                description="kg/cm³ calculation"
+                iconColor="text-accent"
+                bgColor="bg-accent/15"
               />
             </Link>
           </div>
@@ -263,12 +324,12 @@ export default function Home() {
             <CardContent className="p-4">
               <div className="flex items-start space-x-3">
                 <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0">
-                  <i className="fas fa-robot text-primary-foreground text-sm"></i>
+                  <i className="fas fa-comment-dots text-primary-foreground text-sm"></i>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold mb-1 text-sm">Weld Assistant</h4>
+                  <h4 className="font-semibold mb-1 text-sm">AI Weld Assistant</h4>
                   <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                    Ask any welding question — get expert AI guidance powered by Gemini 2.0 Flash
+                    Ask any welding question — expert AI guidance powered by Gemini 2.5 Flash
                   </p>
                   <Link href="/tools/weld-assistant">
                     <Button size="sm" className="bg-primary text-primary-foreground px-4 h-10 text-sm font-semibold">

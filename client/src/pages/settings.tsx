@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -157,27 +157,21 @@ export default function Settings() {
                       {isDark ? "Dark Mode" : "Light Mode"}
                     </h4>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {isDark ? "Switch to light theme" : "Switch to dark theme"}
+                      {isDark ? "Currently using dark theme" : "Currently using light theme"}
                     </p>
                   </div>
-                  <Switch checked={isDark} onCheckedChange={toggleTheme} />
+                  <Switch checked={isDark} onCheckedChange={toggleTheme} data-testid="switch-dark-mode" />
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Color Theme</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Choose your preferred color scheme</p>
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="flex gap-2 mt-0.5">
+                    <div className="w-4 h-4 rounded-full bg-primary"></div>
+                    <div className="w-4 h-4 rounded-full bg-accent"></div>
                   </div>
-                  <Select defaultValue="cyan">
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cyan">Cyan</SelectItem>
-                      <SelectItem value="blue">Blue</SelectItem>
-                      <SelectItem value="green">Green</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div>
+                    <p className="text-xs font-medium">ArcSide Royal Blue</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Brand colors matched to logo</p>
+                  </div>
                 </div>
               </div>
             </CardContent>

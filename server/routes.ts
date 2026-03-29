@@ -488,6 +488,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/user/profile-photo', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { imageData } = req.body;
+      if (!imageData || typeof imageData !== 'string' || !imageData.startsWith('data:image/')) {
+        return res.status(400).json({ message: "Invalid image data" });
+      }
+      // Base64 limit ~5 MB uncompressed
+      if (imageData.length > 7_000_000) {
+        return res.status(400).json({ message: "Image too large. Please use an image under 5 MB." });
+      }
+      await storage.updateUserProfile(userId, { profileImageUrl: imageData });
+      req.body = {};
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Profile photo upload error:', error);
+      res.status(500).json({ message: "Failed to upload profile photo" });
+    }
+  });
+
   // Calculator history
   app.get('/api/calculators/history', isAuthenticated, async (req: any, res) => {
     try {

@@ -2,7 +2,8 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
-import MemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 import { storage } from "./storage";
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -18,10 +19,13 @@ if (!process.env.SESSION_SECRET) {
 }
 
 export function getSession() {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const MemStore = MemoryStore(session);
-  const sessionStore = new MemStore({
-    checkPeriod: sessionTtl,
+  const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days — persistent login
+  const PgStore = connectPgSimple(session);
+  const sessionStore = new PgStore({
+    pool,
+    tableName: "sessions",
+    ttl: sessionTtl / 1000, // in seconds
+    createTableIfMissing: false,
   });
   return session({
     secret: process.env.SESSION_SECRET!,

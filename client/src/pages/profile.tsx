@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,10 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { Camera } from 'lucide-react';
 
 export default function Profile() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -75,6 +78,45 @@ export default function Profile() {
     updateProfileMutation.mutate(updateData);
   };
 
+  const uploadPhotoMutation = useMutation({
+    mutationFn: async (imageData: string) => {
+      const response = await fetch('/api/user/profile-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Upload failed');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Profile photo updated');
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+    onError: (e: Error) => {
+      toast.error(e.message || 'Failed to upload photo');
+    },
+  });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5 MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPhotoPreview(dataUrl);
+      uploadPhotoMutation.mutate(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const updateField = (field: string, value: string) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
   };
@@ -114,6 +156,64 @@ export default function Profile() {
 
         {/* Profile Form */}
         <div className="px-6 space-y-4">
+
+          {/* Photo Upload */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-4">Profile Photo</h3>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full bg-secondary border-2 border-primary/20 flex items-center justify-center overflow-hidden shrink-0">
+                    {photoPreview || profile?.profileImageUrl ? (
+                      <img
+                        src={photoPreview || profile?.profileImageUrl}
+                        alt="Profile"
+                        className="w-20 h-20 object-cover rounded-full"
+                      />
+                    ) : (
+                      <i className="fas fa-user text-2xl text-muted-foreground"></i>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow hover:bg-primary/90 transition-colors"
+                    data-testid="button-edit-photo"
+                    title="Change photo"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                    data-testid="input-profile-photo"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    {profile?.firstName} {profile?.lastName}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {profile?.jobTitle || 'Welding Professional'}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 h-8 text-xs"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={uploadPhotoMutation.isPending}
+                    data-testid="button-change-photo"
+                  >
+                    {uploadPhotoMutation.isPending ? 'Uploading...' : 'Change Photo'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG or WebP · Max 5 MB</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardContent className="p-4 space-y-4">
               <h3 className="font-semibold">Personal Information</h3>
