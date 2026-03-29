@@ -2,24 +2,34 @@ import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-// Retry utility with exponential backoff
+// Retry utility with exponential backoff and timeout protection
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxAttempts: number = 3,
-  initialDelayMs: number = 2000
+  initialDelayMs: number = 2000,
+  timeoutMs: number = 100000 // 100 second timeout per attempt
 ): Promise<T> {
   let lastError: Error | null = null;
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       console.log(`[AI] Attempt ${attempt}/${maxAttempts}`);
-      return await fn();
+      
+      // Wrap with timeout to prevent hanging requests
+      const timeoutPromise = new Promise<T>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`AI request timeout after ${timeoutMs}ms`));
+        }, timeoutMs);
+      });
+      
+      return await Promise.race([fn(), timeoutPromise]);
     } catch (error) {
       lastError = error as Error;
       const errorStatus = (error as any)?.status || 500;
+      const isTimeout = (error as Error).message?.includes('timeout');
       
       // Check if error is retryable (5xx errors, rate limiting)
-      const isRetryable = errorStatus >= 500 || errorStatus === 429;
+      const isRetryable = (errorStatus >= 500 || errorStatus === 429) && !isTimeout;
       
       if (isRetryable && attempt < maxAttempts) {
         const delayMs = initialDelayMs * Math.pow(2, attempt - 1);
