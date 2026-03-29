@@ -190,10 +190,14 @@
   .brand-logo-large { @apply h-12 w-auto object-contain; }
 
   .btn-primary {
-    @apply bg-primary text-primary-foreground transition-colors font-semibold;
+    @apply bg-primary text-white transition-all font-bold shadow-md;
     min-height: 44px;
+    color: #ffffff !important;
   }
-  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:hover { 
+    opacity: 0.9;
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+  }
 
   .btn-secondary {
     @apply bg-secondary text-secondary-foreground transition-colors font-medium;
@@ -233,12 +237,13 @@
   }
 
   .input-base {
-    @apply bg-input border border-border rounded-md px-3 py-2.5 text-foreground placeholder:text-muted-foreground transition-colors;
+    @apply bg-input border-2 border-border rounded-md px-3 py-2.5 text-foreground placeholder:text-muted-foreground transition-all;
     min-height: 44px;
     font-size: 16px;
   }
   .input-base:focus {
-    @apply outline-none border-primary ring-1 ring-primary;
+    @apply outline-none border-primary ring-2 ring-primary ring-opacity-50;
+    border-color: hsl(var(--primary));
   }
 
   .section-padding { @apply px-4 py-6; }
