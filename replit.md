@@ -74,12 +74,38 @@ Preferred communication style: Simple, everyday language.
 - **Replit Plugins**: Development environment integration and error overlay
 
 ### AI and Data Processing (Live Integration)
-- **AI Provider**: Google Gemini 1.5 Flash via `@google/generative-ai` SDK
+- **AI Provider**: Google Gemini 2.5 Flash via `@google/generative-ai` SDK
 - **AI Service**: `server/ai-service.ts` — GeminiAIService class with 5 methods
+- **AI Resilience**: `retryWithBackoff()` 3 attempts + `Promise.race()` 100s timeout per attempt
 - **Vision Support**: Gemini Vision for image-based weld defect analysis (base64 inline)
 - **Conversation Context**: Weld Assistant passes full conversation history to Gemini
 - **Data Validation**: Zod schemas for type-safe data validation
 - **API Key**: Stored as `GEMINI_API_KEY` secret
+
+## Localisation: South African Market (Beta)
+- **Units**: METRIC-ONLY enforced — mm, kg, °C, L/min, kJ/mm throughout
+- **Currency**: ZAR (R) exclusively — no Stripe integration
+- **Standards**: ISO 15614-1 / AWS D1.1 Metric; ISO 13916 heat input
+- **`useUnits.ts`**: Locked to metric permanently — `toImperial`/`fromImperial` are identity functions; no unit-toggle UI exposed
+- **`server/calculators.ts`**: All formulas metric-native (no imperial conversion needed)
+  - `calculateVoltageAmperage`: thickness thresholds in mm, ~40A/mm base rule
+  - `calculateWireFeedSpeed`: wireSize input in mm, output in mm/min
+  - `calculateHeatInput`: `kJ/mm = (V × A × 60 × η) / (S_mm/min × 1000)` per ISO 13916
+  - `calculateGasFlowRate`: output in L/min (was CFH)
+  - `calculatePreheatTemperature`: °C only, thickness thresholds in mm, returns preheatC + maxInterpassC
+  - `calculateFillerConsumption`: density kg/mm³, output kg; electrode = 3.2 mm 7018
+  - `calculateWeldTime`: Banknote icon; cost displayed as `R{cost}`
+  - `calculateCuttingLength`/`calculateMetalWeight`/`calculateBendAllowance`: all mm/kg
+- **Wire size dropdowns**: 0.6/0.8/0.9/1.0/1.2/1.4/1.6 mm in voltage-amperage and wire-feed-speed pages
+- **Heat input default**: 0.65 kJ/mm (was 60 kJ/in)
+- **Preheat page**: Removed imperial fields; sends kJ/mm directly; displays °C only
+
+## Stability & Error Handling
+- **ErrorBoundary**: `[CRASH LOG]` prefix; "Try Again" + "Back to Dashboard" buttons
+- **Server timeouts**: 120s via middleware for long-running AI requests
+- **Process handlers**: `uncaughtException` / `unhandledRejection` with timestamps
+- **Memory**: Image data cleared client-side post-analysis; `req.body` cleared after AI routes
+- **Keep-alive**: `useKeepAlive.ts` pings every 30s to prevent Replit sleep
 
 ### Subscription and Usage Tracking
 - **Built-in Subscription System**: Custom subscription management with tier-based limits

@@ -7,25 +7,23 @@ export class WeldingCalculators {
     position: string;
     wireSize?: number;
   }) {
-    const { material, thickness, process, position, wireSize = 0.035 } = params;
+    const { material, thickness, process, position, wireSize = 0.9 } = params;
 
-    // Base parameters derived from AWS D1.1 / Lincoln Electric empirical tables
     let baseVoltage = 18;
     let baseAmperage = 100;
 
-    // Thickness-driven amperage (rule of thumb: ~1A per 0.001" for steel GMAW)
-    if (thickness <= 0.125) {
-      baseAmperage = 80 + (thickness * 400);
-      baseVoltage = 16 + (thickness * 20);
-    } else if (thickness <= 0.5) {
-      baseAmperage = 130 + (thickness * 200);
-      baseVoltage = 18 + (thickness * 16);
+    // Thickness in mm — AWS D1.1 empirical rule ~40A per mm of steel for GMAW
+    if (thickness <= 3) {
+      baseAmperage = 80 + (thickness * 15.75);
+      baseVoltage = 16 + (thickness * 0.787);
+    } else if (thickness <= 13) {
+      baseAmperage = 130 + (thickness * 7.87);
+      baseVoltage = 18 + (thickness * 0.63);
     } else {
-      baseAmperage = 180 + (thickness * 120);
-      baseVoltage = 20 + (thickness * 12);
+      baseAmperage = 180 + (thickness * 4.72);
+      baseVoltage = 20 + (thickness * 0.47);
     }
 
-    // Process adjustments
     if (process === 'GTAW') {
       baseAmperage *= 0.8;
       baseVoltage *= 0.9;
@@ -37,7 +35,6 @@ export class WeldingCalculators {
       baseVoltage *= 1.02;
     }
 
-    // Material adjustments
     if (material.includes('aluminum') || material === 'aluminum') {
       baseAmperage *= 0.9;
       baseVoltage *= 0.95;
@@ -45,7 +42,6 @@ export class WeldingCalculators {
       baseAmperage *= 0.95;
     }
 
-    // Position adjustments per AWS D1.1 Table 4.5 guidance
     if (position === 'overhead') {
       baseAmperage *= 0.85;
     } else if (position === 'vertical') {
@@ -76,22 +72,23 @@ export class WeldingCalculators {
     material: string;
   }) {
     const { amperage, wireSize, material } = params;
-    
-    // Base calculation: IPM = (Amperage / Wire Cross-sectional Area) * Material Factor
-    const wireArea = Math.PI * Math.pow(wireSize / 2, 2);
+
     let materialFactor = 1.0;
-    
     if (material.includes('aluminum')) {
       materialFactor = 1.3;
     } else if (material.includes('stainless')) {
       materialFactor = 0.9;
     }
-    
-    const wireSpeed = (amperage / (wireArea * 1000)) * materialFactor;
-    
+
+    // wireSize in mm — compute area in mm², convert to in² for empirical formula, return mm/min
+    const wireArea_mm2 = Math.PI * Math.pow(wireSize / 2, 2);
+    const wireArea_in2 = wireArea_mm2 / 645.16;
+    const wireSpeed_ipm = (amperage / (wireArea_in2 * 1000)) * materialFactor;
+    const wireSpeed_mmpm = wireSpeed_ipm * 25.4;
+
     return {
-      wireSpeed: Math.round(wireSpeed * 10) / 10,
-      unit: 'IPM',
+      wireSpeed: Math.round(wireSpeed_mmpm),
+      unit: 'mm/min',
       recommendations: [
         "Fine-tune based on arc stability",
         "Increase speed for thicker materials",
@@ -108,25 +105,23 @@ export class WeldingCalculators {
   }) {
     const { voltage, amperage, travelSpeed, efficiency = 0.8 } = params;
 
-    // AWS D1.1 Formula: HI (kJ/in) = (V × A × 60 × η) / (S_ipm × 1000)
-    // Where: V=Volts, A=Amps, η=process efficiency (0–1), S=travel speed in in/min
-    // The 60 converts seconds→minutes; 1000 converts J→kJ
+    // ISO 13916 / AWS D1.1 Metric Formula:
+    // HI (kJ/mm) = (V × A × 60 × η) / (S_mm/min × 1000)
     const heatInput = (voltage * amperage * efficiency * 60) / (travelSpeed * 1000);
 
-    // Classification thresholds in kJ/in per AWS D1.1 and industry practice
-    // Low  < 25 kJ/in  → fast travel, thin material, minimal HAZ
-    // Med  25–65 kJ/in → typical structural/general welding
-    // High > 65 kJ/in  → slow travel, heavy section, elevated HAZ risk
+    // Thresholds in kJ/mm (converted from kJ/in: ÷ 25.4)
+    // Low  < 1.0 kJ/mm  (~25 kJ/in)
+    // High > 2.5 kJ/mm  (~65 kJ/in)
     let classification = 'Medium';
-    if (heatInput < 25) classification = 'Low';
-    else if (heatInput > 65) classification = 'High';
+    if (heatInput < 1.0) classification = 'Low';
+    else if (heatInput > 2.5) classification = 'High';
 
     return {
-      heatInput: Math.round(heatInput * 100) / 100,
-      unit: 'kJ/in',
+      heatInput: Math.round(heatInput * 1000) / 1000,
+      unit: 'kJ/mm',
       classification,
       recommendations: classification === 'High' ? [
-        "High heat input — preheat base metal per AWS D1.1 Table 3.2",
+        "High heat input — preheat base metal per ISO 13916 / AWS D1.1",
         "Monitor heat-affected zone (HAZ) grain growth carefully",
         "Post-weld heat treatment (PWHT) may be required for code work",
         "Consider increasing travel speed to reduce heat input"
@@ -150,29 +145,28 @@ export class WeldingCalculators {
     environment: string;
   }) {
     const { process, material, thickness, position, environment } = params;
-    
-    let baseFlow = 20; // CFH
-    
+
+    let baseFlow = 9; // L/min (equiv. ~20 CFH)
+
     if (material.includes('aluminum')) {
-      baseFlow = 25;
+      baseFlow = 12; // ~25 CFH
     } else if (material.includes('stainless')) {
-      baseFlow = 22;
+      baseFlow = 10; // ~22 CFH
     }
-    
-    if (thickness > 0.5) {
+
+    if (thickness > 13) { // > 0.5 in equivalent
+      baseFlow += 2;
+    }
+
+    if (position === 'overhead') {
+      baseFlow += 1;
+    }
+
+    if (environment === 'windy') {
       baseFlow += 5;
     }
-    
-    if (position === 'overhead') {
-      baseFlow += 3;
-    }
-    
-    if (environment === 'windy') {
-      baseFlow += 10;
-    }
-    
-    // Gas type per AWS/CGA recommendations
-    let gasType = '75% Ar / 25% CO₂'; // default GMAW mild steel
+
+    let gasType = '75% Ar / 25% CO₂';
     if (process === 'GTAW') {
       gasType = '100% Argon';
     } else if (material.includes('aluminum')) {
@@ -185,14 +179,14 @@ export class WeldingCalculators {
 
     return {
       flowRate: baseFlow,
-      unit: 'CFH',
-      range: `${baseFlow - 5}-${baseFlow + 5} CFH`,
+      unit: 'L/min',
+      range: `${baseFlow - 2}–${baseFlow + 2} L/min`,
       gasType,
       recommendations: [
         `Recommended gas: ${gasType}`,
         "Start at the lower end of the range and increase if porosity occurs",
         "Too much flow can cause turbulence and pull in atmospheric contamination",
-        environment === 'windy' ? "Outdoor/windy: use a windshield or increase to 35–45 CFH" : "Indoor welding: lower flow rates are sufficient"
+        environment === 'windy' ? "Outdoor/windy: use a windshield or increase to 17–21 L/min" : "Indoor welding: lower flow rates are sufficient"
       ]
     };
   }
@@ -205,7 +199,6 @@ export class WeldingCalculators {
   }) {
     const { material, thickness, process, heatInput } = params;
 
-    // Carbon Equivalent values by common steel grades
     const ceMap: Record<string, number> = {
       'a36': 0.40,
       'a572-gr50': 0.46,
@@ -221,47 +214,43 @@ export class WeldingCalculators {
 
     const ce = ceMap[material] ?? 0.45;
 
-    // Base preheat (°F) from CE per AWS D1.1 guidance
-    let preheatF = 0;
-    if (ce >= 0.60) preheatF = 350;
-    else if (ce >= 0.55) preheatF = 250;
-    else if (ce >= 0.45) preheatF = 150;
-    else if (ce >= 0.40) preheatF = 50;
+    // Base preheat (°C) from CE — ISO 13916 / AWS D1.1 guidance
+    let preheatC = 0;
+    if (ce >= 0.60) preheatC = 175;
+    else if (ce >= 0.55) preheatC = 120;
+    else if (ce >= 0.45) preheatC = 65;
+    else if (ce >= 0.40) preheatC = 10;
 
-    // Thickness adjustments
-    if (thickness > 2.5) preheatF += 100;
-    else if (thickness > 1.5) preheatF += 50;
-    else if (thickness > 0.75) preheatF += 25;
+    // Thickness adjustments (mm thresholds)
+    if (thickness > 63) preheatC += 55;        // > 2.5 in
+    else if (thickness > 38) preheatC += 28;   // > 1.5 in
+    else if (thickness > 19) preheatC += 14;   // > 0.75 in
 
-    // Low heat input increases cold-cracking risk
-    if (heatInput < 1.0) preheatF += 50;
+    // Low heat input (< 0.04 kJ/mm ≈ 1.0 kJ/in) increases cold-cracking risk
+    if (heatInput < 0.04) preheatC += 28;
 
     // GTAW/GMAW are cleaner processes — slight reduction
     if (process === 'GTAW' || process === 'GMAW') {
-      preheatF = Math.max(0, preheatF - 25);
+      preheatC = Math.max(0, preheatC - 14);
     }
 
-    preheatF = Math.round(preheatF / 25) * 25; // round to nearest 25°F
-    const preheatC = Math.round((preheatF - 32) * 5 / 9);
-    const maxInterpassF = Math.min(preheatF + 350, 500);
-    const maxInterpassC = Math.round((maxInterpassF - 32) * 5 / 9);
+    preheatC = Math.round(preheatC / 10) * 10; // round to nearest 10°C
+    const maxInterpassC = Math.min(preheatC + 195, 260);
     const riskLevel = ce > 0.60 ? 'High' : ce > 0.45 ? 'Moderate' : 'Low';
 
     const recs: string[] = [];
-    if (preheatF > 0) {
-      recs.push(`Heat base metal to at least ${preheatF}°F (${preheatC}°C) before welding`);
+    if (preheatC > 0) {
+      recs.push(`Heat base metal to at least ${preheatC}°C before welding`);
     } else {
       recs.push('No preheat required under normal ambient conditions');
     }
-    recs.push(`Maximum interpass temperature: ${maxInterpassF}°F (${maxInterpassC}°C)`);
+    recs.push(`Maximum interpass temperature: ${maxInterpassC}°C`);
     if (ce > 0.60) recs.push('Post-weld heat treatment (PWHT) strongly recommended');
     recs.push('Verify temperature using temp-sticks or contact thermocouple');
-    recs.push('Maintain preheat for at least 3" on each side of the joint');
+    recs.push('Maintain preheat for at least 75 mm on each side of the joint');
 
     return {
-      preheatF: Math.max(0, preheatF),
-      preheatC: Math.max(-18, preheatC),
-      maxInterpassF,
+      preheatC: Math.max(0, preheatC),
       maxInterpassC,
       carbonEquivalent: ce,
       riskLevel,
@@ -280,7 +269,6 @@ export class WeldingCalculators {
   }) {
     const { jointType, weldLength, legSize, plateThickness, grooveAngle, passes, process } = params;
 
-    // Deposition efficiency by process
     const efficiency: Record<string, number> = {
       'GMAW': 0.93,
       'FCAW': 0.86,
@@ -289,41 +277,40 @@ export class WeldingCalculators {
       'SAW': 0.99,
     };
     const depEff = efficiency[process] ?? 0.85;
-
-    // Spatter & stub loss factor (multiplier on wire/electrode needed)
     const lossFactor = 1 / depEff;
 
-    // Steel density lb/in³
-    const density = 0.284;
+    // Steel density kg/mm³
+    const density = 7.85e-6;
 
-    // Cross-sectional area of the weld joint (in²)
+    // Cross-sectional area in mm²
     let area = 0;
     if (jointType === 'fillet') {
       area = 0.5 * legSize * legSize;
     } else if (jointType === 'butt-vgroove') {
       const halfAngle = (grooveAngle / 2) * (Math.PI / 180);
-      area = Math.pow(plateThickness, 2) * Math.tan(halfAngle) * 0.5 + 0.0625 * plateThickness;
+      area = Math.pow(plateThickness, 2) * Math.tan(halfAngle) * 0.5 + 1.6 * plateThickness;
     } else if (jointType === 'lap') {
       area = legSize * legSize * 0.5;
     }
 
-    const weldVolume = area * weldLength * passes; // in³
-    const depositedWeight = weldVolume * density; // lbs deposited
-    const fillerRequired = depositedWeight * lossFactor; // lbs of filler needed
-    const electrodesEstimate = Math.ceil(fillerRequired / 0.35); // rough 7018 electrode ~0.35lb usable
+    const weldVolume = area * weldLength * passes; // mm³
+    const depositedWeight = weldVolume * density;  // kg deposited
+    const fillerRequired = depositedWeight * lossFactor; // kg of filler needed
+    // 7018 3.2mm × 450mm electrode: ~0.15 kg usable per electrode
+    const electrodesEstimate = Math.ceil(fillerRequired / 0.15);
 
     return {
-      depositedWeight: Math.round(depositedWeight * 100) / 100,
-      fillerRequired: Math.round(fillerRequired * 100) / 100,
-      weldVolume: Math.round(weldVolume * 100) / 100,
+      depositedWeight: Math.round(depositedWeight * 1000) / 1000,
+      fillerRequired: Math.round(fillerRequired * 1000) / 1000,
+      weldVolume: Math.round(weldVolume),
       depositEfficiency: Math.round(depEff * 100),
       electrodesEstimate: process === 'SMAW' ? electrodesEstimate : null,
-      unit: 'lbs',
+      unit: 'kg',
       recommendations: [
-        `Order at least ${Math.ceil(fillerRequired * 1.1)} lbs to account for waste`,
+        `Order at least ${(Math.ceil(fillerRequired * 1.1 * 100) / 100).toFixed(3)} kg to account for waste`,
         `Deposition efficiency for ${process}: ${Math.round(depEff * 100)}%`,
         'Track actual consumption per joint to refine estimates',
-        process === 'SMAW' ? `Approx. ${electrodesEstimate} electrodes (3/32"–1/8" 7018)` : 'Use wire spool weight to plan procurement',
+        process === 'SMAW' ? `Approx. ${electrodesEstimate} electrodes (3.2 mm 7018)` : 'Use wire spool weight to plan procurement',
       ],
     };
   }
@@ -340,10 +327,10 @@ export class WeldingCalculators {
     const { weldLength, travelSpeed, passes, numberOfJoints, setupTimePerJoint, arcEfficiency, laborRate } = params;
 
     const arcTimePerPass = weldLength / travelSpeed; // minutes
-    const totalArcTime = arcTimePerPass * passes; // minutes
-    const totalSetupTime = numberOfJoints * setupTimePerJoint; // minutes
-    const totalOperatingTime = totalArcTime / (arcEfficiency / 100); // accounts for arc-off time
-    const totalTime = totalOperatingTime + totalSetupTime; // minutes
+    const totalArcTime = arcTimePerPass * passes;
+    const totalSetupTime = numberOfJoints * setupTimePerJoint;
+    const totalOperatingTime = totalArcTime / (arcEfficiency / 100);
+    const totalTime = totalOperatingTime + totalSetupTime;
     const totalHours = totalTime / 60;
     const laborCost = totalHours * laborRate;
 
@@ -358,7 +345,7 @@ export class WeldingCalculators {
         `Arc-on time: ${Math.round(totalArcTime)} min — operating time: ${Math.round(totalOperatingTime)} min`,
         'Add 10–15% buffer for unforeseen delays',
         arcEfficiency < 30 ? 'Low arc efficiency — consider workflow improvements' : 'Arc efficiency is within normal range',
-        laborRate > 0 ? `Estimated labor cost: $${laborCost.toFixed(2)} at $${laborRate}/hr` : 'Enter a labor rate to calculate cost',
+        laborRate > 0 ? `Estimated labor cost: R${laborCost.toFixed(2)} at R${laborRate}/hr` : 'Enter a labor rate to calculate cost',
       ],
     };
   }
@@ -370,8 +357,7 @@ export class WeldingCalculators {
   }) {
     const { stockLength, parts, kerfWidth } = params;
 
-    // Greedy first-fit bin packing
-    const stocks: number[] = []; // remaining length in each stock bar
+    const stocks: number[] = [];
     let totalCuts = 0;
     let totalPartsLength = 0;
 
@@ -383,7 +369,6 @@ export class WeldingCalculators {
       }
     }
 
-    // Sort descending for better packing
     allPieces.sort((a, b) => b - a);
 
     for (const piece of allPieces) {
@@ -417,10 +402,10 @@ export class WeldingCalculators {
       utilization,
       totalStockLength,
       recommendations: [
-        `${barsNeeded} stock bar(s) required at ${stockLength}" each`,
+        `${barsNeeded} stock bar(s) required at ${stockLength} mm each`,
         `Material utilization: ${utilization}%`,
         utilization < 75 ? 'Consider re-nesting parts to reduce waste' : 'Good material utilization',
-        `Total kerf waste from cuts: ${Math.round(totalCutLength * 100) / 100}"`,
+        `Total kerf waste from cuts: ${Math.round(totalCutLength * 100) / 100} mm`,
         'Add 1 extra bar as buffer for defects or remeasurement',
       ],
     };
@@ -441,19 +426,19 @@ export class FabricationCalculators {
     };
   }) {
     const { material, shape, dimensions } = params;
-    
-    // Material densities (lb/in³)
+
+    // Material densities in kg/mm³
     const densities: Record<string, number> = {
-      'steel': 0.284,
-      'aluminum': 0.098,
-      'stainless': 0.290,
-      'copper': 0.324,
-      'brass': 0.307
+      'steel': 7.85e-6,
+      'aluminum': 2.70e-6,
+      'stainless': 7.93e-6,
+      'copper': 8.96e-6,
+      'brass': 8.47e-6
     };
-    
+
     const density = densities[material.toLowerCase()] || densities.steel;
-    let volume = 0;
-    
+    let volume = 0; // mm³
+
     switch (shape) {
       case 'plate':
         volume = (dimensions.length || 0) * (dimensions.width || 0) * (dimensions.thickness || 0);
@@ -467,17 +452,18 @@ export class FabricationCalculators {
         volume = Math.PI * (Math.pow(outerRadius, 2) - Math.pow(innerRadius, 2)) * (dimensions.length || 0);
         break;
     }
-    
-    const weight = volume * density;
-    
+
+    const weight = volume * density; // kg
+    const volumeCm3 = volume / 1000; // convert mm³ to cm³
+
     return {
-      weight: Math.round(weight * 100) / 100,
-      unit: 'lbs',
-      volume: Math.round(volume * 100) / 100,
-      volumeUnit: 'in³',
+      weight: Math.round(weight * 1000) / 1000,
+      unit: 'kg',
+      volume: Math.round(volumeCm3 * 100) / 100,
+      volumeUnit: 'cm³',
       density,
       recommendations: [
-        "Add 5-10% for waste and cutoffs",
+        "Add 5–10% for waste and cutoffs",
         "Consider material handling requirements",
         "Verify material specifications"
       ]
@@ -491,18 +477,18 @@ export class FabricationCalculators {
     kFactor?: number;
   }) {
     const { thickness, bendAngle, insideRadius, kFactor = 0.33 } = params;
-    
-    // Bend Allowance = (π/180) × Bend Angle × (Inside Radius + K-Factor × Thickness)
+
+    // Bend Allowance (mm) = (π/180) × Angle × (Inside Radius + K-Factor × Thickness)
     const bendAllowance = (Math.PI / 180) * bendAngle * (insideRadius + kFactor * thickness);
-    
-    // Setback = (Inside Radius + Thickness) × tan(Bend Angle / 2)
+
+    // Setback (mm) = (Inside Radius + Thickness) × tan(Angle / 2)
     const setback = (insideRadius + thickness) * Math.tan((bendAngle * Math.PI / 180) / 2);
-    
+
     return {
-      bendAllowance: Math.round(bendAllowance * 1000) / 1000,
-      setback: Math.round(setback * 1000) / 1000,
+      bendAllowance: Math.round(bendAllowance * 100) / 100,
+      setback: Math.round(setback * 100) / 100,
       kFactor,
-      unit: 'in',
+      unit: 'mm',
       recommendations: [
         "Test bend on scrap material first",
         "Adjust K-factor based on material properties",
@@ -523,18 +509,18 @@ export class FabricationCalculators {
     profit?: number;
   }) {
     const { materials, laborHours, laborRate, overhead = 0.15, profit = 0.20 } = params;
-    
+
     const materialCost = materials.reduce((total, material) => {
       return total + (material.quantity * material.unitCost);
     }, 0);
-    
+
     const laborCost = laborHours * laborRate;
     const directCosts = materialCost + laborCost;
     const overheadCost = directCosts * overhead;
     const totalCost = directCosts + overheadCost;
     const profitAmount = totalCost * profit;
     const finalPrice = totalCost + profitAmount;
-    
+
     return {
       materialCost: Math.round(materialCost * 100) / 100,
       laborCost: Math.round(laborCost * 100) / 100,

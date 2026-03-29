@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMutation } from '@tanstack/react-query';
-import { Clock, DollarSign } from 'lucide-react';
+import { Clock, Banknote } from 'lucide-react';
 import { useUnits } from '@/hooks/useUnits';
 
 interface WeldTimeResult {
@@ -157,7 +157,7 @@ export default function WeldTime() {
                 </div>
                 {result.laborCost > 0 && (
                   <div className="bg-background rounded-lg p-3 flex items-center gap-3">
-                    <DollarSign className="h-5 w-5 text-green-500" />
+                    <Banknote className="h-5 w-5 text-green-500" />
                     <div>
                       <div className="text-xl font-bold text-green-500">R {result.laborCost.toFixed(2)}</div>
                       <div className="text-xs text-muted-foreground">Estimated labor cost</div>

@@ -194,6 +194,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysis = await storage.createAnalysis(analysisData);
 
+      // Memory cleanup: clear conversation history from request body after processing
+      delete (req.body as any).conversationHistory;
+      req.body = {};
+
       res.json({ analysis, answer });
     } catch (error) {
       const status = (error as any)?.statusCode || 500;
@@ -215,16 +219,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const result = await GeminiAIService.optimizeProcess(req.body);
 
+      const processLabel = `${req.body.process} — ${req.body.material} @ ${req.body.thickness} mm`;
       const analysisData = insertAnalysisSchema.parse({
         userId,
         type: 'process-optimization',
-        input: `${req.body.process} — ${req.body.material} @ ${req.body.thickness}"`,
+        input: processLabel,
         result,
         title: `Process Optimization - ${req.body.process}`
       });
 
       const analysis = await storage.createAnalysis(analysisData);
       await storage.incrementUsage(userId, 'analyses');
+
+      // Memory cleanup
+      req.body = {};
 
       res.json({ analysis, result });
     } catch (error) {

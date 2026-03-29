@@ -11,9 +11,7 @@ import { Thermometer } from 'lucide-react';
 import { useUnits } from '@/hooks/useUnits';
 
 interface PreheatResult {
-  preheatF: number;
   preheatC: number;
-  maxInterpassF: number;
   maxInterpassC: number;
   carbonEquivalent: number;
   riskLevel: string;
@@ -45,11 +43,9 @@ export default function PreheatTemp() {
   const handleCalculate = () => {
     calculateMutation.mutate({
       material: formData.material,
-      thickness: toImperial.length(parseFloat(formData.thickness)),
+      thickness: parseFloat(formData.thickness),
       process: formData.process,
-      heatInput: isMetric
-        ? parseFloat(formData.heatInput) * 25.4
-        : parseFloat(formData.heatInput),
+      heatInput: parseFloat(formData.heatInput),
     });
   };
 
@@ -57,8 +53,8 @@ export default function PreheatTemp() {
 
   const riskColor = result?.riskLevel === 'High' ? 'destructive' : result?.riskLevel === 'Moderate' ? 'secondary' : 'outline';
 
-  const preheat = result ? (isMetric ? result.preheatC : result.preheatF) : null;
-  const maxInterpass = result ? (isMetric ? result.maxInterpassC : result.maxInterpassF) : null;
+  const preheat = result ? result.preheatC : null;
+  const maxInterpass = result ? result.maxInterpassC : null;
 
   return (
     <div className="min-h-screen bg-background pb-20">

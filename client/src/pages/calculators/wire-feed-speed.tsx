@@ -20,7 +20,7 @@ export default function WireFeedSpeed() {
 
   const [formData, setFormData] = useState({
     amperage: '150',
-    wireSize: '0.035',
+    wireSize: '0.9',
     material: 'mild-steel'
   });
 
@@ -78,12 +78,13 @@ export default function WireFeedSpeed() {
                 <Select value={formData.wireSize} onValueChange={(value) => setFormData(prev => ({ ...prev, wireSize: value }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0.023">0.023" (0.6mm)</SelectItem>
-                    <SelectItem value="0.030">0.030" (0.8mm)</SelectItem>
-                    <SelectItem value="0.035">0.035" (0.9mm)</SelectItem>
-                    <SelectItem value="0.045">0.045" (1.2mm)</SelectItem>
-                    <SelectItem value="0.052">0.052" (1.4mm)</SelectItem>
-                    <SelectItem value="0.0625">1/16" (1.6mm)</SelectItem>
+                    <SelectItem value="0.6">0.6 mm</SelectItem>
+                    <SelectItem value="0.8">0.8 mm</SelectItem>
+                    <SelectItem value="0.9">0.9 mm</SelectItem>
+                    <SelectItem value="1.0">1.0 mm</SelectItem>
+                    <SelectItem value="1.2">1.2 mm</SelectItem>
+                    <SelectItem value="1.4">1.4 mm</SelectItem>
+                    <SelectItem value="1.6">1.6 mm</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

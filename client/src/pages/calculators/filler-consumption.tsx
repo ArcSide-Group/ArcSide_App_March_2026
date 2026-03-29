@@ -161,7 +161,7 @@ export default function FillerConsumption() {
                   <div className="bg-background rounded-lg p-3">
                     <div className="text-sm text-muted-foreground">Estimated Electrodes</div>
                     <div className="text-2xl font-bold text-primary">~{result.electrodesEstimate}</div>
-                    <div className="text-xs text-muted-foreground">3/32"–1/8" 7018 sticks</div>
+                    <div className="text-xs text-muted-foreground">3.2 mm 7018 electrodes</div>
                   </div>
                 )}
                 <div className="space-y-2">
