@@ -36,6 +36,8 @@ export default function DefectAnalyzer() {
     },
     onSuccess: (data) => {
       setAnalysis(data);
+      // MEMORY OPTIMIZATION: Clear image data from memory after successful analysis
+      setImageData(null);
       toast({
         title: "Analysis Complete",
         description: "Defect analysis completed successfully",

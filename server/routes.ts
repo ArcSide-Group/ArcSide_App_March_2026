@@ -71,7 +71,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analysis = await storage.createAnalysis(analysisData);
       await storage.incrementUsage(userId, 'analyses');
 
-      res.json({ analysis, result, imageData });
+      // MEMORY OPTIMIZATION: Don't send full image data in response
+      // Clear it from request to free memory
+      delete (req.body as any).imageData;
+      
+      res.json({ analysis, result });
     } catch (error) {
       const status = (error as any)?.statusCode || 500;
       console.error('Defect analysis error:', error);

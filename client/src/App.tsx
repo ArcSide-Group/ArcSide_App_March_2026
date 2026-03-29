@@ -1,11 +1,12 @@
 
 import { Switch, Route } from "wouter";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useKeepAlive } from "@/hooks/useKeepAlive";
 import { ErrorBoundary, PageSuspenseFallback } from "@/components/ErrorBoundary";
 
 // Eagerly-loaded pages (critical path)
@@ -54,6 +55,38 @@ const CalculatorHistory = lazy(() => import("@/pages/calculators/history"));
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  
+  // Keep app alive with periodic pings
+  useKeepAlive();
+  
+  // Global error logging
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('[CRASH LOG] Uncaught Error:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error?.stack || event.error,
+        timestamp: new Date().toISOString()
+      });
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('[CRASH LOG] Unhandled Promise Rejection:', {
+        reason: event.reason,
+        timestamp: new Date().toISOString()
+      });
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
 
   if (isLoading) {
     return <PageSuspenseFallback />;
