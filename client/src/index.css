@@ -11,7 +11,7 @@
   --card-foreground: 218 50% 8%;
   --popover: 0 0% 100%;
   --popover-foreground: 218 50% 8%;
-  --primary: 218 72% 38%;
+  --primary: 224 100% 20%;
   --primary-foreground: 0 0% 100%;
   --secondary: 218 20% 93%;
   --secondary-foreground: 218 40% 20%;
@@ -51,7 +51,7 @@
   --card-foreground: 0 0% 100%;
   --popover: 218 65% 11%;
   --popover-foreground: 0 0% 100%;
-  --primary: 218 72% 50%;
+  --primary: 224 100% 30%;
   --primary-foreground: 0 0% 100%;
   --secondary: 218 55% 18%;
   --secondary-foreground: 0 0% 100%;
@@ -190,18 +190,21 @@
   .brand-logo-large { @apply h-12 w-auto object-contain; }
 
   .btn-primary {
-    background-color: #1e40af !important;
+    background-color: #002366 !important;
     color: #ffffff !important;
-    @apply transition-all font-bold shadow-md rounded-md;
+    border: 2px solid #001a4d !important;
+    border-radius: 5px !important;
+    box-shadow: 0 2px 6px rgba(0, 35, 102, 0.35);
+    @apply transition-all font-bold;
     min-height: 44px;
   }
   .btn-primary:hover {
-    background-color: #1e3a8a !important;
-    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+    background-color: #001a4d !important;
+    box-shadow: 0 4px 14px rgba(0, 35, 102, 0.5);
     transform: translateY(-1px);
   }
   .btn-primary:active {
-    background-color: #1d4ed8 !important;
+    background-color: #002d80 !important;
     transform: translateY(0);
   }
 
@@ -313,6 +316,20 @@
   .header-professional {
     @apply sticky top-0 z-50 w-full bg-background backdrop-blur;
     border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .logo-glow {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
+  }
+  .dark .logo-glow {
+    filter: drop-shadow(0 0 8px rgba(200, 220, 255, 0.35));
+  }
+
+  :root .card-theme-border {
+    border: 1px solid hsl(218 20% 80%);
+  }
+  .dark .card-theme-border {
+    border: 1px solid hsl(var(--border));
   }
 }
 

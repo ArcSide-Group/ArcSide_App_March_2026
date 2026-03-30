@@ -67,14 +67,17 @@ export default function Header() {
           </p>
         </div>
 
-        {/* Single Navigation Bar — logo left, menu right */}
-        <div className="flex h-14 items-center justify-between px-4 border-b border-border">
-          {/* Logo — left side of nav bar */}
-          <Link href="/">
+        {/* Navigation Bar — centered logo, menu right */}
+        <div className="flex h-14 items-center justify-between px-4 border-b border-border relative">
+          {/* Spacer for centering */}
+          <div className="w-11" />
+
+          {/* Logo — centered */}
+          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <img
               src={logoPath}
               alt="ArcSide Mobile App"
-              className="h-9 w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+              className="h-9 w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow"
               data-testid="img-arcside-logo-header"
             />
           </Link>
@@ -101,11 +104,11 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-card border-l border-border">
               <div className="flex flex-col gap-4 mt-8">
-                <div className="flex items-center gap-3 px-4 pb-4 border-b border-border">
+                <div className="flex items-center justify-center gap-3 px-4 pb-4 border-b border-border">
                   <img
                     src={logoPath}
                     alt="ArcSide Mobile App"
-                    className="h-8 w-auto object-contain rounded"
+                    className="h-10 w-auto object-contain rounded logo-glow"
                     data-testid="img-arcside-logo-menu"
                   />
                 </div>

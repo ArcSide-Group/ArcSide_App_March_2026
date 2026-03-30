@@ -8,11 +8,11 @@ export default function FloatingActionButton() {
       <Link href="/tools/weld-assistant">
         <Button
           size="lg"
-          className="w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-105 hover:shadow-primary/40 transition-all duration-200 p-0"
+          className="w-16 h-16 bg-[#002366] text-white rounded-full shadow-[0_4px_20px_rgba(0,35,102,0.5)] hover:scale-110 hover:shadow-[0_6px_28px_rgba(0,35,102,0.65)] transition-all duration-200 p-0 border-2 border-white/20"
           data-testid="fab-weld-assistant"
           title="AI Weld Assistant"
         >
-          <Sparkles className="h-6 w-6" />
+          <Sparkles className="h-[30px] w-[30px]" />
         </Button>
       </Link>
     </div>

@@ -18,10 +18,9 @@ export default function Landing() {
           <img 
             src={logoPath}
             alt="ArcSide Mobile App" 
-            className="h-32 w-auto mx-auto mb-6 object-contain rounded-xl"
+            className="h-32 w-auto mx-auto mb-6 object-contain rounded-xl logo-glow"
             data-testid="img-arcside-logo-hero"
           />
-          <p className="text-primary mb-3 text-lg font-semibold">Professional Welding Tools</p>
           <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
             The App Made by Tradesmen for Tradesmen
           </Badge>
@@ -111,7 +110,7 @@ export default function Landing() {
         <div className="px-6 pb-8">
           <Button 
             onClick={handleLogin}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base font-semibold"
+            className="w-full h-12 text-base font-semibold"
             data-testid="button-login"
           >
             Get Started - Sign In

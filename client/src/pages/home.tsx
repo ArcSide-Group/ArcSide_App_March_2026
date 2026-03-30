@@ -67,15 +67,9 @@ export default function Home() {
               <img
                 src={logoPath}
                 alt="ArcSide Mobile App"
-                className="w-14 h-14 object-contain rounded-lg shrink-0"
+                className="w-14 h-14 object-contain rounded-lg shrink-0 logo-glow"
                 data-testid="img-arcside-logo-home"
               />
-              <div>
-                <h1 className="text-xl font-bold text-foreground">
-                  ArcSide™
-                </h1>
-                <p className="text-xs text-muted-foreground">Professional Welding Platform</p>
-              </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="relative">
