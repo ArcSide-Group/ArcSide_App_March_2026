@@ -103,7 +103,9 @@ CRITICAL TABLE FORMATTING RULE:
 When presenting technical data (rod sizes, amperage ranges, voltage, costs), ALWAYS output a clean Markdown table with separators.
 NEVER use multiple dashes (---) to separate lines of data.
 Table format: | Header | Header | → | --- | --- | → | Data | Data |
-Use only standard punctuation: commas, periods, semicolons. No dashes outside table format.`;
+Use only standard punctuation: commas, periods, semicolons. No dashes outside table format.
+
+STRICT OUTPUT RULE: Output data ONLY in Markdown tables. Use commas and periods only. NEVER use em dashes (—) or en dashes (–) anywhere in the response.`;
 
 // ─── AI Service ───────────────────────────────────────────────────────────────
 export class GeminiAIService {

@@ -190,19 +190,31 @@
   .brand-logo-large { @apply h-12 w-auto object-contain; }
 
   .btn-primary {
-    @apply bg-primary text-white transition-all font-bold shadow-md;
-    min-height: 44px;
+    background-color: #1e40af !important;
     color: #ffffff !important;
+    @apply transition-all font-bold shadow-md rounded-md;
+    min-height: 44px;
   }
-  .btn-primary:hover { 
-    opacity: 0.85;
-    box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
-    transform: translateY(-2px);
+  .btn-primary:hover {
+    background-color: #1e3a8a !important;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+    transform: translateY(-1px);
   }
   .btn-primary:active {
-    opacity: 0.75;
+    background-color: #1d4ed8 !important;
     transform: translateY(0);
-    box-shadow: 0 2px 6px hsl(var(--primary) / 0.3);
+  }
+
+  .nav-active { color: #38bdf8 !important; }
+
+  input, select, textarea, [role="combobox"] {
+    border: 1.5px solid #94a3b8 !important;
+    border-radius: 0.375rem;
+  }
+  input:focus, select:focus, textarea:focus, [role="combobox"]:focus {
+    border-color: #1e40af !important;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15) !important;
+    outline: none !important;
   }
 
   .btn-secondary {

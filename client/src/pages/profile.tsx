@@ -174,14 +174,17 @@ export default function Profile() {
                       <i className="fas fa-user text-2xl text-muted-foreground"></i>
                     )}
                   </div>
-                  <button
-                    onClick={() => photoInputRef.current?.click()}
-                    className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow hover:bg-primary/90 transition-colors"
-                    data-testid="button-edit-photo"
-                    title="Change photo"
-                  >
-                    <Camera className="w-3.5 h-3.5" />
-                  </button>
+                  <div style={{ position: 'relative', zIndex: 50 }}>
+                    <button
+                      onClick={() => photoInputRef.current?.click()}
+                      className="absolute -top-8 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
+                      data-testid="button-edit-photo"
+                      title="Change photo"
+                      type="button"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </button>
+                  </div>
                   <input
                     ref={photoInputRef}
                     type="file"
@@ -198,16 +201,20 @@ export default function Profile() {
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {profile?.jobTitle || 'Welding Professional'}
                   </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2 h-8 text-xs"
-                    onClick={() => photoInputRef.current?.click()}
-                    disabled={uploadPhotoMutation.isPending}
-                    data-testid="button-change-photo"
-                  >
-                    {uploadPhotoMutation.isPending ? 'Uploading...' : 'Change Photo'}
-                  </Button>
+                  <div style={{ position: 'relative', zIndex: 50 }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 h-9 text-xs font-semibold"
+                      onClick={() => photoInputRef.current?.click()}
+                      disabled={uploadPhotoMutation.isPending}
+                      data-testid="button-change-photo"
+                      type="button"
+                    >
+                      <Camera className="w-3 h-3 mr-1" />
+                      {uploadPhotoMutation.isPending ? 'Uploading...' : 'Change Photo'}
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">JPG, PNG or WebP · Max 5 MB</p>
                 </div>
               </div>
