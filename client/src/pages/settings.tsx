@@ -136,17 +136,6 @@ export default function Settings() {
                     data-testid="switch-dark-mode"
                   />
                 </div>
-                <Separator />
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="flex gap-2 mt-0.5">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1e40af' }}></div>
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#38bdf8' }}></div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium">ArcSide Royal Blue</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Brand colors matched to logo</p>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
