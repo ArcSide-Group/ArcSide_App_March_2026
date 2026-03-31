@@ -135,10 +135,20 @@ export default function Disclaimer() {
 
               <div className="industrial-divider"></div>
 
-              <p className="text-xs text-muted-foreground text-center">
-                Questions? Contact your certified welding engineer.<br />
-                ArcSide™ is a field reference tool — not a code authority.
-              </p>
+              <div className="text-xs text-muted-foreground text-center space-y-1">
+                <p>Questions? Contact your certified welding engineer.</p>
+                <p>ArcSide™ is a field reference tool — not a code authority.</p>
+                <div className="flex items-center justify-center gap-3 pt-1">
+                  <a href="mailto:info@arcside.co.za" className="text-primary hover:underline flex items-center gap-1" data-testid="link-disclaimer-email">
+                    <i className="fas fa-envelope text-[10px]"></i>
+                    info@arcside.co.za
+                  </a>
+                  <a href="tel:+27796819319" className="text-primary hover:underline flex items-center gap-1" data-testid="link-disclaimer-phone">
+                    <i className="fas fa-phone text-[10px]"></i>
+                    +27 79 681 9319
+                  </a>
+                </div>
+              </div>
             </CardContent>
           </Card>
 

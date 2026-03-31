@@ -263,10 +263,18 @@ export default function Settings() {
                 <HelpCircle className="h-4 w-4 mr-2" />
                 Help Center
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Mail className="h-4 w-4 mr-2" />
-                Contact Support
-              </Button>
+              <a href="mailto:info@arcside.co.za" data-testid="link-contact-email">
+                <Button variant="outline" className="w-full justify-start" type="button">
+                  <Mail className="h-4 w-4 mr-2" />
+                  info@arcside.co.za
+                </Button>
+              </a>
+              <a href="tel:+27796819319" data-testid="link-contact-phone">
+                <Button variant="outline" className="w-full justify-start" type="button">
+                  <i className="fas fa-phone h-4 w-4 mr-2 text-sm"></i>
+                  +27 79 681 9319
+                </Button>
+              </a>
               <Link href="/beta-feedback">
                 <Button variant="outline" className="w-full justify-start">
                   <MessageSquare className="h-4 w-4 mr-2" />

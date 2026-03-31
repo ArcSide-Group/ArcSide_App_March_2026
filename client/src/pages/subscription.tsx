@@ -154,21 +154,30 @@ export default function Subscription() {
                 )}
 
                 {/* CTA Button */}
-                <Button
-                  variant={plan.buttonVariant}
-                  disabled={plan.name === 'Free'}
-                  className={`w-full h-11 font-semibold ${
-                    plan.buttonVariant === 'default' && plan.popular
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                      : plan.buttonVariant === 'default' && !plan.popular
-                        ? 'bg-accent hover:bg-accent/90 text-accent-foreground'
+                {plan.name === 'Pro / Enterprise' ? (
+                  <a href="mailto:info@arcside.co.za" data-testid="link-contact-sales">
+                    <Button
+                      variant={plan.buttonVariant}
+                      className="w-full h-11 font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
+                      {plan.buttonText}
+                    </Button>
+                  </a>
+                ) : (
+                  <Button
+                    variant={plan.buttonVariant}
+                    disabled={plan.name === 'Free'}
+                    className={`w-full h-11 font-semibold ${
+                      plan.buttonVariant === 'default' && plan.popular
+                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                         : ''
-                  }`}
-                >
-                  {plan.popular && <Zap className="h-4 w-4 mr-2" />}
-                  {plan.name === 'Pro / Enterprise' && <Crown className="h-4 w-4 mr-2" />}
-                  {plan.buttonText}
-                </Button>
+                    }`}
+                  >
+                    {plan.popular && <Zap className="h-4 w-4 mr-2" />}
+                    {plan.buttonText}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}

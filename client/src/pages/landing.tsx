@@ -135,10 +135,20 @@ export default function Landing() {
         </div>
 
         {/* Footer */}
-        <div className="text-center pb-6">
+        <div className="text-center pb-6 px-6 space-y-2">
           <p className="text-xs text-muted-foreground">
             © 2025 ArcSide™ - Professional Welding Solutions
           </p>
+          <div className="flex items-center justify-center gap-4">
+            <a href="mailto:info@arcside.co.za" className="text-xs text-primary hover:underline flex items-center gap-1" data-testid="link-footer-email">
+              <i className="fas fa-envelope text-[10px]"></i>
+              info@arcside.co.za
+            </a>
+            <a href="tel:+27796819319" className="text-xs text-primary hover:underline flex items-center gap-1" data-testid="link-footer-phone">
+              <i className="fas fa-phone text-[10px]"></i>
+              +27 79 681 9319
+            </a>
+          </div>
         </div>
       </div>
     </div>
