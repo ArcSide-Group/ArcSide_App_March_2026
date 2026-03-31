@@ -43,7 +43,7 @@ export default function Disclaimer() {
 
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">1. Informational Use Only</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   ArcSide and all tools, calculators, AI-generated outputs, and Weld Procedure Specification (WPS) drafts
                   provided within this application are intended solely for <strong className="text-foreground">educational and informational reference purposes</strong>.
                   They do not constitute professional engineering advice, certified welding procedures, or code-compliant documentation.
@@ -52,13 +52,13 @@ export default function Disclaimer() {
 
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">2. No Warranty of Accuracy</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   Calculations performed by ArcSide's welding calculators are based on empirical formulas, industry guidelines
                   (including AWS D1.1, ASME Section IX, and Lincoln Electric reference data), and AI-assisted analysis. Results
                   may vary from actual welding conditions due to material variability, equipment calibration, operator technique,
                   environmental factors, and the inherent limitations of simplified mathematical models.
                 </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   <strong className="text-foreground">ArcSide makes no warranty, express or implied</strong>, regarding the accuracy,
                   completeness, reliability, or fitness for a particular purpose of any calculated value or AI-generated recommendation.
                 </p>
@@ -66,11 +66,11 @@ export default function Disclaimer() {
 
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">3. Critical Applications</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   For structural welding, pressure vessel fabrication, pipeline work, aerospace applications, or any
                   safety-critical welding, you <strong className="text-foreground">must</strong>:
                 </p>
-                <ul className="text-xs text-muted-foreground space-y-1.5 mt-1">
+                <ul className="text-xs text-slate-900 dark:text-slate-100 space-y-1.5 mt-1">
                   <li className="flex items-start gap-2">
                     <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
                     Obtain a certified Welding Procedure Specification (WPS) from a qualified Certified Welding Inspector (CWI) or Welding Engineer
@@ -92,7 +92,7 @@ export default function Disclaimer() {
 
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">4. AI-Generated Content</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   ArcSide uses Google Gemini 2.0 Flash to power its AI Defect Analyzer, Weld Assistant, Material Compatibility
                   Checker, WPS Generator, and Terminology tools. AI-generated content can contain errors, hallucinations, or
                   outdated information. Never rely solely on AI analysis for acceptance or rejection of welds in code work.
@@ -102,7 +102,7 @@ export default function Disclaimer() {
 
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">5. Limitation of Liability</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   To the maximum extent permitted by applicable law, ArcSide, its developers, and affiliated parties shall not
                   be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from the
                   use or misuse of this application — including but not limited to weld failures, equipment damage, personal
@@ -112,7 +112,7 @@ export default function Disclaimer() {
 
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">6. User Responsibility</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   By using ArcSide, you acknowledge that you are a trained welding professional or are operating under the
                   supervision of one. You accept full responsibility for verifying all parameters, obtaining appropriate
                   engineering sign-off, and ensuring compliance with all applicable codes, standards, and regulations in
@@ -122,7 +122,7 @@ export default function Disclaimer() {
 
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">7. Applicable Standards Referenced</h3>
-                <ul className="text-xs text-muted-foreground space-y-1">
+                <ul className="text-xs text-slate-900 dark:text-slate-100 space-y-1">
                   <li><span className="text-foreground font-medium">AWS D1.1</span> — Structural Welding Code (Steel)</li>
                   <li><span className="text-foreground font-medium">AWS D1.2</span> — Structural Welding Code (Aluminum)</li>
                   <li><span className="text-foreground font-medium">ASME Section IX</span> — Welding & Brazing Qualifications</li>
@@ -135,7 +135,7 @@ export default function Disclaimer() {
 
               <div className="industrial-divider"></div>
 
-              <div className="text-xs text-muted-foreground text-center space-y-1">
+              <div className="text-xs text-slate-900 dark:text-slate-100 text-center space-y-1">
                 <p>Questions? Contact your certified welding engineer.</p>
                 <p>ArcSide™ is a field reference tool — not a code authority.</p>
                 <div className="flex items-center justify-center gap-3 pt-1">

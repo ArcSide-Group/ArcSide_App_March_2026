@@ -17,7 +17,7 @@ export default function BottomNavigation() {
   };
 
   return (
-    <div className="bottom-nav" style={{ backgroundColor: '#0f172a' }}>
+    <div className="bottom-nav max-w-[600px] mx-auto" style={{ backgroundColor: '#0f172a' }}>
       <div className="grid grid-cols-4 items-center py-1.5">
         {navItems.map((item) => {
           const active = isActive(item.href);

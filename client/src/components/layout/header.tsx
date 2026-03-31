@@ -53,7 +53,7 @@ export default function Header() {
 
   return (
     <header className="header-professional">
-      <div className="max-w-sm mx-auto">
+      <div className="max-w-[600px] mx-auto">
         {/* VIP Founder's Circle Banner */}
         <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-primary/30 px-4 py-2">
           <p className="text-xs font-bold text-primary flex items-center gap-2">
@@ -68,7 +68,7 @@ export default function Header() {
         </div>
 
         {/* Navigation Bar — centered logo, menu right */}
-        <div className="flex h-14 items-center justify-between px-4 border-b border-border relative">
+        <div className="flex h-14 items-center justify-between px-3 border-b border-border relative gap-4">
           {/* Spacer for centering */}
           <div className="w-11" />
 
