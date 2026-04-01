@@ -296,11 +296,11 @@ export default function Settings() {
                 data-testid="img-arcside-logo-settings"
               />
               <div className="text-center">
-                <h3 className="font-bold text-base text-foreground">ArcSide™ Professional</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Mobile App v1.0.0</p>
+                <h3 className="font-bold text-base text-foreground">ArcSide™️ Mobile App</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">v1.0.0 — Beta</p>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  AI-powered welding &amp; fabrication assistant.<br />
-                  Built by tradesmen, for tradesmen.
+                  Built by Tradesmen, For Tradesmen.<br />
+                  AI-powered welding &amp; fabrication assistant.
                 </p>
               </div>
             </div>

@@ -15,6 +15,7 @@ import DisclaimerModal from "@/components/common/disclaimer-modal";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
+import PrivateBeta from "@/pages/private-beta";
 
 // Layout Components
 import Header from "@/components/layout/header";
@@ -100,6 +101,7 @@ function Router() {
       <MobileContainer>
         <Switch>
           <Route path="/" component={Landing} />
+          <Route path="/private-beta" component={PrivateBeta} />
           <Route component={NotFound} />
         </Switch>
       </MobileContainer>
@@ -147,6 +149,7 @@ function Router() {
             <Route path="/settings" component={Settings} />
             <Route path="/beta-feedback" component={BetaFeedback} />
             <Route path="/disclaimer" component={Disclaimer} />
+            <Route path="/private-beta" component={PrivateBeta} />
             <Route component={NotFound} />
           </Switch>
         </Suspense>

@@ -1,8 +1,8 @@
-# ArcSide™ - Professional Welding Tools
+# ArcSide™️ Mobile App — Built by Tradesmen, For Tradesmen
 
 ## Overview
 
-ArcSide™ is a mobile-first web application designed as "The App Made by Tradesmen for Tradesmen." It provides AI-powered tools for welding professionals, including defect analysis, WPS (Welding Procedure Specification) generation, material checking, terminology lookup, and an AI welding assistant. The application features a freemium subscription model with usage limits for free users and unlimited access for premium subscribers.
+ArcSide™️ is a mobile-first web application for welding professionals. It provides AI-powered tools including defect analysis, WPS generation, material checking, terminology lookup, and an AI welding assistant. Currently in **closed beta** with invite-only access enforced via a code-level email whitelist. All measurements are metric (South African market), all costs in ZAR (R).
 
 ## User Preferences
 

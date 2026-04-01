@@ -36,11 +36,17 @@ export default function Header() {
     <Link href={href}>
       <Button
         variant="ghost"
-        className={`
-          ${mobile ? 'w-full justify-start gap-3 px-4 py-3 h-auto text-base' : 'gap-2 px-3 py-2'}
-          text-foreground hover:bg-primary/10 hover:text-primary transition-colors duration-200
-          ${isActive(href) ? 'bg-primary/20 text-primary font-semibold' : ''}
-        `}
+        className={
+          mobile
+            ? `w-full justify-start gap-3 px-4 py-3 h-auto text-base rounded-md border transition-colors duration-200
+               ${isActive(href)
+                 ? 'bg-primary/30 text-primary font-semibold border-primary/40 shadow-[0_0_8px_rgba(0,35,102,0.25)]'
+                 : 'bg-slate-800/50 dark:bg-slate-700/40 text-slate-100 border-slate-600/60 hover:bg-primary/20 hover:text-primary hover:border-primary/30'
+               }`
+            : `gap-2 px-3 py-2 transition-colors duration-200
+               text-foreground hover:bg-primary/10 hover:text-primary
+               ${isActive(href) ? 'bg-primary/20 text-primary font-semibold' : ''}`
+        }
         onClick={() => mobile && setIsOpen(false)}
       >
         <>
@@ -102,7 +108,7 @@ export default function Header() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-card border-l border-border">
+            <SheetContent side="right" className="w-[300px] bg-[#0f172a] dark:bg-[#0a0f1e] border-l border-slate-700">
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center justify-center gap-3 px-4 pb-4 border-b border-border">
                   <img
@@ -116,9 +122,9 @@ export default function Header() {
                   {navigationItems.map((item) => (
                     <NavLink key={item.href} {...item} mobile />
                   ))}
-                  <div className="mt-2 pt-2 border-t border-border">
+                  <div className="mt-2 pt-2 border-t border-slate-700">
                     <Link href="/disclaimer">
-                      <Button variant="ghost" className="w-full justify-start gap-3 px-4 py-3 h-auto text-base text-accent hover:bg-accent/10" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 px-4 py-3 h-auto text-base rounded-md border bg-slate-800/50 border-slate-600/60 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/30 transition-colors duration-200" onClick={() => setIsOpen(false)}>
                         <i className="fas fa-shield-alt h-5 w-5 shrink-0 text-sm"></i>
                         <span>Disclaimer</span>
                       </Button>

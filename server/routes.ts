@@ -6,6 +6,24 @@ import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema, insertWeldL
 import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
 import { z } from "zod";
+import nodemailer from "nodemailer";
+
+// Nodemailer transporter — uses mail.arcside.co.za SMTP
+function createMailTransporter() {
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (!smtpUser || !smtpPass) {
+    console.warn("[MAIL] SMTP_USER or SMTP_PASS not configured — emails will not be sent");
+    return null;
+  }
+  return nodemailer.createTransport({
+    host: "mail.arcside.co.za",
+    port: 587,
+    secure: false, // STARTTLS
+    auth: { user: smtpUser, pass: smtpPass },
+    tls: { rejectUnauthorized: false },
+  });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -579,6 +597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/beta-feedback', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const userEmail = req.user.email || 'unknown';
       const { navigationRating, accuracyRating, aiQualityRating, performanceRating, technicalNotes } = req.body;
       
       // Validate ratings
@@ -598,6 +617,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalNotes: technicalNotes || null,
         averageScore: parseFloat(averageScore.toFixed(2)),
       });
+
+      // Send email notification via Nodemailer
+      try {
+        const transporter = createMailTransporter();
+        if (transporter) {
+          const starRow = (label: string, rating: number) =>
+            `${label}: ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)} (${rating}/5)`;
+
+          await transporter.sendMail({
+            from: `"ArcSide Beta Feedback" <${process.env.SMTP_USER}>`,
+            to: 'info@arcside.co.za',
+            subject: `ArcSide Beta Feedback — ${averageScore.toFixed(1)}/5 ⭐ from ${userEmail}`,
+            text: [
+              `New beta feedback received from: ${userEmail}`,
+              `Submitted: ${new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })}`,
+              '',
+              '── RATINGS ──────────────────────',
+              starRow('Navigation & UX      ', navigationRating),
+              starRow('Calculation Accuracy ', accuracyRating),
+              starRow('AI Assistant Quality ', aiQualityRating),
+              starRow('App Performance      ', performanceRating),
+              '',
+              `Overall Average: ${averageScore.toFixed(2)} / 5`,
+              '',
+              '── TECHNICAL NOTES ───────────────',
+              technicalNotes?.trim() || '(none provided)',
+              '',
+              '─────────────────────────────────',
+              'ArcSide™️ Beta Feedback System',
+            ].join('\n'),
+          });
+          console.log(`[MAIL] Beta feedback email sent for user ${userEmail}`);
+        }
+      } catch (mailError) {
+        console.error("[MAIL] Failed to send feedback email:", mailError);
+        // Do not fail the request — DB save succeeded
+      }
       
       res.json(feedback);
     } catch (error) {
