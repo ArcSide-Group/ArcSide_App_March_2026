@@ -21,7 +21,6 @@ function createMailTransporter() {
     port: 587,
     secure: false, // STARTTLS
     auth: { user: smtpUser, pass: smtpPass },
-    tls: { rejectUnauthorized: false },
   });
 }
 

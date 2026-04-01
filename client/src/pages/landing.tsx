@@ -1,36 +1,63 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 type AuthMode = "choose" | "email-signin" | "email-register";
 
+const signInSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(1, "Password is required."),
+});
+
+const registerSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+});
+
+type SignInValues = z.infer<typeof signInSchema>;
+type RegisterValues = z.infer<typeof registerSchema>;
+
 export default function Landing() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [mode, setMode] = useState<AuthMode>("choose");
-  const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "", firstName: "", lastName: "" });
 
   const handleGoogleLogin = () => {
     window.location.href = "/api/login";
   };
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // ── Sign In Form ───────────────────────────────────────────────────────
+  const signInForm = useForm<SignInValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const onSignIn = async (values: SignInValues) => {
     try {
       const res = await fetch("/api/login/local", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: JSON.stringify(values),
         credentials: "include",
       });
       const data = await res.json();
+
+      if (res.status === 403) {
+        navigate("/private-beta");
+        return;
+      }
       if (!res.ok) {
         toast({ title: "Sign In Failed", description: data.message || "Invalid credentials.", variant: "destructive" });
         return;
@@ -38,27 +65,30 @@ export default function Landing() {
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       window.location.href = "/";
     } catch {
-      toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
+      toast({ title: "Network Error", description: "Could not reach the server. Please try again.", variant: "destructive" });
     }
   };
 
-  const handleEmailRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (form.password.length < 8) {
-      toast({ title: "Password Too Short", description: "Password must be at least 8 characters.", variant: "destructive" });
-      return;
-    }
-    setIsLoading(true);
+  // ── Register Form ──────────────────────────────────────────────────────
+  const registerForm = useForm<RegisterValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { firstName: "", lastName: "", email: "", password: "" },
+  });
+
+  const onRegister = async (values: RegisterValues) => {
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password, firstName: form.firstName, lastName: form.lastName }),
+        body: JSON.stringify(values),
         credentials: "include",
       });
       const data = await res.json();
+
+      if (res.status === 403) {
+        navigate("/private-beta");
+        return;
+      }
       if (!res.ok) {
         toast({ title: "Registration Failed", description: data.message || "Could not create account.", variant: "destructive" });
         return;
@@ -66,9 +96,7 @@ export default function Landing() {
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       window.location.href = "/";
     } catch {
-      toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
+      toast({ title: "Network Error", description: "Could not reach the server. Please try again.", variant: "destructive" });
     }
   };
 
@@ -76,7 +104,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border relative">
 
-        {/* Hero Section */}
+        {/* Hero */}
         <div className="text-center pt-12 pb-8 px-6 hero-section">
           <img
             src={logoPath}
@@ -89,10 +117,9 @@ export default function Landing() {
           </Badge>
         </div>
 
-        {/* Auth Section */}
+        {/* ── CHOOSE MODE ──────────────────────────────────────────────── */}
         {mode === "choose" && (
           <>
-            {/* Features */}
             <div className="px-6 mb-8">
               <div className="grid gap-4">
                 <Card className="bg-card border-border">
@@ -153,135 +180,93 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Trusted By */}
             <div className="px-6 mb-8">
               <p className="text-center text-xs text-muted-foreground mb-4">Trusted by welding professionals worldwide</p>
               <div className="flex justify-center space-x-6 text-muted-foreground">
-                <div className="text-center">
-                  <div className="text-lg font-bold">10K+</div>
-                  <div className="text-xs">Active Users</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold">50K+</div>
-                  <div className="text-xs">Analyses</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold">1K+</div>
-                  <div className="text-xs">WPS Generated</div>
-                </div>
+                <div className="text-center"><div className="text-lg font-bold">10K+</div><div className="text-xs">Active Users</div></div>
+                <div className="text-center"><div className="text-lg font-bold">50K+</div><div className="text-xs">Analyses</div></div>
+                <div className="text-center"><div className="text-lg font-bold">1K+</div><div className="text-xs">WPS Generated</div></div>
               </div>
             </div>
 
-            {/* CTA */}
             <div className="px-6 pb-4">
-              <Button
-                onClick={handleGoogleLogin}
-                className="w-full h-12 text-base font-semibold"
-                data-testid="button-login-google"
-              >
+              <Button onClick={handleGoogleLogin} className="w-full h-12 text-base font-semibold" data-testid="button-login-google">
                 <i className="fab fa-google mr-2"></i>
                 Continue with Google
               </Button>
 
               <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
                 <div className="relative flex justify-center text-xs text-muted-foreground">
                   <span className="bg-background px-2">or use email</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setMode("email-signin")}
-                  className="h-11"
-                  data-testid="button-show-signin"
-                >
-                  Sign In
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setMode("email-register")}
-                  className="h-11"
-                  data-testid="button-show-register"
-                >
-                  Register
-                </Button>
+                <Button variant="outline" onClick={() => setMode("email-signin")} className="h-11" data-testid="button-show-signin">Sign In</Button>
+                <Button variant="outline" onClick={() => setMode("email-register")} className="h-11" data-testid="button-show-register">Register</Button>
               </div>
 
-              <div className="mt-6 text-center">
-                <p className="text-xs text-muted-foreground">
-                  ArcSide is in closed beta. Access is invite-only.
-                </p>
-              </div>
+              <p className="text-center text-xs text-muted-foreground mt-4">
+                ArcSide is in closed beta. Access is invite-only.
+              </p>
             </div>
           </>
         )}
 
-        {/* Email Sign In */}
+        {/* ── EMAIL SIGN IN ─────────────────────────────────────────────── */}
         {mode === "email-signin" && (
           <div className="px-6 pb-8">
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-1">Sign In</h2>
               <p className="text-sm text-muted-foreground">Enter your email and password to access ArcSide.</p>
             </div>
-            <form onSubmit={handleEmailSignIn} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  required
-                  autoComplete="email"
-                  data-testid="input-signin-email"
+
+            <Form {...signInForm}>
+              <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4">
+                <FormField
+                  control={signInForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="you@example.com" autoComplete="email" data-testid="input-signin-email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  required
-                  autoComplete="current-password"
-                  data-testid="input-signin-password"
+                <FormField
+                  control={signInForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••" autoComplete="current-password" data-testid="input-signin-password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <Button type="submit" className="w-full h-11" disabled={isLoading} data-testid="button-signin-submit">
-                {isLoading ? "Signing In…" : "Sign In"}
-              </Button>
-            </form>
+                <Button type="submit" className="w-full h-11" disabled={signInForm.formState.isSubmitting} data-testid="button-signin-submit">
+                  {signInForm.formState.isSubmitting ? "Signing In…" : "Sign In"}
+                </Button>
+              </form>
+            </Form>
 
             <div className="mt-4 space-y-2 text-center">
-              <button
-                onClick={() => setMode("email-register")}
-                className="text-xs text-primary hover:underline"
-                data-testid="link-switch-to-register"
-              >
+              <button onClick={() => setMode("email-register")} className="text-xs text-primary hover:underline" data-testid="link-switch-to-register">
                 Don't have an account? Register
               </button>
               <div className="block">
-                <button
-                  onClick={handleGoogleLogin}
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                  data-testid="button-back-to-google"
-                >
+                <button onClick={handleGoogleLogin} className="text-xs text-muted-foreground hover:text-primary transition-colors" data-testid="button-signin-google-alt">
                   Or continue with Google
                 </button>
               </div>
               <div className="block">
-                <button
-                  onClick={() => setMode("choose")}
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                  data-testid="button-back-to-choose"
-                >
+                <button onClick={() => setMode("choose")} className="text-xs text-muted-foreground hover:text-primary transition-colors" data-testid="button-back-to-choose">
                   ← Back
                 </button>
               </div>
@@ -289,85 +274,82 @@ export default function Landing() {
           </div>
         )}
 
-        {/* Email Register */}
+        {/* ── EMAIL REGISTER ────────────────────────────────────────────── */}
         {mode === "email-register" && (
           <div className="px-6 pb-8">
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-1">Create Account</h2>
               <p className="text-sm text-muted-foreground">Register with your email. Beta access is invite-only.</p>
             </div>
-            <form onSubmit={handleEmailRegister} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="Jan"
-                    value={form.firstName}
-                    onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-                    autoComplete="given-name"
-                    data-testid="input-register-firstname"
+
+            <Form {...registerForm}>
+              <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={registerForm.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input type="text" placeholder="Jan" autoComplete="given-name" data-testid="input-register-firstname" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={registerForm.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input type="text" placeholder="Botha" autoComplete="family-name" data-testid="input-register-lastname" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Botha"
-                    value={form.lastName}
-                    onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-                    autoComplete="family-name"
-                    data-testid="input-register-lastname"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="reg-email">Email</Label>
-                <Input
-                  id="reg-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  required
-                  autoComplete="email"
-                  data-testid="input-register-email"
+                <FormField
+                  control={registerForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="you@example.com" autoComplete="email" data-testid="input-register-email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="reg-password">Password</Label>
-                <Input
-                  id="reg-password"
-                  type="password"
-                  placeholder="Min. 8 characters"
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  required
-                  autoComplete="new-password"
-                  data-testid="input-register-password"
+                <FormField
+                  control={registerForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Min. 8 characters" autoComplete="new-password" data-testid="input-register-password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <Button type="submit" className="w-full h-11" disabled={isLoading} data-testid="button-register-submit">
-                {isLoading ? "Creating Account…" : "Create Account"}
-              </Button>
-            </form>
+                <Button type="submit" className="w-full h-11" disabled={registerForm.formState.isSubmitting} data-testid="button-register-submit">
+                  {registerForm.formState.isSubmitting ? "Creating Account…" : "Create Account"}
+                </Button>
+              </form>
+            </Form>
 
             <div className="mt-4 space-y-2 text-center">
-              <button
-                onClick={() => setMode("email-signin")}
-                className="text-xs text-primary hover:underline"
-                data-testid="link-switch-to-signin"
-              >
+              <button onClick={() => setMode("email-signin")} className="text-xs text-primary hover:underline" data-testid="link-switch-to-signin">
                 Already have an account? Sign In
               </button>
               <div className="block">
-                <button
-                  onClick={() => setMode("choose")}
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                  data-testid="button-back-to-choose-reg"
-                >
+                <button onClick={() => setMode("choose")} className="text-xs text-muted-foreground hover:text-primary transition-colors" data-testid="button-back-to-choose-reg">
                   ← Back
                 </button>
               </div>
@@ -377,9 +359,7 @@ export default function Landing() {
 
         {/* Footer */}
         <div className="text-center pb-6 px-6 space-y-2 mt-4">
-          <p className="text-xs text-muted-foreground">
-            © 2025 ArcSide™ - Professional Welding Solutions
-          </p>
+          <p className="text-xs text-muted-foreground">© 2025 ArcSide™ — Professional Welding Solutions</p>
           <div className="flex items-center justify-center gap-4">
             <a href="mailto:info@arcside.co.za" className="text-xs text-primary hover:underline flex items-center gap-1" data-testid="link-footer-email">
               <i className="fas fa-envelope text-[10px]"></i>
