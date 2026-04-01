@@ -124,11 +124,12 @@ export function setupAuth(app: Express) {
           console.log(`[AUTH] Google strategy verify: profile.id=${profile.id}`);
           await upsertGoogleUser(profile);
 
+          const normalizedEmail = (profile.emails?.[0]?.value ?? "").toLowerCase().trim();
           const user: SessionUser = {
-            id: profile.emails?.[0]?.value
-              ? (await storage.getUserByEmail(profile.emails[0].value))?.id ?? profile.id
+            id: normalizedEmail
+              ? (await storage.getUserByEmail(normalizedEmail))?.id ?? profile.id
               : profile.id,
-            email: profile.emails?.[0]?.value,
+            email: normalizedEmail || undefined,
             displayName: profile.displayName,
           };
           console.log(`[AUTH] Google strategy returning user:`, user);
@@ -210,7 +211,6 @@ export function setupAuth(app: Express) {
 
   app.get(
     "/api/callback",
-    (_req: Request, _res: Response, next: NextFunction) => next(),
     passport.authenticate("google", { failureRedirect: "/" }),
     (req: Request, res: Response) => {
       const email = req.user?.email;
