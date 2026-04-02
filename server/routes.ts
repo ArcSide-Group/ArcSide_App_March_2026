@@ -1,3 +1,4 @@
+import { rateLimit } from 'express-rate-limit';
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -7,7 +8,13 @@ import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
 import { z } from "zod";
 import nodemailer from "nodemailer";
-
+const aiLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24-hour reset window
+  max: 10, // Max 10 AI questions per user per day
+  message: { error: "Beta Limit Reached: Please try again tomorrow to help us manage API costs!" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 // Nodemailer transporter — uses mail.arcside.co.za SMTP
 function createMailTransporter() {
   const smtpUser = process.env.SMTP_USER;
@@ -51,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Tools routes
-  app.post('/api/ai/analyze-defect', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/analyze-defect', isAuthenticated, aiLimiter, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const { imageData, additionalDetails, projectId } = req.body;
