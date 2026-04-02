@@ -1,19 +1,31 @@
 import passport from "passport";
-import { Strategy as GoogleStrategy, Profile as GoogleProfile } from "passport-google-oauth20";
+import {
+  Strategy as GoogleStrategy,
+  Profile as GoogleProfile,
+} from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
 import session from "express-session";
-import type { Express, Request, Response, NextFunction, RequestHandler } from "express";
+import type {
+  Express,
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
+import { GalleryThumbnails } from "lucide-react";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required");
+  throw new Error(
+    "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required",
+  );
 }
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable is required");
@@ -31,16 +43,25 @@ declare global {
   }
 }
 
-type PublicUser = Omit<User, "passwordHash" | "passwordResetToken" | "passwordResetExpires">;
+type PublicUser = Omit<
+  User,
+  "passwordHash" | "passwordResetToken" | "passwordResetExpires"
+>;
 
 function toPublicUser(user: User): PublicUser {
-  const { passwordHash: _ph, passwordResetToken: _prt, passwordResetExpires: _pre, ...safe } = user;
+  const {
+    passwordHash: _ph,
+    passwordResetToken: _prt,
+    passwordResetExpires: _pre,
+    ...safe
+  } = user;
   return safe;
 }
 
 const ALLOWED_USERS = [
   "info@arcside.co.za",
   "caitywills16@gmail.com",
+  "andriesjuniormodise@gmail.com",
 ];
 
 function isEmailAllowed(email: string | undefined | null): boolean {
@@ -78,7 +99,9 @@ async function upsertGoogleUser(profile: GoogleProfile): Promise<void> {
   const lastName = profile.name?.familyName ?? "";
   const profileImageUrl = profile.photos?.[0]?.value ?? "";
 
-  console.log(`[AUTH] Upserting Google user: googleId=${googleId}, email=${email}`);
+  console.log(
+    `[AUTH] Upserting Google user: googleId=${googleId}, email=${email}`,
+  );
 
   // If a local account already exists with this email, link Google to it instead
   // of inserting a new row (which would violate the unique email constraint).
@@ -121,13 +144,18 @@ export function setupAuth(app: Express) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          console.log(`[AUTH] Google strategy verify: profile.id=${profile.id}`);
+          console.log(
+            `[AUTH] Google strategy verify: profile.id=${profile.id}`,
+          );
           await upsertGoogleUser(profile);
 
-          const normalizedEmail = (profile.emails?.[0]?.value ?? "").toLowerCase().trim();
+          const normalizedEmail = (profile.emails?.[0]?.value ?? "")
+            .toLowerCase()
+            .trim();
           const user: SessionUser = {
             id: normalizedEmail
-              ? (await storage.getUserByEmail(normalizedEmail))?.id ?? profile.id
+              ? ((await storage.getUserByEmail(normalizedEmail))?.id ??
+                profile.id)
               : profile.id,
             email: normalizedEmail || undefined,
             displayName: profile.displayName,
@@ -138,8 +166,8 @@ export function setupAuth(app: Express) {
           console.error("[AUTH] Strategy verify error:", error);
           return done(error as Error);
         }
-      }
-    )
+      },
+    ),
   );
 
   passport.use(
@@ -151,13 +179,21 @@ export function setupAuth(app: Express) {
           const user = await storage.getUserByEmail(email.toLowerCase().trim());
 
           if (!user) {
-            return done(null, false, { message: "No account found with that email." });
+            return done(null, false, {
+              message: "No account found with that email.",
+            });
           }
           if (!user.passwordHash) {
-            return done(null, false, { message: "This account uses Google sign-in. Please use the Google button." });
+            return done(null, false, {
+              message:
+                "This account uses Google sign-in. Please use the Google button.",
+            });
           }
 
-          const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+          const passwordMatch = await bcrypt.compare(
+            password,
+            user.passwordHash,
+          );
           if (!passwordMatch) {
             return done(null, false, { message: "Incorrect password." });
           }
@@ -165,7 +201,8 @@ export function setupAuth(app: Express) {
           const sessionUser: SessionUser = {
             id: user.id,
             email: user.email ?? undefined,
-            displayName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+            displayName:
+              `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
           };
           console.log(`[AUTH] Local strategy returning user:`, sessionUser);
           return done(null, sessionUser);
@@ -173,8 +210,8 @@ export function setupAuth(app: Express) {
           console.error("[AUTH] Local strategy error:", error);
           return done(error as Error);
         }
-      }
-    )
+      },
+    ),
   );
 
   passport.serializeUser((user, done) => {
@@ -206,7 +243,11 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/login", (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+    passport.authenticate("google", { scope: ["profile", "email"] })(
+      req,
+      res,
+      next,
+    );
   });
 
   app.get(
@@ -215,7 +256,9 @@ export function setupAuth(app: Express) {
     (req: Request, res: Response) => {
       const email = req.user?.email;
       if (!isEmailAllowed(email)) {
-        console.log(`[AUTH] Email ${email} not whitelisted — logging out, redirecting to /private-beta`);
+        console.log(
+          `[AUTH] Email ${email} not whitelisted — logging out, redirecting to /private-beta`,
+        );
         return req.logout((err: Error | null) => {
           if (err) console.error("[AUTH] Logout error:", err);
           res.redirect("/private-beta");
@@ -228,7 +271,7 @@ export function setupAuth(app: Express) {
         }
         res.redirect("/");
       });
-    }
+    },
   );
 
   app.post("/api/register", async (req: Request, res: Response) => {
@@ -241,24 +284,33 @@ export function setupAuth(app: Express) {
       };
 
       if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required." });
+        return res
+          .status(400)
+          .json({ message: "Email and password are required." });
       }
       if (password.length < 8) {
-        return res.status(400).json({ message: "Password must be at least 8 characters." });
+        return res
+          .status(400)
+          .json({ message: "Password must be at least 8 characters." });
       }
 
       const normalizedEmail = email.toLowerCase().trim();
 
       if (!isEmailAllowed(normalizedEmail)) {
-        console.log(`[AUTH] Register denied (not whitelisted): ${normalizedEmail}`);
+        console.log(
+          `[AUTH] Register denied (not whitelisted): ${normalizedEmail}`,
+        );
         return res.status(403).json({
-          message: "Access restricted. Your email is not on the beta invite list. Contact info@arcside.co.za to request access.",
+          message:
+            "Access restricted. Your email is not on the beta invite list. Contact info@arcside.co.za to request access.",
         });
       }
 
       const existing = await storage.getUserByEmail(normalizedEmail);
       if (existing) {
-        return res.status(409).json({ message: "An account with this email already exists." });
+        return res
+          .status(409)
+          .json({ message: "An account with this email already exists." });
       }
 
       const passwordHash = await bcrypt.hash(password, 12);
@@ -283,47 +335,70 @@ export function setupAuth(app: Express) {
       req.login(sessionUser, (loginErr: Error | null) => {
         if (loginErr) {
           console.error("[AUTH] Login after register error:", loginErr);
-          return res.status(500).json({ message: "Registration succeeded but login failed. Please sign in." });
+          return res
+            .status(500)
+            .json({
+              message:
+                "Registration succeeded but login failed. Please sign in.",
+            });
         }
         console.log(`[AUTH] Registered and logged in: ${normalizedEmail}`);
         res.json({ success: true, message: "Account created successfully." });
       });
     } catch (error) {
       console.error("[AUTH] Registration error:", error);
-      res.status(500).json({ message: "Registration failed. Please try again." });
+      res
+        .status(500)
+        .json({ message: "Registration failed. Please try again." });
     }
   });
 
-  app.post("/api/login/local", (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate(
-      "local",
-      (err: Error | null, user: SessionUser | false, info: { message: string } | undefined) => {
-        if (err) {
-          console.error("[AUTH] Local login error:", err);
-          return res.status(500).json({ message: "Login failed. Please try again." });
-        }
-        if (!user) {
-          return res.status(401).json({ message: info?.message ?? "Invalid credentials." });
-        }
-
-        if (!isEmailAllowed(user.email)) {
-          console.log(`[AUTH] Local login denied (not whitelisted): ${user.email}`);
-          return res.status(403).json({
-            message: "Access restricted. Your email is not on the beta invite list. Contact info@arcside.co.za to request access.",
-          });
-        }
-
-        req.login(user, (loginErr: Error | null) => {
-          if (loginErr) {
-            console.error("[AUTH] Session login error:", loginErr);
-            return res.status(500).json({ message: "Login failed. Please try again." });
+  app.post(
+    "/api/login/local",
+    (req: Request, res: Response, next: NextFunction) => {
+      passport.authenticate(
+        "local",
+        (
+          err: Error | null,
+          user: SessionUser | false,
+          info: { message: string } | undefined,
+        ) => {
+          if (err) {
+            console.error("[AUTH] Local login error:", err);
+            return res
+              .status(500)
+              .json({ message: "Login failed. Please try again." });
           }
-          console.log(`[AUTH] Local login successful: ${user.email}`);
-          res.json({ success: true });
-        });
-      }
-    )(req, res, next);
-  });
+          if (!user) {
+            return res
+              .status(401)
+              .json({ message: info?.message ?? "Invalid credentials." });
+          }
+
+          if (!isEmailAllowed(user.email)) {
+            console.log(
+              `[AUTH] Local login denied (not whitelisted): ${user.email}`,
+            );
+            return res.status(403).json({
+              message:
+                "Access restricted. Your email is not on the beta invite list. Contact info@arcside.co.za to request access.",
+            });
+          }
+
+          req.login(user, (loginErr: Error | null) => {
+            if (loginErr) {
+              console.error("[AUTH] Session login error:", loginErr);
+              return res
+                .status(500)
+                .json({ message: "Login failed. Please try again." });
+            }
+            console.log(`[AUTH] Local login successful: ${user.email}`);
+            res.json({ success: true });
+          });
+        },
+      )(req, res, next);
+    },
+  );
 
   app.get("/api/logout", (req: Request, res: Response, next: NextFunction) => {
     req.logout((err: Error | null) => {
@@ -332,28 +407,39 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/auth/user", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const sessionUser = req.user as SessionUser;
-      if (!sessionUser) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
+  app.get(
+    "/api/auth/user",
+    isAuthenticated,
+    async (req: Request, res: Response) => {
+      try {
+        const sessionUser = req.user as SessionUser;
+        if (!sessionUser) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
 
-      const dbUser = await storage.getUser(sessionUser.id);
-      if (!dbUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
+        const dbUser = await storage.getUser(sessionUser.id);
+        if (!dbUser) {
+          return res.status(404).json({ message: "User not found" });
+        }
 
-      res.json(toPublicUser(dbUser));
-    } catch (error) {
-      console.error("[AUTH] /api/auth/user error:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+        res.json(toPublicUser(dbUser));
+      } catch (error) {
+        console.error("[AUTH] /api/auth/user error:", error);
+        res.status(500).json({ message: "Failed to fetch user" });
+      }
+    },
+  );
 }
 
-export const isAuthenticated: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
-  console.log(`[AUTH] isAuthenticated middleware - req.isAuthenticated():`, req.isAuthenticated?.());
+export const isAuthenticated: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  console.log(
+    `[AUTH] isAuthenticated middleware - req.isAuthenticated():`,
+    req.isAuthenticated?.(),
+  );
   console.log(`[AUTH] isAuthenticated middleware - req.user:`, req.user);
 
   if (req.isAuthenticated?.()) {
