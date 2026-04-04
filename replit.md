@@ -2,7 +2,20 @@
 
 ## Overview
 
-ArcSide™️ is a mobile-first web application for welding professionals. It provides AI-powered tools including defect analysis, WPS generation, material checking, terminology lookup, and an AI welding assistant. Currently in **closed beta** with invite-only access enforced via a code-level email whitelist. All measurements are metric (South African market), all costs in ZAR (R).
+ArcSide™️ is a mobile-first web application for welding professionals. It provides AI-powered tools including defect analysis, WPS generation, material checking, terminology lookup, and an AI welding assistant. Currently in **closed beta** with invite-only access enforced via a persistent database whitelist managed through the Admin Portal. All measurements are metric (South African market), all costs in ZAR (R).
+
+## Admin Portal
+- Route: `/admin-portal` (authenticated users only; admin check enforced both server-side and client-side)
+- Admin email: `info@arcside.co.za`
+- Features: view whitelist, add email, revoke access
+- API routes: `GET/POST /api/admin/whitelist`, `DELETE /api/admin/whitelist/:id`
+- `isAdmin` middleware exported from `server/replitAuth.ts`
+
+## Whitelist
+- Stored in `whitelist` DB table (created on startup via `initializeWhitelist()` in `server/db.ts`)
+- Seeded with `info@arcside.co.za` and `caitywills16@gmail.com` on first run
+- Auth reads from DB via `storage.isEmailInWhitelist(email)` — no more hardcoded array
+- `DatabaseStorage` is now the active storage implementation (switched from `MemStorage`)
 
 ## User Preferences
 

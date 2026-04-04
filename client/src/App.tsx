@@ -16,6 +16,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import PrivateBeta from "@/pages/private-beta";
+import AdminPortal from "@/pages/admin-portal";
 
 // Layout Components
 import Header from "@/components/layout/header";
@@ -150,6 +151,7 @@ function Router() {
             <Route path="/beta-feedback" component={BetaFeedback} />
             <Route path="/disclaimer" component={Disclaimer} />
             <Route path="/private-beta" component={PrivateBeta} />
+            <Route path="/admin-portal" component={AdminPortal} />
             <Route component={NotFound} />
           </Switch>
         </Suspense>

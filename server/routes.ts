@@ -2,7 +2,7 @@ import { rateLimit } from 'express-rate-limit';
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
 import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema, insertWeldLogSchema } from "@shared/schema";
 import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
@@ -665,6 +665,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error submitting feedback:", error);
       res.status(500).json({ message: "Failed to submit feedback" });
+    }
+  });
+
+  // Admin: whitelist management (info@arcside.co.za only)
+  app.get("/api/admin/whitelist", isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const list = await storage.getWhitelist();
+      res.json(list);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch whitelist." });
+    }
+  });
+
+  app.post("/api/admin/whitelist", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { email } = req.body as { email?: string };
+      if (!email || !email.includes("@")) {
+        return res.status(400).json({ message: "A valid email address is required." });
+      }
+      const entry = await storage.addToWhitelist(email, req.user?.email ?? "admin");
+      res.status(201).json(entry);
+    } catch (err: any) {
+      if (err?.code === "23505") {
+        return res.status(409).json({ message: "That email is already on the whitelist." });
+      }
+      res.status(500).json({ message: "Failed to add email." });
+    }
+  });
+
+  app.delete("/api/admin/whitelist/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.removeFromWhitelist(req.params.id);
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ message: "Failed to remove email." });
     }
   });
 

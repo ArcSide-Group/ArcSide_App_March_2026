@@ -7,6 +7,7 @@ import {
   calculatorResults,
   weldLogEntries,
   betaFeedback,
+  whitelist,
   type User,
   type UpsertUser,
   type InsertProject,
@@ -20,6 +21,7 @@ import {
   type WeldLogEntry,
   type InsertBetaFeedback,
   type BetaFeedback,
+  type WhitelistEntry,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
@@ -70,6 +72,12 @@ export interface IStorage {
 
   // Beta feedback operations
   submitBetaFeedback(feedback: InsertBetaFeedback): Promise<BetaFeedback>;
+
+  // Whitelist operations
+  getWhitelist(): Promise<WhitelistEntry[]>;
+  addToWhitelist(email: string, addedBy?: string): Promise<WhitelistEntry>;
+  removeFromWhitelist(id: string): Promise<void>;
+  isEmailInWhitelist(email: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -321,6 +329,36 @@ export class DatabaseStorage implements IStorage {
 
     return user;
   }
+
+  async submitBetaFeedback(feedback: InsertBetaFeedback): Promise<BetaFeedback> {
+    const [entry] = await db.insert(betaFeedback).values(feedback).returning();
+    return entry;
+  }
+
+  // Whitelist operations
+  async getWhitelist(): Promise<WhitelistEntry[]> {
+    return await db.select().from(whitelist).orderBy(whitelist.addedAt);
+  }
+
+  async addToWhitelist(email: string, addedBy?: string): Promise<WhitelistEntry> {
+    const [entry] = await db
+      .insert(whitelist)
+      .values({ email: email.toLowerCase().trim(), addedBy: addedBy ?? "admin" })
+      .returning();
+    return entry;
+  }
+
+  async removeFromWhitelist(id: string): Promise<void> {
+    await db.delete(whitelist).where(eq(whitelist.id, id));
+  }
+
+  async isEmailInWhitelist(email: string): Promise<boolean> {
+    const [entry] = await db
+      .select()
+      .from(whitelist)
+      .where(eq(whitelist.email, email.toLowerCase().trim()));
+    return !!entry;
+  }
 }
 
 class MemStorage implements IStorage {
@@ -527,6 +565,26 @@ class MemStorage implements IStorage {
   }
 
   private feedbackData = new Map<string, BetaFeedback>();
+  private whitelistData = new Map<string, WhitelistEntry>();
+
+  async getWhitelist(): Promise<WhitelistEntry[]> {
+    return Array.from(this.whitelistData.values());
+  }
+
+  async addToWhitelist(email: string, addedBy?: string): Promise<WhitelistEntry> {
+    const id = crypto.randomUUID();
+    const entry: WhitelistEntry = { id, email: email.toLowerCase().trim(), addedBy: addedBy ?? "admin", addedAt: new Date() };
+    this.whitelistData.set(id, entry);
+    return entry;
+  }
+
+  async removeFromWhitelist(id: string): Promise<void> {
+    this.whitelistData.delete(id);
+  }
+
+  async isEmailInWhitelist(email: string): Promise<boolean> {
+    return Array.from(this.whitelistData.values()).some(e => e.email === email.toLowerCase().trim());
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

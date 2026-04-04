@@ -162,6 +162,16 @@ export const weldLogEntries = pgTable("weld_log_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const whitelist = pgTable("whitelist", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull().unique(),
+  addedBy: varchar("added_by"),
+  addedAt: timestamp("added_at").defaultNow(),
+});
+
+export type WhitelistEntry = typeof whitelist.$inferSelect;
+export type InsertWhitelistEntry = typeof whitelist.$inferInsert;
+
 export const betaFeedback = pgTable("beta_feedback", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),

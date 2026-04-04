@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { initializeWhitelist } from "./db";
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use((req, res, next) => {
 // Wrap entire app execution with try/catch to prevent crashes
 (async () => {
   try {
+    await initializeWhitelist();
     const server = await registerRoutes(app);
 
     // Global error handler with crash logging
@@ -88,7 +90,7 @@ app.use((req, res, next) => {
     // importantly only setup vite in development and after
     // setting up all the other routes so the catch-all route
     // doesn't interfere with the other routes
-    if (process.env.NODE_ENV === "production" || process.env.REPL_ID) {
+    if (process.env.NODE_ENV === "production") {
       serveStatic(app);
     } else {
       await setupVite(app, server);
