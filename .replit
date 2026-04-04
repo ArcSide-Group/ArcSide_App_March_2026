@@ -45,4 +45,7 @@ expertMode = true
 [userenv]
 
 [userenv.shared]
-APP_URL = "https://app.arcside.co.za"
+
+[userenv.production]
+
+[userenv.development]
