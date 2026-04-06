@@ -1,0 +1,65 @@
+STRICT ARCHITECTURAL REFACTOR: VVIP Industrial Minimalist Beta System
+
+CONTEXT: Use the attached HTML and CSS files as the absolute visual and structural source of truth. The goal is to restyle the entire app and inject a sophisticated Beta Feedback Drawer without breaking any existing business logic.
+
+1. GLOBAL STYLING (Reference: Attached CSS)
+
+Update client/src/index.css with the 'VVIP' theme variables:
+
+Background: #0a0a0a | Cards: #1a1a1a | Primary Accent: #5DBBFF (Electric Blue).
+
+Implement the glow-border, electric-pulse, and diagonal-cut classes exactly as defined in the files.
+
+Ensure all typography uses 'Montserrat' for headers and 'IBM Plex Mono' for technical readouts.
+
+2. FEATURE INJECTION: client/src/components/FeedbackDrawer.tsx
+
+Structure: A fixed vertical tab on the right viewport edge that slides out a full-height, scrollable charcoal panel.
+
+Information Header: An 'i' information bubble at the top containing these EXACT phases:
+
+Phase 1: Explore all 13 Tools (Welding, Fabrication, Project, and AI).
+
+Phase 2: Real-World Testing (Poor lighting, network interruptions, offline sync).
+
+Phase 3: Issue Reporting (Crashes, calculation inaccuracies, UI clarity).
+
+The Form (Manus Spec): Implement these fields with high-contrast, mobile-responsive styling:
+
+Auto-captured: User Name and Email (from Auth context).
+
+Text Inputs: Phone Number, Issue Title, Device Info (e.g., iPhone 13), Detailed Description.
+
+Scrollable Select Menus (with Icons):
+
+Category: 🐛 Bug Report, 💡 Feature Request, 🎨 UX Feedback, 🎯 Accuracy Issue, ⚡ Performance.
+
+Severity: Low, Medium, High, Critical.
+
+Tool Tested (The 13 Tools): >       - Welding: Voltage & Amperage, Wire Feed Speed, Heat Input, Gas Flow Rate.
+
+Fabrication: Metal Weight, Bend Allowance.
+
+Project: Project Planning, Project Cost, Weld Time Estimator.
+
+AI: Material Checker, Terminology Guide, Weld Assistant, Process Optimizer Pro.
+
+3. BACKEND & TRANSMISSION
+
+Route: Form must POST to /api/beta-feedback.
+
+Email Logic: Use the existing Resend SDK and RESEND_API_KEY.
+
+Target: Send ALL data to info@arcside.co.za.
+
+Sender: Must be ArcSide <onboarding@resend.dev>.
+
+4. OPERATIONAL CONSTRAINTS (CRITICAL)
+
+NO TRIMMING: Do not delete or shorten any existing routes in server/routes.ts or any tool logic in the client directory.
+
+MOBILE FIRST: Ensure the drawer handles internal scrolling (overflow-y-auto) so the 'Submit' button is never cut off on mobile devices.
+
+TYPE SAFETY: Ensure all decimal fields remain handled as strings.
+
+VALIDATION: Run a full app test. Only finish once the server is green and the UI renders without overlapping elements."
