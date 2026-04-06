@@ -4,6 +4,13 @@
 
 ArcSide™️ is a mobile-first web application for welding professionals. It provides AI-powered tools including defect analysis, WPS generation, material checking, terminology lookup, and an AI welding assistant. Currently in **closed beta** with invite-only access enforced via a persistent database whitelist managed through the Admin Portal. All measurements are metric (South African market), all costs in ZAR (R).
 
+## Email (Resend)
+- Package: `resend` (installed via Replit package manager)
+- Client initialized with `RESEND_API_KEY` secret
+- From address: `ArcSide <onboarding@resend.dev>` (Resend free tier)
+- Used for: beta feedback notification emails to `info@arcside.co.za`
+- Nodemailer and its SMTP config (`SMTP_USER`/`SMTP_PASS`) have been removed
+
 ## Admin Portal
 - Route: `/admin-portal` (authenticated users only; admin check enforced both server-side and client-side)
 - Admin email: `info@arcside.co.za`
