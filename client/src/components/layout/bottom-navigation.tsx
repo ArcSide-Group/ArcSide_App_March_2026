@@ -17,7 +17,7 @@ export default function BottomNavigation() {
   };
 
   return (
-    <div className="bottom-nav max-w-[600px] mx-auto" style={{ backgroundColor: '#0f172a' }}>
+    <div className="bottom-nav max-w-[600px] mx-auto" style={{ backgroundColor: '#0a0a0a' }}>
       <div className="grid grid-cols-4 items-center py-1.5">
         {navItems.map((item) => {
           const active = isActive(item.href);
@@ -30,11 +30,11 @@ export default function BottomNavigation() {
               >
                 <i
                   className={`${item.icon} text-xl mb-1`}
-                  style={{ color: active ? '#38bdf8' : '#94a3b8' }}
+                  style={{ color: active ? '#5DBBFF' : '#b0b0b0' }}
                 ></i>
                 <span
                   className="text-[11px] font-semibold"
-                  style={{ color: active ? '#38bdf8' : '#94a3b8' }}
+                  style={{ color: active ? '#5DBBFF' : '#b0b0b0' }}
                 >
                   {item.label}
                 </span>

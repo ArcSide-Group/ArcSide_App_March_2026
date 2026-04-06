@@ -595,6 +595,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Detailed feedback from FeedbackDrawer (email-only, no DB persistence)
+  app.post('/api/beta-feedback-detailed', isAuthenticated, async (req: any, res) => {
+    try {
+      const userEmail = req.user?.email ?? 'unknown';
+      const { category, severity, toolTested, issueTitle, description, deviceInfo, phoneNumber, userName } = req.body;
+
+      if (!category || !severity || !issueTitle || !description || !deviceInfo) {
+        return res.status(400).json({ message: "Category, severity, issue title, description, and device info are required." });
+      }
+
+      const timestamp = new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' });
+
+      try {
+        await sendMail({
+          to: 'info@arcside.co.za',
+          subject: `[ArcSide Beta] ${category} — ${issueTitle} (${severity})`,
+          text: [
+            '╔══════════════════════════════════════════╗',
+            '║       ARCSIDE™ BETA FEEDBACK REPORT      ║',
+            '╚══════════════════════════════════════════╝',
+            '',
+            `Submitted : ${timestamp}`,
+            `From      : ${userName || 'Unknown'} <${userEmail}>`,
+            `Phone     : ${phoneNumber || '—'}`,
+            '',
+            '── CLASSIFICATION ─────────────────────────',
+            `Category  : ${category}`,
+            `Severity  : ${severity}`,
+            `Tool      : ${toolTested || '—'}`,
+            '',
+            '── ISSUE DETAILS ───────────────────────────',
+            `Title     : ${issueTitle}`,
+            '',
+            'Description:',
+            description.trim(),
+            '',
+            '── ENVIRONMENT ─────────────────────────────',
+            `Device    : ${deviceInfo}`,
+            '',
+            '────────────────────────────────────────────',
+            'ArcSide™ Beta Feedback Drawer System',
+          ].join('\n'),
+        });
+        console.log(`[MAIL] Detailed feedback email sent — ${category} from ${userEmail}`);
+      } catch (mailError) {
+        console.error("[MAIL] Failed to send detailed feedback email:", mailError);
+      }
+
+      res.json({ success: true, message: "Feedback submitted successfully." });
+    } catch (error) {
+      console.error("Error submitting detailed feedback:", error);
+      res.status(500).json({ message: "Failed to submit feedback." });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

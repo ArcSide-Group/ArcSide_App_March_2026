@@ -57,7 +57,7 @@ export default function Header() {
           </nav>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden"><Button variant="ghost" size="icon" className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors h-11 w-11" data-testid="button-mobile-menu"><Menu className="h-6 w-6" /><span className="sr-only">Toggle menu</span></Button></SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-[#0f172a] dark:bg-[#0a0f1e] border-l border-slate-700">
+            <SheetContent side="right" className="w-[300px] bg-[#0a0a0a] dark:bg-[#111111] border-l border-[#2a2a2a]">
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center justify-center gap-3 px-4 pb-4 border-b border-border"><img src={logoPath} alt="ArcSide Mobile App" className="h-10 w-auto object-contain rounded logo-glow" data-testid="img-arcside-logo-menu" /></div>
                 <nav className="flex flex-col space-y-1 px-2">

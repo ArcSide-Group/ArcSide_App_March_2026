@@ -23,6 +23,7 @@ import ResetPassword from "@/pages/reset-password";
 import Header from "@/components/layout/header";
 import BottomNavigation from "@/components/layout/bottom-navigation";
 import MobileContainer from "@/components/layout/mobile-container";
+import FeedbackDrawer from "@/components/FeedbackDrawer";
 
 // Lazily-loaded pages — all wrapped in Suspense below
 const Tools = lazy(() => import("@/pages/tools"));
@@ -119,6 +120,7 @@ function Router() {
       {needsDisclaimer && (
         <DisclaimerModal onAccepted={() => setDisclaimerDismissed(true)} />
       )}
+      <FeedbackDrawer />
       <Header />
       <ErrorBoundary>
         <Suspense fallback={<PageSuspenseFallback />}>
