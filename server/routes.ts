@@ -517,7 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         aiQualityRating,
         performanceRating,
         technicalNotes: technicalNotes || null,
-        averageScore: parseFloat(averageScore.toFixed(2)),
+        averageScore: averageScore.toFixed(2),
       });
 
       // Send feedback email via Resend

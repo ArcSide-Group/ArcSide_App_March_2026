@@ -10,6 +10,7 @@ import { pool } from "./db";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
 import crypto from "crypto";
+import { Resend } from "resend";
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required");
@@ -220,6 +221,89 @@ export function setupAuth(app: Express) {
     const dbUser = await storage.getUser(sessionUser.id);
     if (!dbUser) return res.status(404).json({ message: "User not found" });
     res.json(toPublicUser(dbUser));
+  });
+
+  // ── Forgot Password ────────────────────────────────────────────────────
+  app.post("/api/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body as { email?: string };
+      if (!email) return res.status(400).json({ message: "Email address is required." });
+
+      const normalizedEmail = normalizeEmail(email);
+      const user = await storage.getUserByEmail(normalizedEmail);
+
+      // Always return success to prevent email enumeration
+      if (!user || !user.passwordHash) {
+        return res.json({ success: true });
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await storage.setPasswordResetToken(user.id, token, expires);
+
+      const domain = process.env.REPLIT_DOMAINS?.split(",")[0] ?? "localhost:5000";
+      const resetUrl = `https://${domain}/reset-password?token=${token}`;
+
+      try {
+        if (process.env.RESEND_API_KEY) {
+          const resend = new Resend(process.env.RESEND_API_KEY);
+          await resend.emails.send({
+            from: "ArcSide <onboarding@resend.dev>",
+            to: normalizedEmail,
+            subject: "ArcSide — Password Reset Request",
+            text: [
+              "You requested a password reset for your ArcSide account.",
+              "",
+              "Click the link below to set a new password (valid for 1 hour):",
+              resetUrl,
+              "",
+              "If you did not request this, you can safely ignore this email.",
+              "",
+              "— The ArcSide Team",
+            ].join("\n"),
+          });
+          console.log(`[MAIL] Password reset email sent to ${normalizedEmail}`);
+        }
+      } catch (mailError) {
+        console.error("[MAIL] Failed to send password reset email:", mailError);
+        // Do not fail the request — token is already saved
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process request." });
+    }
+  });
+
+  // ── Reset Password ─────────────────────────────────────────────────────
+  app.post("/api/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, password } = req.body as { token?: string; password?: string };
+      if (!token || !password) {
+        return res.status(400).json({ message: "Token and new password are required." });
+      }
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters." });
+      }
+
+      const user = await storage.getUserByResetToken(token);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired reset link. Please request a new one." });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 12);
+      await storage.updateUserProfile(user.id, {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      });
+
+      res.json({ success: true, message: "Password updated successfully. You can now sign in." });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Failed to reset password." });
+    }
   });
 }
 

@@ -1,14 +1,22 @@
 import { defineConfig } from "drizzle-kit";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL, ensure the database is provisioned");
+const { DATABASE_URL, PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT } = process.env;
+
+const url =
+  DATABASE_URL ??
+  (PGHOST && PGDATABASE && PGUSER && PGPASSWORD
+    ? `postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT || 5432}/${PGDATABASE}?sslmode=require`
+    : null);
+
+if (!url) {
+  throw new Error(
+    "Database credentials not found. Set DATABASE_URL or provision a database (PGHOST, PGDATABASE, PGUSER, PGPASSWORD).",
+  );
 }
 
 export default defineConfig({
   out: "./migrations",
   schema: "./shared/schema.ts",
   dialect: "postgresql",
-  dbCredentials: {
-    url: process.env.DATABASE_URL,
-  },
+  dbCredentials: { url },
 });

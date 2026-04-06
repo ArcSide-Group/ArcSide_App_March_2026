@@ -17,6 +17,7 @@ import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import PrivateBeta from "@/pages/private-beta";
 import AdminPortal from "@/pages/admin-portal";
+import ResetPassword from "@/pages/reset-password";
 
 // Layout Components
 import Header from "@/components/layout/header";
@@ -103,6 +104,7 @@ function Router() {
         <Switch>
           <Route path="/" component={Landing} />
           <Route path="/private-beta" component={PrivateBeta} />
+          <Route path="/reset-password" component={ResetPassword} />
           <Route component={NotFound} />
         </Switch>
       </MobileContainer>

@@ -12,11 +12,15 @@ import { queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
-type AuthMode = "choose" | "email-signin" | "email-register";
+type AuthMode = "choose" | "email-signin" | "email-register" | "forgot-password";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(1, "Password is required."),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
 });
 
 const registerSchema = z.object({
@@ -28,6 +32,7 @@ const registerSchema = z.object({
 
 type SignInValues = z.infer<typeof signInSchema>;
 type RegisterValues = z.infer<typeof registerSchema>;
+type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function Landing() {
   const { toast } = useToast();
@@ -64,6 +69,32 @@ export default function Landing() {
       }
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       window.location.href = "/";
+    } catch {
+      toast({ title: "Network Error", description: "Could not reach the server. Please try again.", variant: "destructive" });
+    }
+  };
+
+  // ── Forgot Password Form ───────────────────────────────────────────────
+  const forgotForm = useForm<ForgotPasswordValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
+  });
+
+  const onForgotPassword = async (values: ForgotPasswordValues) => {
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+        credentials: "include",
+      });
+      // Always show success message (server never leaks whether email exists)
+      toast({
+        title: "Check your inbox",
+        description: "If an account exists for that email, a password reset link has been sent.",
+      });
+      forgotForm.reset();
+      setMode("email-signin");
     } catch {
       toast({ title: "Network Error", description: "Could not reach the server. Please try again.", variant: "destructive" });
     }
@@ -257,9 +288,14 @@ export default function Landing() {
             </Form>
 
             <div className="mt-4 space-y-2 text-center">
-              <button onClick={() => setMode("email-register")} className="text-xs text-primary hover:underline" data-testid="link-switch-to-register">
-                Don't have an account? Register
+              <button onClick={() => setMode("forgot-password")} className="text-xs text-primary hover:underline" data-testid="link-forgot-password">
+                Forgot your password?
               </button>
+              <div className="block">
+                <button onClick={() => setMode("email-register")} className="text-xs text-muted-foreground hover:text-primary transition-colors" data-testid="link-switch-to-register">
+                  Don't have an account? Register
+                </button>
+              </div>
               <div className="block">
                 <button onClick={handleGoogleLogin} className="text-xs text-muted-foreground hover:text-primary transition-colors" data-testid="button-signin-google-alt">
                   Or continue with Google
@@ -270,6 +306,43 @@ export default function Landing() {
                   ← Back
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── FORGOT PASSWORD ───────────────────────────────────────────── */}
+        {mode === "forgot-password" && (
+          <div className="px-6 pb-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-1">Reset Password</h2>
+              <p className="text-sm text-muted-foreground">Enter your email and we'll send you a reset link.</p>
+            </div>
+
+            <Form {...forgotForm}>
+              <form onSubmit={forgotForm.handleSubmit(onForgotPassword)} className="space-y-4">
+                <FormField
+                  control={forgotForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="you@example.com" autoComplete="email" data-testid="input-forgot-email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full h-11" disabled={forgotForm.formState.isSubmitting} data-testid="button-forgot-submit">
+                  {forgotForm.formState.isSubmitting ? "Sending…" : "Send Reset Link"}
+                </Button>
+              </form>
+            </Form>
+
+            <div className="mt-4 text-center">
+              <button onClick={() => setMode("email-signin")} className="text-xs text-muted-foreground hover:text-primary transition-colors" data-testid="button-back-to-signin">
+                ← Back to Sign In
+              </button>
             </div>
           </div>
         )}
