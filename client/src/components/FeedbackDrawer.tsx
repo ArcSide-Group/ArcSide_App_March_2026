@@ -107,14 +107,14 @@ export default function FeedbackDrawer() {
           }}
           aria-label="Open Beta Feedback drawer"
         >
-          ⚡ Feedback
+          ⚡ Beta Feedback
         </button>
       </div>
 
       {/* Dark overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
@@ -122,7 +122,7 @@ export default function FeedbackDrawer() {
 
       {/* Drawer panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm z-50 flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full max-w-sm z-[70] flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ backgroundColor: '#1a1a1a', borderLeft: '1px solid #2a2a2a' }}
