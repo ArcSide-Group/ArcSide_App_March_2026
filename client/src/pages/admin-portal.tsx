@@ -103,7 +103,7 @@ export default function AdminPortal() {
                         <span className="text-xs text-slate-400">{row.isActive ? "On" : "Off"}</span>
                       </div>
                     </td>
-                    <td className="p-3">{row.lastLoggedOn ? new Date(row.lastLoggedOn).toLocaleString() : "—"}</td>
+                    <td className="p-3">{row.lastLoggedOn ? new Date(row.lastLoggedOn).toLocaleString() : "-"}</td>
                   </tr>
                 ))}
               </tbody>
