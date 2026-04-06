@@ -40,13 +40,20 @@ export default function AdminPortal() {
     },
     onError: async (error: any) => {
       const message = await error?.response?.json?.().catch(() => null);
-      toast({ title: "Could Not Add", description: message?.message ?? "That email may already be in the list." , variant: "destructive" });
+      toast({ title: "Could Not Add", description: message?.message ?? "That email may already be in the list.", variant: "destructive" });
     },
   });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => apiRequest("PATCH", `/api/admin/whitelist/${id}`, { isActive }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/whitelist"] }),
+    onError: () => {
+      toast({ 
+        title: "Toggle Failed", 
+        description: "Database column 'isActive' may be missing. Check Neon SQL.", 
+        variant: "destructive" 
+      });
+    }
   });
 
   const handleAdd = () => {
@@ -63,29 +70,30 @@ export default function AdminPortal() {
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
-      <div className="max-w-5xl mx-auto px-6 py-6">
-        <div className="border border-cyan-500/30 bg-slate-950 rounded-2xl p-6 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
-          <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="border border-cyan-500/30 bg-slate-950 rounded-2xl p-4 md:p-6 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold text-cyan-400">Admin Command Center</h1>
               <p className="text-slate-400 text-sm">Whitelist management and access control</p>
             </div>
-            <Button variant="outline" onClick={() => navigate("/")}>Back</Button>
+            <Button variant="outline" className="w-fit" onClick={() => navigate("/")}>Back</Button>
           </div>
 
-          <div className="flex gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <Input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Add user email" className="bg-black border-slate-700" />
-            <Button onClick={handleAdd} disabled={addMutation.isPending}>Add User</Button>
+            <Button onClick={handleAdd} disabled={addMutation.isPending} className="whitespace-nowrap">Add User</Button>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-slate-800">
-            <table className="w-full text-sm">
+          {/* FIX: Changed overflow-hidden to overflow-x-auto for mobile scrolling */}
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-slate-900 text-slate-300">
                 <tr>
                   <th className="text-left p-3">First Name</th>
                   <th className="text-left p-3">Surname</th>
                   <th className="text-left p-3">Email Address</th>
-                  <th className="text-left p-3">Access Toggle</th>
+                  <th className="text-left p-3">Access</th>
                   <th className="text-left p-3">Last Logged On</th>
                 </tr>
               </thead>
@@ -96,14 +104,17 @@ export default function AdminPortal() {
                   <tr key={row.id} className="border-t border-slate-800">
                     <td className="p-3">{row.firstName || "Pending"}</td>
                     <td className="p-3">{row.lastName || "Pending"}</td>
-                    <td className="p-3">{row.email}</td>
+                    <td className="p-3 font-medium">{row.email}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        <Switch checked={row.isActive} onCheckedChange={(checked) => toggleMutation.mutate({ id: row.id, isActive: checked })} />
-                        <span className="text-xs text-slate-400">{row.isActive ? "On" : "Off"}</span>
+                        <Switch 
+                          checked={row.isActive ?? true} 
+                          onCheckedChange={(checked) => toggleMutation.mutate({ id: row.id, isActive: checked })} 
+                        />
+                        <span className="text-xs text-slate-400">{(row.isActive ?? true) ? "On" : "Off"}</span>
                       </div>
                     </td>
-                    <td className="p-3">{row.lastLoggedOn ? new Date(row.lastLoggedOn).toLocaleString() : "-"}</td>
+                    <td className="p-3 text-slate-400">{row.lastLoggedOn ? new Date(row.lastLoggedOn).toLocaleString() : "Never"}</td>
                   </tr>
                 ))}
               </tbody>

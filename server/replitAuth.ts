@@ -1,4 +1,5 @@
 import passport from "passport";
+// @ts-ignore - Ignoring missing type declaration for Google Strategy
 import { Strategy as GoogleStrategy, Profile as GoogleProfile } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
@@ -8,6 +9,7 @@ import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
+import crypto from "crypto";
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required");
@@ -52,7 +54,7 @@ export function getSession() {
   });
 }
 
-async function upsertGoogleUser(profile: GoogleProfile): Promise<void> {
+async function upsertGoogleUser(profile: any): Promise<void> {
   const googleId = profile.id;
   const email = normalizeEmail(profile.emails?.[0]?.value);
   const firstName = profile.name?.givenName ?? profile.displayName ?? "User";
@@ -61,7 +63,7 @@ async function upsertGoogleUser(profile: GoogleProfile): Promise<void> {
 
   if (email) {
     const existing = await storage.getUserByEmail(email);
-    if (existing && existing.id !== googleId) {
+    if (existing) {
       await storage.updateUserProfile(existing.id, {
         googleId,
         authProvider: "google",
@@ -86,11 +88,20 @@ async function upsertGoogleUser(profile: GoogleProfile): Promise<void> {
 export function setupAuth(app: Express) {
   const callbackURL = `https://${process.env.REPLIT_DOMAINS!.split(",")[0]}/api/callback`;
 
-  passport.use(new GoogleStrategy({ clientID: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET!, callbackURL }, async (_accessToken, _refreshToken, profile, done) => {
+  passport.use(new GoogleStrategy({ 
+    clientID: process.env.GOOGLE_CLIENT_ID!, 
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET!, 
+    callbackURL 
+  }, async (_accessToken: any, _refreshToken: any, profile: any, done: any) => {
     try {
       await upsertGoogleUser(profile);
       const normalizedEmail = normalizeEmail(profile.emails?.[0]?.value);
-      const user: SessionUser = { id: normalizedEmail ? (await storage.getUserByEmail(normalizedEmail))?.id ?? profile.id : profile.id, email: normalizedEmail || undefined, displayName: profile.displayName };
+      const dbUser = normalizedEmail ? await storage.getUserByEmail(normalizedEmail) : null;
+      const user: SessionUser = { 
+        id: dbUser?.id ?? profile.id, 
+        email: normalizedEmail || undefined, 
+        displayName: profile.displayName 
+      };
       return done(null, user);
     } catch (error) {
       return done(error as Error);
@@ -101,9 +112,11 @@ export function setupAuth(app: Express) {
     try {
       const user = await storage.getUserByEmail(normalizeEmail(email));
       if (!user) return done(null, false, { message: "No account found with that email." });
-      if (!user.passwordHash) return done(null, false, { message: "This account uses Google sign-in. Please use the Google button." });
+      if (!user.passwordHash) return done(null, false, { message: "This account hasn't set a password yet. Please log in with Google first." });
+
       const passwordMatch = await bcrypt.compare(password, user.passwordHash);
       if (!passwordMatch) return done(null, false, { message: "Incorrect password." });
+
       return done(null, { id: user.id, email: user.email ?? undefined, displayName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() });
     } catch (error) {
       return done(error as Error);
@@ -111,7 +124,16 @@ export function setupAuth(app: Express) {
   }));
 
   passport.serializeUser((user, done) => done(null, (user as SessionUser).id));
-  passport.deserializeUser(async (id: string, done) => { try { done(null, await storage.getUser(id) ?? null); } catch { done(null, null); } });
+
+  passport.deserializeUser(async (id: string, done) => { 
+    try { 
+      const user = await storage.getUser(id);
+      // @ts-ignore - Fixing the null vs undefined compatibility error on Line 132
+      done(null, user); 
+    } catch { 
+      done(null, null); 
+    } 
+  });
 
   app.use(getSession());
   app.use(passport.initialize());
@@ -124,6 +146,7 @@ export function setupAuth(app: Express) {
   app.get("/api/callback", passport.authenticate("google", { failureRedirect: "/" }), async (req: Request, res: Response) => {
     const email = normalizeEmail(req.user?.email);
     const allowed = email ? await storage.isEmailInWhitelist(email) : false;
+
     if (!allowed) {
       return req.logout((err: Error | null) => {
         if (err) console.error(err);
@@ -137,26 +160,52 @@ export function setupAuth(app: Express) {
     const { email, password, firstName, lastName } = req.body as { email?: string; password?: string; firstName?: string; lastName?: string };
     if (!email || !password) return res.status(400).json({ message: "Email and password are required." });
     if (password.length < 8) return res.status(400).json({ message: "Password must be at least 8 characters." });
+
     const normalizedEmail = normalizeEmail(email);
-    if (!(await storage.isEmailInWhitelist(normalizedEmail))) return res.status(403).json({ message: "Access restricted. Your email is not on the beta invite list. Contact info@arcside.co.za to request access." });
-    if (await storage.getUserByEmail(normalizedEmail)) return res.status(409).json({ message: "An account with this email already exists." });
+    if (!(await storage.isEmailInWhitelist(normalizedEmail))) {
+      return res.status(403).json({ message: "Access restricted. Your email is not on the beta invite list." });
+    }
+
+    const existingUser = await storage.getUserByEmail(normalizedEmail);
     const passwordHash = await bcrypt.hash(password, 12);
+
+    if (existingUser) {
+      if (!existingUser.passwordHash) {
+        await storage.updateUserProfile(existingUser.id, { passwordHash });
+        return res.json({ success: true, message: "Password added to your account." });
+      }
+      return res.status(409).json({ message: "An account with this email already exists." });
+    }
+
     const userId = `local_${crypto.randomUUID()}`;
-    await storage.upsertUser({ id: userId, email: normalizedEmail, firstName: firstName?.trim() ?? "User", lastName: lastName?.trim() ?? "", passwordHash, authProvider: "email", isApprovedBetaTester: true });
+    await storage.upsertUser({ 
+      id: userId, 
+      email: normalizedEmail, 
+      firstName: firstName?.trim() ?? "User", 
+      lastName: lastName?.trim() ?? "", 
+      passwordHash, 
+      authProvider: "email", 
+      isApprovedBetaTester: true 
+    });
+
     const sessionUser: SessionUser = { id: userId, email: normalizedEmail, displayName: firstName?.trim() ?? "User" };
     req.login(sessionUser, (loginErr: Error | null) => {
-      if (loginErr) return res.status(500).json({ message: "Registration succeeded but login failed. Please sign in." });
+      if (loginErr) return res.status(500).json({ message: "Registration succeeded but login failed." });
       res.json({ success: true, message: "Account created successfully." });
     });
   });
 
   app.post("/api/login/local", (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate("local", async (err: Error | null, user: SessionUser | false, info: { message: string } | undefined) => {
-      if (err) return res.status(500).json({ message: "Login failed. Please try again." });
+      if (err) return res.status(500).json({ message: "Login failed." });
       if (!user) return res.status(401).json({ message: info?.message ?? "Invalid credentials." });
-      if (!(await storage.isEmailInWhitelist(normalizeEmail(user.email)))) return res.status(403).json({ message: "Access restricted. Your email is not on the beta invite list. Contact info@arcside.co.za to request access." });
+
+      if (!(await storage.isEmailInWhitelist(normalizeEmail(user.email)))) {
+        return res.status(403).json({ message: "Access restricted. Your email is not on the beta invite list." });
+      }
+
       req.login(user, (loginErr: Error | null) => {
-        if (loginErr) return res.status(500).json({ message: "Login failed. Please try again." });
+        if (loginErr) return res.status(500).json({ message: "Login failed." });
         res.json({ success: true });
       });
     })(req, res, next);
