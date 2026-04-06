@@ -37,14 +37,18 @@ export const users = pgTable("users", {
   companyName: varchar("company_name"),
   jobTitle: varchar("job_title"),
   yearsExperience: integer("years_experience"),
+
   // Authentication fields
   passwordHash: varchar("password_hash"), // for email/password auth
   googleId: varchar("google_id"),
   appleId: varchar("apple_id"),
   authProvider: varchar("auth_provider").default("replit"), // replit, email, google, apple
   emailVerified: boolean("email_verified").default(false),
+
+  // Password Reset Fields (Placed here, no duplicates)
   passwordResetToken: varchar("password_reset_token"),
   passwordResetExpires: timestamp("password_reset_expires"),
+
   // Subscription and preferences
   subscriptionTier: varchar("subscription_tier").default("free"), // free, premium, pro
   subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired
@@ -56,7 +60,6 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
-
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
