@@ -607,41 +607,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const timestamp = new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' });
 
-      try {
-        await sendMail({
-          to: 'info@arcside.co.za',
-          subject: `[ArcSide Beta] ${category} — ${issueTitle} (${severity})`,
-          text: [
-            '╔══════════════════════════════════════════╗',
-            '║       ARCSIDE™ BETA FEEDBACK REPORT      ║',
-            '╚══════════════════════════════════════════╝',
-            '',
-            `Submitted : ${timestamp}`,
-            `From      : ${userName || 'Unknown'} <${userEmail}>`,
-            `Phone     : ${phoneNumber || '—'}`,
-            '',
-            '── CLASSIFICATION ─────────────────────────',
-            `Category  : ${category}`,
-            `Severity  : ${severity}`,
-            `Tool      : ${toolTested || '—'}`,
-            '',
-            '── ISSUE DETAILS ───────────────────────────',
-            `Title     : ${issueTitle}`,
-            '',
-            'Description:',
-            description.trim(),
-            '',
-            '── ENVIRONMENT ─────────────────────────────',
-            `Device    : ${deviceInfo}`,
-            '',
-            '────────────────────────────────────────────',
-            'ArcSide™ Beta Feedback Drawer System',
-          ].join('\n'),
-        });
-        console.log(`[MAIL] Detailed feedback email sent — ${category} from ${userEmail}`);
-      } catch (mailError) {
-        console.error("[MAIL] Failed to send detailed feedback email:", mailError);
-      }
+      await sendMail({
+        to: 'info@arcside.co.za',
+        subject: `[ArcSide Beta] ${category} — ${issueTitle} (${severity})`,
+        text: [
+          '╔══════════════════════════════════════════╗',
+          '║       ARCSIDE™ BETA FEEDBACK REPORT      ║',
+          '╚══════════════════════════════════════════╝',
+          '',
+          `Submitted : ${timestamp}`,
+          `From      : ${userName || 'Unknown'} <${userEmail}>`,
+          `Phone     : ${phoneNumber || '—'}`,
+          '',
+          '── CLASSIFICATION ─────────────────────────',
+          `Category  : ${category}`,
+          `Severity  : ${severity}`,
+          `Tool      : ${toolTested || '—'}`,
+          '',
+          '── ISSUE DETAILS ───────────────────────────',
+          `Title     : ${issueTitle}`,
+          '',
+          'Description:',
+          description.trim(),
+          '',
+          '── ENVIRONMENT ─────────────────────────────',
+          `Device    : ${deviceInfo}`,
+          '',
+          '────────────────────────────────────────────',
+          'ArcSide™ Beta Feedback Drawer System',
+        ].join('\n'),
+      });
+      console.log(`[MAIL] Detailed feedback email sent — ${category} from ${userEmail}`);
 
       res.json({ success: true, message: "Feedback submitted successfully." });
     } catch (error) {

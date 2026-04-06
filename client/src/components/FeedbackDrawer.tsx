@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { X, Info, ChevronDown } from 'lucide-react';
+import type { User } from '@shared/schema';
 
 interface DrawerFormData {
   category: string;
@@ -31,7 +32,7 @@ export default function FeedbackDrawer() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<DrawerFormData>(EMPTY_FORM);
 
-  const { data: user } = useQuery<any>({ queryKey: ['/api/auth/user'] });
+  const { data: user } = useQuery<User>({ queryKey: ['/api/auth/user'] });
 
   const userName = user?.firstName
     ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`.trim()
