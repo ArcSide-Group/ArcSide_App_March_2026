@@ -14,10 +14,12 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { X, Download } from "lucide-react";
 import { exportDefectAnalysisPdf } from "@/lib/pdf-export";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function DefectAnalyzer() {
   const { user } = useAuth();
   const { units } = useUnits();
+  const { brand } = useBrand();
   const { toast } = useToast();
   const [imageData, setImageData] = useState<string | null>(null);
   const [additionalDetails, setAdditionalDetails] = useState("");
@@ -267,7 +269,7 @@ export default function DefectAnalyzer() {
               <Button
                 className="bg-primary text-primary-foreground h-12"
                 onClick={() => {
-                  exportDefectAnalysisPdf(analysis, analysis.imageData);
+                  exportDefectAnalysisPdf(analysis, analysis.imageData, brand.name);
                   toast({ title: "PDF Downloaded", description: "Your analysis report has been saved." });
                 }}
               >

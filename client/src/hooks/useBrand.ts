@@ -19,10 +19,8 @@ export function useBrand(options: { poll?: boolean } = {}): { brand: Brand; bran
   const brand = BRANDS[brandId];
 
   useEffect(() => {
-    if (poll) {
-      applyBrandToDocument(brand);
-    }
-  }, [brand, poll]);
+    applyBrandToDocument(brand);
+  }, [brand]);
 
   return { brand, brandId, isLoading };
 }

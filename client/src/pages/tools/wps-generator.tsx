@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBrand } from "@/hooks/useBrand";
+import { useUnits } from "@/hooks/useUnits";
 import { useMutation } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -19,6 +20,7 @@ import { exportWpsPdf } from "@/lib/pdf-export";
 export default function WpsGenerator() {
   const { user } = useAuth();
   const { brand } = useBrand();
+  const { isMetric, fromImperial } = useUnits();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     projectName: "",
@@ -30,9 +32,20 @@ export default function WpsGenerator() {
   });
   const [wpsResult, setWpsResult] = useState<any>(null);
 
+  // Always store and submit thickness in millimetres so the AI service (which
+  // enforces metric-only inputs) and the PDF stay consistent regardless of
+  // the user's display preference.
+  const thicknessMm = (() => {
+    const raw = parseFloat(formData.thickness);
+    if (!Number.isFinite(raw)) return "";
+    if (isMetric) return String(raw);
+    return String(fromImperial.length(raw));
+  })();
+
   const generateMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const response = await apiRequest('POST', '/api/ai/generate-wps', data);
+      const payload = { ...data, thickness: thicknessMm };
+      const response = await apiRequest('POST', '/api/ai/generate-wps', payload);
       return response.json();
     },
     onSuccess: (data) => {
@@ -71,6 +84,14 @@ export default function WpsGenerator() {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!thicknessMm) {
+      toast({
+        title: "Invalid Thickness",
+        description: `Enter a numeric thickness in ${isMetric ? "mm" : "inches"}.`,
         variant: "destructive",
       });
       return;
@@ -181,12 +202,12 @@ export default function WpsGenerator() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="thickness">Thickness (in)</Label>
+                    <Label htmlFor="thickness">Thickness ({isMetric ? "mm" : "in"})</Label>
                     <Input
                       id="thickness"
                       value={formData.thickness}
                       onChange={(e) => updateFormData('thickness', e.target.value)}
-                      placeholder="0.25"
+                      placeholder={isMetric ? "6" : "0.25"}
                       data-testid="input-thickness"
                     />
                   </div>
@@ -296,7 +317,7 @@ export default function WpsGenerator() {
                     <h4 className="font-semibold text-sm mb-2">Base Materials</h4>
                     <div className="text-sm text-muted-foreground">
                       <p>{formData.baseMaterial}</p>
-                      <p>Thickness: {formData.thickness}"</p>
+                      <p>Thickness: {thicknessMm} mm</p>
                     </div>
                   </div>
 
@@ -331,7 +352,11 @@ export default function WpsGenerator() {
                     size="sm"
                     className="bg-primary text-primary-foreground"
                     onClick={() => {
-                      exportWpsPdf(wpsResult, formData, brand.name);
+                      exportWpsPdf(
+                        wpsResult,
+                        { ...formData, thickness: thicknessMm },
+                        brand.name,
+                      );
                       toast({ title: "PDF Downloaded", description: "Your WPS document has been saved." });
                     }}
                   >

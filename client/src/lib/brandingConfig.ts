@@ -60,6 +60,27 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
   return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 
+function setOrCreateLink(rel: string, href: string, type?: string) {
+  if (typeof document === "undefined") return;
+  let link = document.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = rel;
+    document.head.appendChild(link);
+  }
+  link.href = href;
+  if (type) link.type = type;
+}
+
+function inferIconType(href: string): string | undefined {
+  const lower = href.split("?")[0].toLowerCase();
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+  if (lower.endsWith(".svg")) return "image/svg+xml";
+  if (lower.endsWith(".ico")) return "image/x-icon";
+  return undefined;
+}
+
 export function applyBrandToDocument(brand: Brand) {
   if (typeof document === "undefined") return;
   const { h, s, l } = hexToHsl(brand.primaryColor);
@@ -75,4 +96,10 @@ export function applyBrandToDocument(brand: Brand) {
   root.style.setProperty("--brand-primary", brand.primaryColor);
   root.style.setProperty("--brand-secondary", brand.secondaryColor);
   document.title = brand.name;
+
+  if (brand.logo) {
+    const iconType = inferIconType(brand.logo);
+    setOrCreateLink("icon", brand.logo, iconType);
+    setOrCreateLink("apple-touch-icon", brand.logo);
+  }
 }

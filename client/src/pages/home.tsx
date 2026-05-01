@@ -10,11 +10,13 @@ import FloatingActionButton from "@/components/common/floating-action-button";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useBrand } from "@/hooks/useBrand";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  const { brand } = useBrand();
 
   const { data: projects } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -65,10 +67,10 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <img
-                src={logoPath}
-                alt="ArcSide Mobile App"
+                src={brand.logo || logoPath}
+                alt={brand.name}
                 className="w-14 h-14 object-contain rounded-lg shrink-0 logo-glow"
-                data-testid="img-arcside-logo-home"
+                data-testid="img-brand-logo-home"
               />
             </div>
             <div className="flex items-center space-x-3">

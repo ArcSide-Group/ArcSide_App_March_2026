@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useUnits } from "@/hooks/useUnits";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useBrand } from "@/hooks/useBrand";
+import { useTranslation } from "@/lib/i18n";
 import {
   User,
   Bell,
@@ -33,18 +35,21 @@ export default function Settings() {
   const { isDark, toggleTheme } = useTheme();
   const { units, setUnits } = useUnits();
   const { preferences, setPreference } = useUserPreferences();
+  const { brand } = useBrand();
+  const { t } = useTranslation();
   const pushNotifications = preferences.pushNotifications ?? true;
   const emailUpdates = preferences.emailUpdates ?? true;
   const autoSave = preferences.autoSave ?? true;
   const language = preferences.language ?? "english";
+  const isArcside = brand.id === "arcside";
 
   return (
     <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Settings</h1>
+          <h1 className="text-2xl font-bold mb-2">{t("settings.title")}</h1>
           <p className="text-muted-foreground">
-            Manage your account preferences and application settings
+            {t("settings.subtitle")}
           </p>
         </div>
 
@@ -71,7 +76,7 @@ export default function Settings() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Bell className="h-5 w-5 text-primary" />
-                Notifications
+                {t("settings.notifications")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -80,8 +85,8 @@ export default function Settings() {
                   <div className="flex items-center gap-3 flex-1 pr-4">
                     <Bell className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div>
-                      <h4 className="font-medium text-sm">Push Notifications</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">Get notified about project updates</p>
+                      <h4 className="font-medium text-sm">{t("settings.pushNotifications")}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t("settings.pushNotificationsDesc")}</p>
                     </div>
                   </div>
                   <Switch
@@ -95,8 +100,8 @@ export default function Settings() {
                   <div className="flex items-center gap-3 flex-1 pr-4">
                     <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div>
-                      <h4 className="font-medium text-sm">Email Updates</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">Receive important updates via email</p>
+                      <h4 className="font-medium text-sm">{t("settings.emailUpdates")}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t("settings.emailUpdatesDesc")}</p>
                     </div>
                   </div>
                   <Switch
@@ -113,7 +118,7 @@ export default function Settings() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Palette className="h-5 w-5 text-primary" />
-                Appearance
+                {t("settings.appearance")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -122,9 +127,9 @@ export default function Settings() {
                   <div className="flex items-center gap-3 flex-1 pr-4">
                     {isDark ? <Moon className="h-4 w-4 text-muted-foreground shrink-0" /> : <Sun className="h-4 w-4 text-muted-foreground shrink-0" />}
                     <div>
-                      <h4 className="font-medium text-sm">Dark Mode</h4>
+                      <h4 className="font-medium text-sm">{t("settings.darkMode")}</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {isDark ? "Currently using dark theme" : "Currently using light theme"}
+                        {isDark ? t("settings.darkOn") : t("settings.darkOff")}
                       </p>
                     </div>
                   </div>
@@ -142,34 +147,34 @@ export default function Settings() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Globe className="h-5 w-5 text-primary" />
-                Preferences
+                {t("settings.preferences")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Measurement Units</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Choose your preferred measurement system</p>
+                    <h4 className="font-medium text-sm">{t("settings.units")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("settings.unitsDesc")}</p>
                   </div>
                   <Select value={units} onValueChange={(v) => setUnits(v as 'imperial' | 'metric')}>
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-32" data-testid="select-units">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="imperial">Imperial</SelectItem>
-                      <SelectItem value="metric">Metric</SelectItem>
+                      <SelectItem value="imperial">{t("settings.imperial")}</SelectItem>
+                      <SelectItem value="metric">{t("settings.metric")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Language</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Select your preferred language</p>
+                    <h4 className="font-medium text-sm">{t("settings.language")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("settings.languageDesc")}</p>
                   </div>
                   <Select value={language} onValueChange={(v) => setPreference("language", v)}>
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-32" data-testid="select-language">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -182,8 +187,8 @@ export default function Settings() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Auto-save Projects</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Automatically save project changes</p>
+                    <h4 className="font-medium text-sm">{t("settings.autoSave")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("settings.autoSaveDesc")}</p>
                   </div>
                   <Switch checked={autoSave} onCheckedChange={(v) => setPreference("autoSave", v)} data-testid="switch-auto-save" />
                 </div>
@@ -195,15 +200,15 @@ export default function Settings() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Shield className="h-5 w-5 text-primary" />
-                Privacy & Security
+                {t("settings.privacy")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Change Password</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Update your account password</p>
+                    <h4 className="font-medium text-sm">{t("settings.changePassword")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("settings.changePasswordDesc")}</p>
                   </div>
                   <Button variant="outline" size="sm">
                     <Lock className="h-4 w-4 mr-2" />
@@ -211,21 +216,20 @@ export default function Settings() {
                   </Button>
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Two-Factor Auth</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Add an extra layer of security</p>
+                    <h4 className="font-medium text-sm">{t("settings.twoFactor")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1" data-testid="text-2fa-description">
+                      {t("settings.twoFactorDesc")}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-yellow-600 border-yellow-200 text-xs">Off</Badge>
-                    <Button variant="outline" size="sm">Enable</Button>
-                  </div>
+                  <Badge variant="outline" className="text-xs shrink-0 mt-0.5">Google OAuth</Badge>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Export Data</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Download your data and projects</p>
+                    <h4 className="font-medium text-sm">{t("settings.exportData")}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{t("settings.exportDataDesc")}</p>
                   </div>
                   <Button variant="outline" size="sm">
                     <Database className="h-4 w-4 mr-2" />
@@ -272,37 +276,39 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        <Card className="mt-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Info className="h-5 w-5 text-primary" />
-              About ArcSide
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center gap-3 py-2">
-              <img
-                src={logoPath}
-                alt="ArcSide Mobile App"
-                className="h-12 w-auto object-contain rounded-lg"
-                data-testid="img-arcside-logo-settings"
-              />
-              <div className="text-center">
-                <h3 className="font-bold text-base text-foreground">ArcSide™️ Mobile App</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">v1.0.0</p>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  Built by Tradesmen, For Tradesmen.<br />
-                  AI-powered welding &amp; fabrication assistant.
-                </p>
+        {isArcside && (
+          <Card className="mt-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Info className="h-5 w-5 text-primary" />
+                About ArcSide
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center gap-3 py-2">
+                <img
+                  src={logoPath}
+                  alt="ArcSide"
+                  className="h-12 w-auto object-contain rounded-lg"
+                  data-testid="img-arcside-logo-settings"
+                />
+                <div className="text-center">
+                  <h3 className="font-bold text-base text-foreground">ArcSide&trade; Mobile App</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">v1.0.0</p>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                    Built by Tradesmen, For Tradesmen.<br />
+                    AI-powered welding &amp; fabrication assistant.
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="mt-6 border-destructive/30">
           <CardHeader>
-            <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
-            <CardDescription>Irreversible and destructive actions</CardDescription>
+            <CardTitle className="text-lg text-destructive">{t("settings.dangerZone")}</CardTitle>
+            <CardDescription>{t("settings.dangerZoneDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -313,10 +319,10 @@ export default function Settings() {
                 data-testid="button-sign-out"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                {t("settings.signOut")}
               </Button>
               <Button variant="outline" className="w-full justify-start text-destructive border-destructive/30 hover:bg-destructive/10">
-                Delete Account
+                {t("settings.deleteAccount")}
               </Button>
             </div>
           </CardContent>

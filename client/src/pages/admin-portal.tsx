@@ -1,48 +1,17 @@
-import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { useLocation } from "wouter";
 import { BRANDS, type BrandId } from "@/lib/brandingConfig";
-
-interface WhitelistEntry {
-  id: string;
-  email: string;
-  firstName: string | null;
-  lastName: string | null;
-  lastLoggedOn: string | null;
-  isActive: boolean;
-}
 
 export default function AdminPortal() {
   const { user, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [newEmail, setNewEmail] = useState("");
 
   const isAdmin = (user as any)?.role === "admin";
-
-  const { data = [], isFetching } = useQuery<WhitelistEntry[]>({
-    queryKey: ["/api/admin/whitelist"],
-    enabled: isAdmin,
-  });
-
-  const addMutation = useMutation({
-    mutationFn: (email: string) => apiRequest("POST", "/api/admin/whitelist", { email }),
-    onSuccess: async (_, email) => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/admin/whitelist"] });
-      setNewEmail("");
-      toast({ title: "Access Added", description: `${email} was added to the whitelist.` });
-    },
-    onError: async (error: any) => {
-      const message = await error?.response?.json?.().catch(() => null);
-      toast({ title: "Could Not Add", description: message?.message ?? "That email may already be in the list.", variant: "destructive" });
-    },
-  });
 
   const { data: branding } = useQuery<{ brandId: BrandId }>({
     queryKey: ["/api/branding"],
@@ -61,27 +30,6 @@ export default function AdminPortal() {
     },
   });
 
-  const toggleMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => apiRequest("PATCH", `/api/admin/whitelist/${id}`, { isActive }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/whitelist"] }),
-    onError: () => {
-      toast({ 
-        title: "Toggle Failed", 
-        description: "Database column 'isActive' may be missing. Check Neon SQL.", 
-        variant: "destructive" 
-      });
-    }
-  });
-
-  const handleAdd = () => {
-    const value = newEmail.trim().toLowerCase();
-    if (!value.includes("@")) {
-      toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
-      return;
-    }
-    addMutation.mutate(value);
-  };
-
   if (isLoading) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading…</div>;
   if (!isAdmin) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Restricted Access</div>;
 
@@ -92,7 +40,7 @@ export default function AdminPortal() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold text-primary">Admin Command Center</h1>
-              <p className="text-slate-400 text-sm">Whitelist management and access control</p>
+              <p className="text-slate-400 text-sm">Brand and white-label control</p>
             </div>
             <Button variant="outline" className="w-fit" onClick={() => navigate("/")}>Back</Button>
           </div>
@@ -135,46 +83,6 @@ export default function AdminPortal() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <Input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Add user email" className="bg-black border-slate-700" />
-            <Button onClick={handleAdd} disabled={addMutation.isPending} className="whitespace-nowrap">Add User</Button>
-          </div>
-
-          {/* FIX: Changed overflow-hidden to overflow-x-auto for mobile scrolling */}
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
-            <table className="w-full text-sm min-w-[600px]">
-              <thead className="bg-slate-900 text-slate-300">
-                <tr>
-                  <th className="text-left p-3">First Name</th>
-                  <th className="text-left p-3">Surname</th>
-                  <th className="text-left p-3">Email Address</th>
-                  <th className="text-left p-3">Access</th>
-                  <th className="text-left p-3">Last Logged On</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isFetching ? (
-                  <tr><td className="p-4 text-slate-400" colSpan={5}>Loading…</td></tr>
-                ) : data.map((row) => (
-                  <tr key={row.id} className="border-t border-slate-800">
-                    <td className="p-3">{row.firstName || "Pending"}</td>
-                    <td className="p-3">{row.lastName || "Pending"}</td>
-                    <td className="p-3 font-medium">{row.email}</td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-3">
-                        <Switch 
-                          checked={row.isActive ?? true} 
-                          onCheckedChange={(checked) => toggleMutation.mutate({ id: row.id, isActive: checked })} 
-                        />
-                        <span className="text-xs text-slate-400">{(row.isActive ?? true) ? "On" : "Off"}</span>
-                      </div>
-                    </td>
-                    <td className="p-3 text-slate-400">{row.lastLoggedOn ? new Date(row.lastLoggedOn).toLocaleString() : "Never"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </div>

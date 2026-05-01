@@ -1,16 +1,18 @@
 import { Link, useLocation } from "wouter";
 import { useBrand } from "@/hooks/useBrand";
+import { useTranslation } from "@/lib/i18n";
 
 export default function BottomNavigation() {
   const [location] = useLocation();
   const { brand } = useBrand();
+  const { t } = useTranslation();
   const showPoweredBy = brand.id !== "arcside";
 
   const navItems = [
-    { href: "/", icon: "fas fa-home", label: "Home" },
-    { href: "/tools", icon: "fas fa-wrench", label: "Tools" },
-    { href: "/ai-tools", icon: "fas fa-robot", label: "AI" },
-    { href: "/settings", icon: "fas fa-cog", label: "Settings" },
+    { href: "/", icon: "fas fa-home", label: t("nav.home"), testId: "home" },
+    { href: "/tools", icon: "fas fa-wrench", label: t("nav.tools"), testId: "tools" },
+    { href: "/ai-tools", icon: "fas fa-robot", label: t("nav.ai"), testId: "ai" },
+    { href: "/settings", icon: "fas fa-cog", label: t("nav.settings"), testId: "settings" },
   ];
 
   const isActive = (path: string) => {
@@ -36,7 +38,7 @@ export default function BottomNavigation() {
             <Link key={item.href} href={item.href}>
               <button
                 className="flex flex-col items-center justify-center w-full py-2 min-h-[56px] transition-colors"
-                data-testid={`nav-${item.label.toLowerCase()}`}
+                data-testid={`nav-${item.testId}`}
                 type="button"
               >
                 <i

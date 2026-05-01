@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Download } from "lucide-react";
 import { exportMaterialCheckPdf } from "@/lib/pdf-export";
+import { useBrand } from "@/hooks/useBrand";
 
 const materials = [
   "A36 Carbon Steel",
@@ -27,6 +28,7 @@ const materials = [
 export default function MaterialChecker() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { brand } = useBrand();
   const [material1, setMaterial1] = useState("");
   const [material2, setMaterial2] = useState("");
   const [result, setResult] = useState<any>(null);
@@ -258,7 +260,7 @@ export default function MaterialChecker() {
                 <Button
                   className="w-full bg-primary text-primary-foreground mt-4"
                   onClick={() => {
-                    exportMaterialCheckPdf(result, material1, material2);
+                    exportMaterialCheckPdf(result, material1, material2, brand.name);
                     toast({ title: "PDF Downloaded", description: "Your compatibility report has been saved." });
                   }}
                 >

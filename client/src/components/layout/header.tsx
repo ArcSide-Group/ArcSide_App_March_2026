@@ -28,7 +28,7 @@ export default function Header() {
         <img
           src={brand.logo}
           alt={brand.name}
-          className={`${size === "header" ? "h-9" : "h-10"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
+          className={`${size === "header" ? "h-11" : "h-12"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
           data-testid={testId}
         />
       );

@@ -36,6 +36,27 @@ function addHeader(doc: jsPDF, subtitle: string, brandName: string = "ArcSide") 
   doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - 14, 19, { align: "right" });
 }
 
+function addWatermark(doc: jsPDF, brandName: string = "ArcSide") {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const totalPages = doc.getNumberOfPages();
+
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.08 }) : null;
+    if (gState) (doc as any).setGState(gState);
+    doc.setTextColor(...DARK_NAVY);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(70);
+    doc.text(brandName.toUpperCase(), pageWidth / 2, pageHeight / 2, {
+      align: "center",
+      angle: -30,
+    });
+    if (gState) (doc as any).setGState(new (doc as any).GState({ opacity: 1 }));
+  }
+  doc.setPage(totalPages);
+}
+
 function addFooter(doc: jsPDF, brandName: string = "ArcSide") {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -175,17 +196,18 @@ export function exportWpsPdf(wpsResult: any, formData: any, brandName: string = 
   }
 
   addFooter(doc, brandName);
+  addWatermark(doc, brandName);
 
   const filename = `WPS_${(formData.projectName || "document").replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(filename);
 }
 
-export function exportDefectAnalysisPdf(analysis: any, imageDataUrl?: string) {
+export function exportDefectAnalysisPdf(analysis: any, imageDataUrl?: string, brandName: string = "ArcSide") {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 36;
 
-  addHeader(doc, "Weld Defect Analysis Report");
+  addHeader(doc, "Weld Defect Analysis Report", brandName);
 
   const result = analysis.result || analysis;
 
@@ -283,18 +305,19 @@ export function exportDefectAnalysisPdf(analysis: any, imageDataUrl?: string) {
     y += 20;
   }
 
-  addFooter(doc);
+  addFooter(doc, brandName);
+  addWatermark(doc, brandName);
 
   const filename = `Defect_Analysis_${(result.defectType || "report").replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(filename);
 }
 
-export function exportMaterialCheckPdf(result: any, material1: string, material2: string) {
+export function exportMaterialCheckPdf(result: any, material1: string, material2: string, brandName: string = "ArcSide") {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 36;
 
-  addHeader(doc, "Material Compatibility Report");
+  addHeader(doc, "Material Compatibility Report", brandName);
 
   const data = result.result || result;
 
@@ -369,7 +392,8 @@ export function exportMaterialCheckPdf(result: any, material1: string, material2
     });
   }
 
-  addFooter(doc);
+  addFooter(doc, brandName);
+  addWatermark(doc, brandName);
 
   const filename = `Material_Compatibility_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(filename);
