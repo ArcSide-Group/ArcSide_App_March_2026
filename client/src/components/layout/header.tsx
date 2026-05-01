@@ -3,8 +3,8 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Home, Wrench, Bot, FolderOpen, Settings, CreditCard } from "lucide-react";
-import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 import { useAuth } from "@/hooks/useAuth";
+import { useBrand } from "@/hooks/useBrand";
 
 const navigationItems = [
   { href: "/dashboard", icon: Home, label: "Home" },
@@ -19,8 +19,30 @@ export default function Header() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
+  const { brand } = useBrand();
   const email = (user as any)?.email?.toLowerCase?.() ?? "";
   const isAdmin = ["info@arcside.co.za", "arcside.group@gmail.com"].includes(email);
+
+  const BrandMark = ({ size, testId }: { size: "header" | "menu"; testId: string }) => {
+    if (brand.logo) {
+      return (
+        <img
+          src={brand.logo}
+          alt={brand.name}
+          className={`${size === "header" ? "h-9" : "h-10"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
+          data-testid={testId}
+        />
+      );
+    }
+    return (
+      <span
+        className={`${size === "header" ? "text-base" : "text-lg"} font-extrabold tracking-tight text-primary cursor-pointer hover:opacity-90 transition-opacity whitespace-nowrap`}
+        data-testid={testId}
+      >
+        {brand.name}
+      </span>
+    );
+  };
 
   const isActive = (href: string) =>
     href === "/dashboard"
@@ -53,7 +75,7 @@ export default function Header() {
         <div className="flex h-14 items-center justify-between px-3 border-b border-border relative gap-4">
           <div className="w-11" />
           <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <img src={logoPath} alt="ArcSide Mobile App" className="h-9 w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow" data-testid="img-arcside-logo-header" />
+            <BrandMark size="header" testId="brand-mark-header" />
           </Link>
           <nav className="hidden md:flex items-center space-x-1">
             {navigationItems.slice(1).map((item) => <NavLink key={item.href} {...item} />)}
@@ -63,7 +85,7 @@ export default function Header() {
             <SheetTrigger asChild className="md:hidden"><Button variant="ghost" size="icon" className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors h-11 w-11" data-testid="button-mobile-menu"><Menu className="h-6 w-6" /><span className="sr-only">Toggle menu</span></Button></SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-[#0a0a0a] dark:bg-[#111111] border-l border-[#2a2a2a]">
               <div className="flex flex-col gap-4 mt-8">
-                <div className="flex items-center justify-center gap-3 px-4 pb-4 border-b border-border"><img src={logoPath} alt="ArcSide Mobile App" className="h-10 w-auto object-contain rounded logo-glow" data-testid="img-arcside-logo-menu" /></div>
+                <div className="flex items-center justify-center gap-3 px-4 pb-4 border-b border-border"><BrandMark size="menu" testId="brand-mark-menu" /></div>
                 <nav className="flex flex-col space-y-1 px-2">
                   {navigationItems.map((item) => <NavLink key={item.href} {...item} mobile />)}
                   {isAdmin && <NavLink href="/admin-portal" icon={Settings} label="Admin" mobile />}

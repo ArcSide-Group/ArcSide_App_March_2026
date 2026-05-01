@@ -30,11 +30,11 @@ export default function BottomNavigation() {
               >
                 <i
                   className={`${item.icon} text-xl mb-1`}
-                  style={{ color: active ? '#5DBBFF' : '#b0b0b0' }}
+                  style={{ color: active ? 'hsl(var(--primary))' : '#b0b0b0' }}
                 ></i>
                 <span
                   className="text-[11px] font-semibold"
-                  style={{ color: active ? '#5DBBFF' : '#b0b0b0' }}
+                  style={{ color: active ? 'hsl(var(--primary))' : '#b0b0b0' }}
                 >
                   {item.label}
                 </span>

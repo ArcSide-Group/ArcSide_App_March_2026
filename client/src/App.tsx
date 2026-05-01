@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useKeepAlive } from "@/hooks/useKeepAlive";
+import { useBrand } from "@/hooks/useBrand";
 import { ErrorBoundary, PageSuspenseFallback } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import DisclaimerModal from "@/components/common/disclaimer-modal";
@@ -62,6 +63,9 @@ function Router() {
   
   // Keep app alive with periodic pings
   useKeepAlive();
+
+  // Subscribe to global brand setting (polls every 3s so admin changes propagate)
+  useBrand({ poll: true });
   
   // Global error logging
   useEffect(() => {

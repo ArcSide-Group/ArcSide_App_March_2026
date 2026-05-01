@@ -560,6 +560,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Branding: public read (so unauthenticated landing also picks up brand)
+  app.get("/api/branding", async (_req, res) => {
+    try {
+      const brandId = (await storage.getSetting("currentBrand")) || "arcside";
+      res.json({ brandId });
+    } catch {
+      res.json({ brandId: "arcside" });
+    }
+  });
+
+  // Branding: admin-only update
+  app.post("/api/admin/branding", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { brandId } = req.body as { brandId?: string };
+      if (!brandId || !["arcside", "afrox"].includes(brandId)) {
+        return res.status(400).json({ message: "brandId must be 'arcside' or 'afrox'." });
+      }
+      await storage.setSetting("currentBrand", brandId);
+      res.json({ success: true, brandId });
+    } catch (error) {
+      console.error("Failed to set brand:", error);
+      res.status(500).json({ message: "Failed to update brand." });
+    }
+  });
+
   // Admin: whitelist management
   app.get("/api/admin/whitelist", isAuthenticated, isAdmin, async (_req, res) => {
     try {

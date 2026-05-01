@@ -8,6 +8,7 @@ import {
   weldLogEntries,
   betaFeedback,
   whitelist,
+  appSettings,
   type User,
   type UpsertUser,
   type InsertProject,
@@ -60,6 +61,8 @@ export interface IStorage {
   isEmailInWhitelist(email: any): Promise<boolean>;
   setPasswordResetToken(userId: string, token: string, expires: Date): Promise<void>;
   getUserByResetToken(token: string): Promise<User | undefined>;
+  getSetting(key: string): Promise<string | undefined>;
+  setSetting(key: string, value: string): Promise<void>;
 }
 
 const normalizeEmail = (email: any): string => (String(email || '')).toLowerCase().trim();
@@ -223,6 +226,17 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(and(eq(users.passwordResetToken, token), gt(users.passwordResetExpires, new Date())));
     return user;
   }
+
+  async getSetting(key: string): Promise<string | undefined> {
+    const [row] = await db.select().from(appSettings).where(eq(appSettings.key, key));
+    return row?.value;
+  }
+
+  async setSetting(key: string, value: string): Promise<void> {
+    await db.insert(appSettings)
+      .values({ key, value, updatedAt: new Date() })
+      .onConflictDoUpdate({ target: appSettings.key, set: { value, updatedAt: new Date() } });
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -273,6 +287,9 @@ export class MemStorage implements IStorage {
   async isEmailInWhitelist(email: any) { return Array.from(this.whitelistData.values()).some(entry => entry.email === normalizeEmail(email)); }
   async setPasswordResetToken(userId: string, token: string, expires: Date) { const user = this.users.get(userId); if (user) this.users.set(userId, { ...user, passwordResetToken: token, passwordResetExpires: expires }); }
   async getUserByResetToken(token: string) { return Array.from(this.users.values()).find(u => u.passwordResetToken === token && (u.passwordResetExpires || new Date(0)) > new Date()); }
+  private settings = new Map<string, string>();
+  async getSetting(key: string) { return this.settings.get(key); }
+  async setSetting(key: string, value: string) { this.settings.set(key, value); }
 }
 
 export const storage = new DatabaseStorage();

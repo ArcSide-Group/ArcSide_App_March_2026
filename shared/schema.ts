@@ -165,6 +165,15 @@ export const weldLogEntries = pgTable("weld_log_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Global key/value app settings (single source of truth for things like the active brand)
+export const appSettings = pgTable("app_settings", {
+  key: varchar("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type AppSetting = typeof appSettings.$inferSelect;
+
 export const whitelist = pgTable("whitelist", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").notNull().unique(),

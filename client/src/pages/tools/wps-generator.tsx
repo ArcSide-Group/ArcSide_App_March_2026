@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useBrand } from "@/hooks/useBrand";
 import { useMutation } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -17,6 +18,7 @@ import { exportWpsPdf } from "@/lib/pdf-export";
 
 export default function WpsGenerator() {
   const { user } = useAuth();
+  const { brand } = useBrand();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     projectName: "",
@@ -265,6 +267,19 @@ export default function WpsGenerator() {
                 </div>
 
                 <div className="space-y-4">
+                  {/* Brand Header — current white-label brand owner */}
+                  <div
+                    className="rounded-lg p-3 text-center border"
+                    style={{
+                      borderColor: 'hsl(var(--primary) / 0.4)',
+                      background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))',
+                    }}
+                    data-testid="wps-brand-header"
+                  >
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">Welding Procedure Specification</p>
+                    <p className="text-lg font-extrabold text-primary mt-1">{brand.name}</p>
+                  </div>
+
                   {/* WPS Header */}
                   <div className="bg-secondary/30 rounded-lg p-3">
                     <h4 className="font-semibold text-sm mb-2">WPS Identification</h4>
@@ -316,7 +331,7 @@ export default function WpsGenerator() {
                     size="sm"
                     className="bg-primary text-primary-foreground"
                     onClick={() => {
-                      exportWpsPdf(wpsResult, formData);
+                      exportWpsPdf(wpsResult, formData, brand.name);
                       toast({ title: "PDF Downloaded", description: "Your WPS document has been saved." });
                     }}
                   >

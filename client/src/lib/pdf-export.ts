@@ -9,7 +9,7 @@ const LIGHT_GRAY = [245, 247, 250] as [number, number, number];
 const MID_GRAY = [100, 116, 139] as [number, number, number];
 const DARK_TEXT = [15, 23, 42] as [number, number, number];
 
-function addHeader(doc: jsPDF, subtitle: string) {
+function addHeader(doc: jsPDF, subtitle: string, brandName: string = "ArcSide") {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   doc.setFillColor(...DARK_NAVY);
@@ -18,7 +18,7 @@ function addHeader(doc: jsPDF, subtitle: string) {
   doc.setTextColor(...BRAND_CYAN);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("ArcSide", 14, 13);
+  doc.text(brandName, 14, 13);
 
   doc.setTextColor(...WHITE);
   doc.setFontSize(7);
@@ -36,7 +36,7 @@ function addHeader(doc: jsPDF, subtitle: string) {
   doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - 14, 19, { align: "right" });
 }
 
-function addFooter(doc: jsPDF) {
+function addFooter(doc: jsPDF, brandName: string = "ArcSide") {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
@@ -46,7 +46,7 @@ function addFooter(doc: jsPDF) {
   doc.setTextColor(...MID_GRAY);
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("ArcSide™ — Professional Welding Tools", 14, pageHeight - 4);
+  doc.text(`${brandName} — Professional Welding Tools`, 14, pageHeight - 4);
   doc.text("This document is AI-generated. Always verify with a certified welding engineer.", pageWidth - 14, pageHeight - 4, { align: "right" });
 }
 
@@ -61,12 +61,12 @@ function sectionTitle(doc: jsPDF, text: string, y: number): number {
   return y + 12;
 }
 
-export function exportWpsPdf(wpsResult: any, formData: any) {
+export function exportWpsPdf(wpsResult: any, formData: any, brandName: string = "ArcSide") {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 36;
 
-  addHeader(doc, "Welding Procedure Specification");
+  addHeader(doc, "Welding Procedure Specification", brandName);
 
   const result = wpsResult.result || wpsResult;
 
@@ -174,7 +174,7 @@ export function exportWpsPdf(wpsResult: any, formData: any) {
     y += 4;
   }
 
-  addFooter(doc);
+  addFooter(doc, brandName);
 
   const filename = `WPS_${(formData.projectName || "document").replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(filename);
