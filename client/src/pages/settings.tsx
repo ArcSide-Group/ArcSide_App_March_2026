@@ -27,7 +27,6 @@ import {
   Sun,
   Moon,
   Info,
-  MessageSquare
 } from "lucide-react";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
@@ -264,12 +263,6 @@ export default function Settings() {
                   +27 79 681 9319
                 </Button>
               </a>
-              <Link href="/beta-feedback">
-                <Button variant="outline" className="w-full justify-start">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Give Feedback
-                </Button>
-              </Link>
               <Link href="/disclaimer">
                 <Button variant="outline" className="w-full justify-start text-accent border-accent/30 hover:bg-accent/10">
                   <Shield className="h-4 w-4 mr-2" />
@@ -297,7 +290,7 @@ export default function Settings() {
               />
               <div className="text-center">
                 <h3 className="font-bold text-base text-foreground">ArcSide™️ Mobile App</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">v1.0.0 — Beta</p>
+                <p className="text-xs text-muted-foreground mt-0.5">v1.0.0</p>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                   Built by Tradesmen, For Tradesmen.<br />
                   AI-powered welding &amp; fabrication assistant.

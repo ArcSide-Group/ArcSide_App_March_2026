@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { useLocation } from "wouter";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 type AuthMode = "choose" | "email-signin" | "email-register" | "forgot-password";
@@ -36,7 +35,6 @@ type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function Landing() {
   const { toast } = useToast();
-  const [, navigate] = useLocation();
   const [mode, setMode] = useState<AuthMode>("choose");
 
   const handleGoogleLogin = () => {
@@ -59,16 +57,12 @@ export default function Landing() {
       });
       const data = await res.json();
 
-      if (res.status === 403) {
-        navigate("/private-beta");
-        return;
-      }
       if (!res.ok) {
         toast({ title: "Sign In Failed", description: data.message || "Invalid credentials.", variant: "destructive" });
         return;
       }
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch {
       toast({ title: "Network Error", description: "Could not reach the server. Please try again.", variant: "destructive" });
     }
@@ -116,16 +110,12 @@ export default function Landing() {
       });
       const data = await res.json();
 
-      if (res.status === 403) {
-        navigate("/private-beta");
-        return;
-      }
       if (!res.ok) {
         toast({ title: "Registration Failed", description: data.message || "Could not create account.", variant: "destructive" });
         return;
       }
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch {
       toast({ title: "Network Error", description: "Could not reach the server. Please try again.", variant: "destructive" });
     }
@@ -239,7 +229,7 @@ export default function Landing() {
               </div>
 
               <p className="text-center text-xs text-muted-foreground mt-4">
-                ArcSide is in closed beta. Access is invite-only.
+                Built by tradesmen, for tradesmen.
               </p>
             </div>
           </>
@@ -352,7 +342,7 @@ export default function Landing() {
           <div className="px-6 pb-8">
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-1">Create Account</h2>
-              <p className="text-sm text-muted-foreground">Register with your email. Beta access is invite-only.</p>
+              <p className="text-sm text-muted-foreground">Register with your email to get started.</p>
             </div>
 
             <Form {...registerForm}>

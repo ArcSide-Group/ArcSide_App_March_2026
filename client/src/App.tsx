@@ -15,7 +15,6 @@ import DisclaimerModal from "@/components/common/disclaimer-modal";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
-import PrivateBeta from "@/pages/private-beta";
 import AdminPortal from "@/pages/admin-portal";
 import ResetPassword from "@/pages/reset-password";
 
@@ -23,7 +22,6 @@ import ResetPassword from "@/pages/reset-password";
 import Header from "@/components/layout/header";
 import BottomNavigation from "@/components/layout/bottom-navigation";
 import MobileContainer from "@/components/layout/mobile-container";
-import FeedbackDrawer from "@/components/FeedbackDrawer";
 
 // Lazily-loaded pages — all wrapped in Suspense below
 const Tools = lazy(() => import("@/pages/tools"));
@@ -35,7 +33,6 @@ const Subscription = lazy(() => import("@/pages/subscription"));
 const Settings = lazy(() => import("@/pages/settings"));
 const Disclaimer = lazy(() => import("@/pages/disclaimer"));
 const Profile = lazy(() => import("@/pages/profile"));
-const BetaFeedback = lazy(() => import("@/pages/beta-feedback").then(m => ({ default: m.BetaFeedback })));
 
 // AI Tool pages
 const DefectAnalyzer = lazy(() => import("@/pages/tools/defect-analyzer"));
@@ -104,7 +101,6 @@ function Router() {
       <MobileContainer>
         <Switch>
           <Route path="/" component={Landing} />
-          <Route path="/private-beta" component={PrivateBeta} />
           <Route path="/reset-password" component={ResetPassword} />
           <Route component={NotFound} />
         </Switch>
@@ -120,12 +116,12 @@ function Router() {
       {needsDisclaimer && (
         <DisclaimerModal onAccepted={() => setDisclaimerDismissed(true)} />
       )}
-      <FeedbackDrawer />
       <Header />
       <ErrorBoundary>
         <Suspense fallback={<PageSuspenseFallback />}>
           <Switch>
             <Route path="/" component={Home} />
+            <Route path="/dashboard" component={Home} />
             <Route path="/tools" component={Tools} />
             <Route path="/ai-tools" component={AITools} />
             <Route path="/tools/defect-analyzer" component={DefectAnalyzer} />
@@ -152,9 +148,7 @@ function Router() {
             <Route path="/profile" component={Profile} />
             <Route path="/subscription" component={Subscription} />
             <Route path="/settings" component={Settings} />
-            <Route path="/beta-feedback" component={BetaFeedback} />
             <Route path="/disclaimer" component={Disclaimer} />
-            <Route path="/private-beta" component={PrivateBeta} />
             <Route path="/admin-portal" component={AdminPortal} />
             <Route component={NotFound} />
           </Switch>

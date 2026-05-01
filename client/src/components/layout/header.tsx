@@ -2,16 +2,15 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Home, Wrench, Bot, FolderOpen, Settings, CreditCard, MessageSquare } from "lucide-react";
+import { Menu, Home, Wrench, Bot, FolderOpen, Settings, CreditCard } from "lucide-react";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 import { useAuth } from "@/hooks/useAuth";
 
 const navigationItems = [
-  { href: "/", icon: Home, label: "Home" },
+  { href: "/dashboard", icon: Home, label: "Home" },
   { href: "/tools", icon: Wrench, label: "Tools" },
   { href: "/ai-tools", icon: Bot, label: "AI Tools" },
   { href: "/projects", icon: FolderOpen, label: "Projects" },
-  { href: "/beta-feedback", icon: MessageSquare, label: "Beta Feedback" },
   { href: "/settings", icon: Settings, label: "Settings" },
   { href: "/subscription", icon: CreditCard, label: "Subscription" },
 ];
@@ -23,7 +22,10 @@ export default function Header() {
   const email = (user as any)?.email?.toLowerCase?.() ?? "";
   const isAdmin = ["info@arcside.co.za", "arcside.group@gmail.com"].includes(email);
 
-  const isActive = (href: string) => (href === "/" ? location === "/" : location.startsWith(href));
+  const isActive = (href: string) =>
+    href === "/dashboard"
+      ? location === "/" || location === "/dashboard"
+      : location.startsWith(href);
 
   const NavLink = ({ href, icon: Icon, label, mobile = false }: { href: string; icon: any; label: string; mobile?: boolean }) => (
     <Link href={href}>
@@ -43,9 +45,11 @@ export default function Header() {
   return (
     <header className="header-professional">
       <div className="max-w-[600px] mx-auto">
-        <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-primary/30 px-4 py-2">
-          <p className="text-xs font-bold text-primary flex items-center gap-2">ArcSide Founder's Circle {user?.firstName && <span className="text-foreground">| Authorized Beta User: <span className="text-primary font-bold">{user.firstName}</span></span>}</p>
-        </div>
+        {user?.firstName && (
+          <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-primary/30 px-4 py-2">
+            <p className="text-xs font-bold text-primary flex items-center gap-2">Welcome, <span className="text-foreground font-bold">{user.firstName}</span></p>
+          </div>
+        )}
         <div className="flex h-14 items-center justify-between px-3 border-b border-border relative gap-4">
           <div className="w-11" />
           <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">

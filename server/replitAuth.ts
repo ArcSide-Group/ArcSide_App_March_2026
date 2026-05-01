@@ -69,7 +69,7 @@ async function upsertGoogleUser(profile: any): Promise<void> {
         googleId,
         authProvider: "google",
         profileImageUrl: profileImageUrl || existing.profileImageUrl,
-        isApprovedBetaTester: await storage.isEmailInWhitelist(email),
+        isApprovedBetaTester: true,
       });
       return;
     }
@@ -82,7 +82,7 @@ async function upsertGoogleUser(profile: any): Promise<void> {
     lastName,
     profileImageUrl,
     authProvider: "google",
-    isApprovedBetaTester: await storage.isEmailInWhitelist(email),
+    isApprovedBetaTester: true,
   });
 }
 
@@ -145,16 +145,7 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", passport.authenticate("google", { failureRedirect: "/" }), async (req: Request, res: Response) => {
-    const email = normalizeEmail(req.user?.email);
-    const allowed = email ? await storage.isEmailInWhitelist(email) : false;
-
-    if (!allowed) {
-      return req.logout((err: Error | null) => {
-        if (err) console.error(err);
-        res.redirect("/private-beta");
-      });
-    }
-    req.session.save(() => res.redirect("/"));
+    req.session.save(() => res.redirect("/dashboard"));
   });
 
   app.post("/api/register", async (req: Request, res: Response) => {
@@ -163,10 +154,6 @@ export function setupAuth(app: Express) {
     if (password.length < 8) return res.status(400).json({ message: "Password must be at least 8 characters." });
 
     const normalizedEmail = normalizeEmail(email);
-    if (!(await storage.isEmailInWhitelist(normalizedEmail))) {
-      return res.status(403).json({ message: "Access restricted. Your email is not on the beta invite list." });
-    }
-
     const existingUser = await storage.getUserByEmail(normalizedEmail);
     const passwordHash = await bcrypt.hash(password, 12);
 
@@ -200,10 +187,6 @@ export function setupAuth(app: Express) {
     passport.authenticate("local", async (err: Error | null, user: SessionUser | false, info: { message: string } | undefined) => {
       if (err) return res.status(500).json({ message: "Login failed." });
       if (!user) return res.status(401).json({ message: info?.message ?? "Invalid credentials." });
-
-      if (!(await storage.isEmailInWhitelist(normalizeEmail(user.email)))) {
-        return res.status(403).json({ message: "Access restricted. Your email is not on the beta invite list." });
-      }
 
       req.login(user, (loginErr: Error | null) => {
         if (loginErr) return res.status(500).json({ message: "Login failed." });
