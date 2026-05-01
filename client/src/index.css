@@ -4,39 +4,39 @@
 @tailwind utilities;
 
 :root {
-  /* ArcSide VVIP — Industrial Minimalism Theme */
-  --background: 0 0% 4%;           /* #0a0a0a Deep black */
-  --foreground: 0 0% 88%;          /* #e0e0e0 Light gray */
-  --card: 0 0% 10%;                /* #1a1a1a Charcoal */
-  --card-foreground: 0 0% 100%;
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 100%;
-  --primary: 205 100% 68%;         /* #5DBBFF Electric Blue */
-  --primary-foreground: 0 0% 0%;   /* #000000 Black on Electric Blue */
-  --secondary: 0 0% 16%;           /* #2a2a2a */
-  --secondary-foreground: 0 0% 88%;
-  --muted: 0 0% 23%;               /* #3a3a3a */
-  --muted-foreground: 0 0% 69%;    /* #b0b0b0 */
-  --accent: 205 100% 68%;          /* #5DBBFF */
-  --accent-foreground: 0 0% 0%;
-  --destructive: 0 100% 63%;       /* #FF4444 */
+  /* Light Theme — clean professional surface */
+  --background: 0 0% 98%;          /* #fafafa Near-white */
+  --foreground: 0 0% 12%;          /* #1f1f1f Deep slate */
+  --card: 0 0% 100%;               /* #ffffff */
+  --card-foreground: 0 0% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 12%;
+  --primary: 205 100% 45%;         /* #007ce6 — accessible blue on white */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 94%;           /* #f0f0f0 */
+  --secondary-foreground: 0 0% 12%;
+  --muted: 0 0% 94%;
+  --muted-foreground: 0 0% 38%;    /* #616161 */
+  --accent: 205 100% 45%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 50%;        /* #e02828 */
   --destructive-foreground: 0 0% 100%;
-  --border: 0 0% 16%;              /* #2a2a2a */
-  --input: 0 0% 10%;               /* #1a1a1a */
-  --ring: 205 100% 68%;
-  --chart-1: 205 100% 68%;         /* #5DBBFF */
-  --chart-2: 210 100% 65%;         /* #4BA3FF */
-  --chart-3: 212 78% 56%;          /* #3A8BE6 */
-  --chart-4: 213 67% 48%;          /* #2973CC */
-  --chart-5: 215 75% 40%;          /* #1A5BB3 */
-  --sidebar: 0 0% 4%;
-  --sidebar-foreground: 0 0% 88%;
-  --sidebar-primary: 205 100% 68%;
-  --sidebar-primary-foreground: 0 0% 0%;
-  --sidebar-accent: 205 100% 68%;
-  --sidebar-accent-foreground: 0 0% 0%;
-  --sidebar-border: 0 0% 16%;
-  --sidebar-ring: 205 100% 68%;
+  --border: 0 0% 88%;              /* #e0e0e0 */
+  --input: 0 0% 100%;
+  --ring: 205 100% 45%;
+  --chart-1: 205 100% 45%;
+  --chart-2: 210 100% 55%;
+  --chart-3: 212 78% 56%;
+  --chart-4: 213 67% 48%;
+  --chart-5: 215 75% 40%;
+  --sidebar: 0 0% 98%;
+  --sidebar-foreground: 0 0% 12%;
+  --sidebar-primary: 205 100% 45%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 205 100% 45%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 88%;
+  --sidebar-ring: 205 100% 45%;
   --font-sans: "Montserrat", "Inter", sans-serif;
   --font-serif: "Georgia", serif;
   --font-mono: "IBM Plex Mono", "Fira Code", monospace;
@@ -44,7 +44,7 @@
 }
 
 .dark {
-  /* Dark theme — identical to :root (VVIP is always dark) */
+  /* Dark Theme — ArcSide VVIP Industrial Minimalism (default) */
   --background: 0 0% 4%;
   --foreground: 0 0% 88%;
   --card: 0 0% 10%;

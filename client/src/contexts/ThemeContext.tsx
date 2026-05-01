@@ -15,7 +15,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDark, setIsDark] = useState<boolean>(() => {
+  const [isDark, setIsDarkState] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem(THEME_KEY);
       return saved !== null ? saved === "dark" : true;
@@ -34,9 +34,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
     } catch {}
+    // Notify any listeners (ThemeSync) that the theme changed.
+    try {
+      window.dispatchEvent(new CustomEvent("arcside-theme-change", { detail: isDark ? "dark" : "light" }));
+    } catch {}
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark((prev) => !prev);
+  const setIsDark = (v: boolean) => setIsDarkState(v);
+  const toggleTheme = () => setIsDarkState((prev) => !prev);
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme, setIsDark }}>

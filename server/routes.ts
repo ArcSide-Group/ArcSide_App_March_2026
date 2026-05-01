@@ -103,11 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/ai/generate-wps', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-
-      if (user?.subscriptionTier === 'free') {
-        return res.status(403).json({ message: "WPS generation requires Premium subscription" });
-      }
+      // Beta launch: WPS generation is open to all authenticated users.
 
       const result = await GeminiAIService.generateWPS(req.body);
 
@@ -405,10 +401,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/user/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const updatedUser = await storage.updateUserProfile(userId, req.body);
+      // Strict allowlist — never trust raw req.body for privileged fields like role,
+      // subscriptionTier, subscriptionStatus, passwordHash, email, id, etc.
+      const allowedKeys = ['firstName', 'lastName', 'company', 'profileImageUrl', 'preferences'];
+      const sanitized: Record<string, any> = {};
+      for (const k of allowedKeys) {
+        if (k in (req.body || {})) sanitized[k] = req.body[k];
+      }
+      const updatedUser = await storage.updateUserProfile(userId, sanitized);
       res.json(updatedUser);
     } catch (error) {
+      console.error('Update profile error:', error);
       res.status(500).json({ message: "Failed to update user profile" });
+    }
+  });
+
+  app.put('/api/user/preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const incoming = req.body || {};
+      const sanitized: Record<string, any> = {};
+
+      // Validate each field strictly
+      if ('theme' in incoming && (incoming.theme === 'dark' || incoming.theme === 'light')) {
+        sanitized.theme = incoming.theme;
+      }
+      if ('units' in incoming && (incoming.units === 'metric' || incoming.units === 'imperial')) {
+        sanitized.units = incoming.units;
+      }
+      if ('language' in incoming && typeof incoming.language === 'string' && incoming.language.length <= 32) {
+        sanitized.language = incoming.language;
+      }
+      for (const boolKey of ['pushNotifications', 'emailUpdates', 'autoSave', 'shareUsage'] as const) {
+        if (boolKey in incoming && typeof incoming[boolKey] === 'boolean') {
+          sanitized[boolKey] = incoming[boolKey];
+        }
+      }
+
+      const existing = await storage.getUser(userId);
+      const merged = { ...(existing?.preferences as any || {}), ...sanitized };
+      const updated = await storage.updateUserProfile(userId, { preferences: merged });
+      res.json({ success: true, preferences: updated.preferences });
+    } catch (error) {
+      console.error('Update preferences error:', error);
+      res.status(500).json({ message: "Failed to update preferences" });
     }
   });
 

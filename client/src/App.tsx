@@ -10,6 +10,7 @@ import { useKeepAlive } from "@/hooks/useKeepAlive";
 import { useBrand } from "@/hooks/useBrand";
 import { ErrorBoundary, PageSuspenseFallback } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import ThemeSync from "@/components/ThemeSync";
 import DisclaimerModal from "@/components/common/disclaimer-modal";
 
 // Eagerly-loaded pages (critical path)
@@ -167,6 +168,7 @@ function App() {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
+        <ThemeSync />
         <TooltipProvider>
           <Toaster />
           <ErrorBoundary>

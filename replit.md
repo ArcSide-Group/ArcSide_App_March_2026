@@ -131,3 +131,13 @@ Preferred communication style: Simple, everyday language.
 - **Built-in Subscription System**: Custom subscription management with tier-based limits
 - **Usage Monitoring**: Real-time tracking of tool usage against subscription limits
 - **Upgrade Flows**: Integrated subscription upgrade functionality
+## Pre-launch Sweep (May 2026)
+- **Branding**: Afrox brand now uses `client/public/afrox-logo.png` via `BRANDS.afrox.logo`. Removed verbose "Afrox Powered by ArcSide" header text.
+- **"Powered by ArcSide" attribution**: Subtle uppercase footer line above the bottom navigation, shown only when active brand is non-ArcSide.
+- **Role-based admin**: Added `users.role` ('user' | 'admin'); seeded `info@arcside.co.za` and `arcside.group@gmail.com` as admins. `isAdmin` middleware (`server/replitAuth.ts`) re-reads role from DB each request. Header + admin portal now check `user.role === 'admin'`.
+- **User preferences API**: `PUT /api/user/preferences` with strict per-field validation (theme/units/language/booleans). Settings page (theme, units, language, push, email, autoSave) writes through `useUserPreferences` hook with per-user localStorage cache.
+- **Theme**: `:root` is now a true light theme; `.dark` keeps the VVIP dark theme. `ThemeContext` is QueryClient-free (localStorage only); a separate `<ThemeSync />` mounted inside `QueryClientProvider` hydrates from DB and persists toggles, with per-user hydration tracking that resets on logout.
+- **Mass-assignment hardening**: `PUT /api/user/profile` now allows only `firstName, lastName, company, profileImageUrl, preferences`; privileged fields (role, subscriptionTier, etc.) are no longer settable from client.
+- **Beta WPS access**: Removed `subscriptionTier === 'free'` 403 from `POST /api/ai/generate-wps`.
+- **Orientation**: Viewport meta no longer pins `maximum-scale=1`. `MobileContainer`, header, and bottom nav use `max-w-[600px] landscape:max-w-[900px] md:max-w-[800px]` for landscape and tablet support.
+- **Capacitor**: Installed `@capacitor/{core,cli,android}@^6`. App ID `com.arcside.app`, name `ArcSide`, webDir `dist/public`. Added Android platform, created `android/app/src/main/res/values/colors.xml` (colorPrimary `#5DBBFF`, colorPrimaryDark `#1A5BB3`, colorAccent `#5DBBFF`) referenced by `styles.xml`. Run `npm run build && npx cap sync android` to refresh native assets.

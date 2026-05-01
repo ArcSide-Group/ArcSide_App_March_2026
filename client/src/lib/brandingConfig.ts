@@ -20,7 +20,8 @@ export const BRANDS: Record<BrandId, Brand> = {
   },
   afrox: {
     id: "afrox",
-    name: "Afrox Powered by ArcSide",
+    name: "Afrox",
+    logo: "/afrox-logo.png",
     primaryColor: "#e31e24",
     secondaryColor: "#0a0a0a",
   },

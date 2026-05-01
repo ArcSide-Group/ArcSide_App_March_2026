@@ -20,8 +20,7 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const { brand } = useBrand();
-  const email = (user as any)?.email?.toLowerCase?.() ?? "";
-  const isAdmin = ["info@arcside.co.za", "arcside.group@gmail.com"].includes(email);
+  const isAdmin = (user as any)?.role === "admin";
 
   const BrandMark = ({ size, testId }: { size: "header" | "menu"; testId: string }) => {
     if (brand.logo) {
@@ -66,7 +65,7 @@ export default function Header() {
 
   return (
     <header className="header-professional">
-      <div className="max-w-[600px] mx-auto">
+      <div className="max-w-[600px] landscape:max-w-[900px] md:max-w-[800px] mx-auto">
         {user?.firstName && (
           <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-primary/30 px-4 py-2">
             <p className="text-xs font-bold text-primary flex items-center gap-2">Welcome, <span className="text-foreground font-bold">{user.firstName}</span></p>

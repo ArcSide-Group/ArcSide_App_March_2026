@@ -24,8 +24,7 @@ export default function AdminPortal() {
   const { toast } = useToast();
   const [newEmail, setNewEmail] = useState("");
 
-  const email = (user as any)?.email?.toLowerCase?.() ?? "";
-  const isAdmin = ["info@arcside.co.za", "arcside.group@gmail.com"].includes(email);
+  const isAdmin = (user as any)?.role === "admin";
 
   const { data = [], isFetching } = useQuery<WhitelistEntry[]>({
     queryKey: ["/api/admin/whitelist"],
@@ -89,10 +88,10 @@ export default function AdminPortal() {
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="border border-cyan-500/30 bg-slate-950 rounded-2xl p-4 md:p-6 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
+        <div className="border border-primary/30 bg-slate-950 rounded-2xl p-4 md:p-6 shadow-[0_0_30px_hsl(var(--primary)/0.10)]">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-cyan-400">Admin Command Center</h1>
+              <h1 className="text-2xl font-bold text-primary">Admin Command Center</h1>
               <p className="text-slate-400 text-sm">Whitelist management and access control</p>
             </div>
             <Button variant="outline" className="w-fit" onClick={() => navigate("/")}>Back</Button>

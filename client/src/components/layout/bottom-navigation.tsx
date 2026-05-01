@@ -1,7 +1,10 @@
 import { Link, useLocation } from "wouter";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function BottomNavigation() {
   const [location] = useLocation();
+  const { brand } = useBrand();
+  const showPoweredBy = brand.id !== "arcside";
 
   const navItems = [
     { href: "/", icon: "fas fa-home", label: "Home" },
@@ -17,7 +20,15 @@ export default function BottomNavigation() {
   };
 
   return (
-    <div className="bottom-nav max-w-[600px] mx-auto" style={{ backgroundColor: '#0a0a0a' }}>
+    <div className="bottom-nav max-w-[600px] landscape:max-w-[900px] md:max-w-[800px] mx-auto" style={{ backgroundColor: '#0a0a0a' }}>
+      {showPoweredBy && (
+        <div
+          className="text-center text-[9px] tracking-[0.18em] uppercase text-slate-500/80 pt-1.5 pb-0.5 select-none"
+          data-testid="text-powered-by-arcside"
+        >
+          Powered by <span className="text-primary/80 font-semibold">ArcSide</span>
+        </div>
+      )}
       <div className="grid grid-cols-4 items-center py-1.5">
         {navItems.map((item) => {
           const active = isActive(item.href);

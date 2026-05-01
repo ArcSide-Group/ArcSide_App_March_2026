@@ -295,10 +295,19 @@ export const isAuthenticated: RequestHandler = (req: Request, res: Response, nex
   res.status(401).json({ message: "Unauthorized" });
 };
 
-export const isAdmin: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
-  const email = normalizeEmail((req.user as SessionUser | undefined)?.email);
-  if (!ADMIN_EMAILS.includes(email)) return res.status(403).json({ message: "Admin access required." });
-  next();
+export const isAdmin: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const sessionUser = req.user as SessionUser | undefined;
+    if (!sessionUser?.id) return res.status(401).json({ message: "Unauthorized" });
+    const dbUser = await storage.getUser(sessionUser.id);
+    if (dbUser?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required." });
+    }
+    next();
+  } catch (err) {
+    console.error("isAdmin check failed:", err);
+    res.status(500).json({ message: "Failed to verify admin role." });
+  }
 };
 
 export const isAdminEmail = (email?: string | null) => ADMIN_EMAILS.includes(normalizeEmail(email));

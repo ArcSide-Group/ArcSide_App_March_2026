@@ -49,6 +49,9 @@ export const users = pgTable("users", {
   passwordResetToken: varchar("password_reset_token"),
   passwordResetExpires: timestamp("password_reset_expires"),
 
+  // Role-based access control
+  role: varchar("role").default("user"), // user, admin
+
   // Subscription and preferences
   subscriptionTier: varchar("subscription_tier").default("free"), // free, premium, pro
   subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired

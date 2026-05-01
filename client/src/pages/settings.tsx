@@ -1,17 +1,15 @@
 
-import { useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useUnits } from "@/hooks/useUnits";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import {
   User,
   Bell,
@@ -34,10 +32,11 @@ export default function Settings() {
   const { user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { units, setUnits } = useUnits();
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailUpdates, setEmailUpdates] = useState(true);
-  const [autoSave, setAutoSave] = useState(true);
-  const [language, setLanguage] = useState("english");
+  const { preferences, setPreference } = useUserPreferences();
+  const pushNotifications = preferences.pushNotifications ?? true;
+  const emailUpdates = preferences.emailUpdates ?? true;
+  const autoSave = preferences.autoSave ?? true;
+  const language = preferences.language ?? "english";
 
   return (
     <div className="min-h-screen bg-background pt-16 pb-20">
@@ -87,7 +86,7 @@ export default function Settings() {
                   </div>
                   <Switch
                     checked={pushNotifications}
-                    onCheckedChange={setPushNotifications}
+                    onCheckedChange={(v) => setPreference("pushNotifications", v)}
                     data-testid="switch-push-notifications"
                   />
                 </div>
@@ -102,7 +101,7 @@ export default function Settings() {
                   </div>
                   <Switch
                     checked={emailUpdates}
-                    onCheckedChange={setEmailUpdates}
+                    onCheckedChange={(v) => setPreference("emailUpdates", v)}
                     data-testid="switch-email-updates"
                   />
                 </div>
@@ -169,7 +168,7 @@ export default function Settings() {
                     <h4 className="font-medium text-sm">Language</h4>
                     <p className="text-xs text-muted-foreground mt-1">Select your preferred language</p>
                   </div>
-                  <Select value={language} onValueChange={setLanguage}>
+                  <Select value={language} onValueChange={(v) => setPreference("language", v)}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
@@ -186,7 +185,7 @@ export default function Settings() {
                     <h4 className="font-medium text-sm">Auto-save Projects</h4>
                     <p className="text-xs text-muted-foreground mt-1">Automatically save project changes</p>
                   </div>
-                  <Switch checked={autoSave} onCheckedChange={setAutoSave} data-testid="switch-auto-save" />
+                  <Switch checked={autoSave} onCheckedChange={(v) => setPreference("autoSave", v)} data-testid="switch-auto-save" />
                 </div>
               </div>
             </CardContent>

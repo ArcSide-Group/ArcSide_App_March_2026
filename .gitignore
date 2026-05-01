@@ -4,3 +4,9 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+# Capacitor / Android (built locally; not part of repo)
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/captures/
