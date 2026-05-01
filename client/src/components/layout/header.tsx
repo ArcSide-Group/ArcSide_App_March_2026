@@ -28,14 +28,14 @@ export default function Header() {
         <img
           src={brand.logo}
           alt={brand.name}
-          className={`${size === "header" ? "h-11" : "h-12"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
+          className={`${size === "header" ? "h-14" : "h-12"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
           data-testid={testId}
         />
       );
     }
     return (
       <span
-        className={`${size === "header" ? "text-base" : "text-lg"} font-extrabold tracking-tight text-primary cursor-pointer hover:opacity-90 transition-opacity whitespace-nowrap`}
+        className={`${size === "header" ? "text-lg" : "text-lg"} font-extrabold tracking-tight text-primary cursor-pointer hover:opacity-90 transition-opacity whitespace-nowrap`}
         data-testid={testId}
       >
         {brand.name}
@@ -71,7 +71,7 @@ export default function Header() {
             <p className="text-xs font-bold text-primary flex items-center gap-2">Welcome, <span className="text-foreground font-bold">{user.firstName}</span></p>
           </div>
         )}
-        <div className="flex h-14 items-center justify-between px-3 border-b border-border relative gap-4">
+        <div className="flex h-16 items-center justify-between px-3 border-b border-border relative gap-4">
           <div className="w-11" />
           <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <BrandMark size="header" testId="brand-mark-header" />
@@ -80,6 +80,35 @@ export default function Header() {
             {navigationItems.slice(1).map((item) => <NavLink key={item.href} {...item} />)}
             {isAdmin && <NavLink href="/admin-portal" icon={Settings} label="Admin" />}
           </nav>
+          {user && (
+            <div className="md:hidden flex items-center gap-2 mr-1" data-testid="header-user-cluster">
+              <button
+                type="button"
+                className="relative h-9 w-9 flex items-center justify-center rounded-full text-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                aria-label="Notifications"
+                data-testid="button-notifications"
+              >
+                <i className="fas fa-bell text-base"></i>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+              </button>
+              <Link href="/profile">
+                <div
+                  className="w-9 h-9 bg-secondary rounded-full flex items-center justify-center border-2 border-primary/30 shrink-0 cursor-pointer hover:border-primary transition-colors overflow-hidden"
+                  data-testid="link-profile-header"
+                >
+                  {(user as any)?.profileImageUrl ? (
+                    <img
+                      src={(user as any).profileImageUrl}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <i className="fas fa-user text-sm text-secondary-foreground"></i>
+                  )}
+                </div>
+              </Link>
+            </div>
+          )}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden"><Button variant="ghost" size="icon" className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors h-11 w-11" data-testid="button-mobile-menu"><Menu className="h-6 w-6" /><span className="sr-only">Toggle menu</span></Button></SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-[#0a0a0a] dark:bg-[#111111] border-l border-[#2a2a2a]">

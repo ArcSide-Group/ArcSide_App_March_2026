@@ -10,13 +10,10 @@ import FloatingActionButton from "@/components/common/floating-action-button";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { useBrand } from "@/hooks/useBrand";
-import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
-  const { brand } = useBrand();
 
   const { data: projects } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -62,37 +59,8 @@ export default function Home() {
     <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
 
-        {/* Hero — single, prominent, centered brand logo */}
-        <div className="relative px-5 pt-6 pb-5 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent">
-          <div className="absolute top-4 right-4 flex items-center space-x-3">
-            <div className="relative">
-              <i className="fas fa-bell text-muted-foreground cursor-pointer text-sm"></i>
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-            </div>
-            <div className="w-9 h-9 bg-secondary rounded-full flex items-center justify-center border-2 border-primary/20 shrink-0">
-              {(user as User)?.profileImageUrl ? (
-                <img
-                  src={(user as User).profileImageUrl!}
-                  alt="Profile"
-                  className="w-9 h-9 rounded-full object-cover"
-                />
-              ) : (
-                <i className="fas fa-user text-sm text-secondary-foreground"></i>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-center pt-2">
-            <img
-              src={brand.logo || logoPath}
-              alt={brand.name}
-              className="h-24 w-auto max-w-[260px] object-contain logo-glow"
-              data-testid="img-brand-logo-home"
-            />
-          </div>
-        </div>
-
         {/* Welcome Card */}
-        <div className="px-4 pt-4 mb-5">
+        <div className="px-4 pt-3 mb-5">
           <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
             <CardContent className="p-4">
               <h2 className="text-lg font-bold mb-1 text-foreground">

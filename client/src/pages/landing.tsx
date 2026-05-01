@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useBrand } from "@/hooks/useBrand";
 import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
 
 type AuthMode = "choose" | "email-signin" | "email-register" | "forgot-password";
@@ -35,6 +36,7 @@ type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function Landing() {
   const { toast } = useToast();
+  const { brand } = useBrand();
   const [mode, setMode] = useState<AuthMode>("choose");
 
   const handleGoogleLogin = () => {
@@ -128,10 +130,10 @@ export default function Landing() {
         {/* Hero */}
         <div className="text-center pt-12 pb-8 px-6 hero-section">
           <img
-            src={logoPath}
-            alt="ArcSide Mobile App"
+            src={brand.logo || logoPath}
+            alt={`${brand.name} Mobile App`}
             className="h-32 w-auto mx-auto mb-6 object-contain rounded-xl logo-glow"
-            data-testid="img-arcside-logo-hero"
+            data-testid="img-brand-logo-hero"
           />
           <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
             The App Made by Tradesmen for Tradesmen
