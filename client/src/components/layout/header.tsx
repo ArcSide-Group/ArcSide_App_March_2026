@@ -28,7 +28,7 @@ export default function Header() {
         <img
           src={brand.logo}
           alt={brand.name}
-          className={`${size === "header" ? "h-14" : "h-12"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
+          className={`${size === "header" ? "h-20" : "h-12"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
           data-testid={testId}
         />
       );
@@ -66,12 +66,7 @@ export default function Header() {
   return (
     <header className="header-professional">
       <div className="max-w-[600px] landscape:max-w-[900px] md:max-w-[800px] mx-auto">
-        {user?.firstName && (
-          <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-primary/30 px-4 py-2">
-            <p className="text-xs font-bold text-primary flex items-center gap-2">Welcome, <span className="text-foreground font-bold">{user.firstName}</span></p>
-          </div>
-        )}
-        <div className="flex h-16 items-center justify-between px-3 border-b border-border relative gap-4">
+        <div className="flex h-24 items-center justify-between px-3 border-b border-border relative gap-4">
           <div className="w-11" />
           <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <BrandMark size="header" testId="brand-mark-header" />

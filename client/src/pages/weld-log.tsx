@@ -214,7 +214,7 @@ export default function WeldLog() {
   const projectMap = Object.fromEntries(projects.map((p) => [p.id, p.name]));
 
   return (
-    <div className="min-h-screen bg-background pt-16 pb-20">
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-2">

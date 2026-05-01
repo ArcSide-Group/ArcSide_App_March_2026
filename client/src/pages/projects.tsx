@@ -104,7 +104,7 @@ export default function Projects() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pt-16 pb-20">
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">

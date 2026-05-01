@@ -56,7 +56,7 @@ export default function Home() {
   const userName = (user as User)?.firstName || 'Professional';
 
   return (
-    <div className="min-h-screen bg-background pt-16 pb-20">
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
 
         {/* Welcome Card */}
