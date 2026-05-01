@@ -62,34 +62,32 @@ export default function Home() {
     <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
 
-        {/* Hero Section — Industrial palette */}
-        <div className="relative p-5 pb-4 bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border-b border-border/50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img
-                src={brand.logo || logoPath}
-                alt={brand.name}
-                className="w-14 h-14 object-contain rounded-lg shrink-0 logo-glow"
-                data-testid="img-brand-logo-home"
-              />
+        {/* Hero — single, prominent, centered brand logo */}
+        <div className="relative px-5 pt-6 pb-5 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent">
+          <div className="absolute top-4 right-4 flex items-center space-x-3">
+            <div className="relative">
+              <i className="fas fa-bell text-muted-foreground cursor-pointer text-sm"></i>
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse"></div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <i className="fas fa-bell text-muted-foreground cursor-pointer text-sm"></i>
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-              </div>
-              <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center border-2 border-primary/20 shrink-0">
-                {(user as User)?.profileImageUrl ? (
-                  <img
-                    src={(user as User).profileImageUrl!}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <i className="fas fa-user text-sm text-secondary-foreground"></i>
-                )}
-              </div>
+            <div className="w-9 h-9 bg-secondary rounded-full flex items-center justify-center border-2 border-primary/20 shrink-0">
+              {(user as User)?.profileImageUrl ? (
+                <img
+                  src={(user as User).profileImageUrl!}
+                  alt="Profile"
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+              ) : (
+                <i className="fas fa-user text-sm text-secondary-foreground"></i>
+              )}
             </div>
+          </div>
+          <div className="flex flex-col items-center justify-center pt-2">
+            <img
+              src={brand.logo || logoPath}
+              alt={brand.name}
+              className="h-24 w-auto max-w-[260px] object-contain logo-glow"
+              data-testid="img-brand-logo-home"
+            />
           </div>
         </div>
 

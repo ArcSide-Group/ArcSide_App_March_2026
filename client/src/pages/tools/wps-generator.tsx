@@ -351,13 +351,21 @@ export default function WpsGenerator() {
                   <Button
                     size="sm"
                     className="bg-primary text-primary-foreground"
-                    onClick={() => {
-                      exportWpsPdf(
-                        wpsResult,
-                        { ...formData, thickness: thicknessMm },
-                        brand.name,
-                      );
-                      toast({ title: "PDF Downloaded", description: "Your WPS document has been saved." });
+                    onClick={async () => {
+                      try {
+                        await exportWpsPdf(
+                          wpsResult,
+                          { ...formData, thickness: thicknessMm },
+                          { name: brand.name, slogan: brand.slogan, logo: brand.logo },
+                        );
+                        toast({ title: "PDF Downloaded", description: "Your WPS document has been saved." });
+                      } catch (err) {
+                        toast({
+                          title: "Export Failed",
+                          description: (err as Error)?.message || "Could not generate the PDF.",
+                          variant: "destructive",
+                        });
+                      }
                     }}
                   >
                     <Download className="h-4 w-4 mr-2" />

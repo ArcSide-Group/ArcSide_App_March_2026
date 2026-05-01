@@ -8,6 +8,9 @@ export interface Brand {
   logo?: string;
   primaryColor: string;
   secondaryColor: string;
+  slogan?: string;
+  version?: string;
+  description?: string;
 }
 
 export const BRANDS: Record<BrandId, Brand> = {
@@ -17,6 +20,10 @@ export const BRANDS: Record<BrandId, Brand> = {
     logo: arcsideLogo,
     primaryColor: "#007bff",
     secondaryColor: "#0a0a0a",
+    slogan: "Made by Tradesmen for Tradesmen",
+    version: "v1.0.0",
+    description:
+      "Built by Tradesmen, For Tradesmen.\nAI-powered welding & fabrication assistant.",
   },
   afrox: {
     id: "afrox",
@@ -24,6 +31,10 @@ export const BRANDS: Record<BrandId, Brand> = {
     logo: "/afrox-logo.png",
     primaryColor: "#e31e24",
     secondaryColor: "#0a0a0a",
+    slogan: "",
+    version: "Afrox Edition v1.0",
+    description:
+      "Afrox Welding Companion.\nIndustrial welding & gas expertise for South African fabricators.",
   },
 };
 

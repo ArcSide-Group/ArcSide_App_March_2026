@@ -268,9 +268,17 @@ export default function DefectAnalyzer() {
               </Button>
               <Button
                 className="bg-primary text-primary-foreground h-12"
-                onClick={() => {
-                  exportDefectAnalysisPdf(analysis, analysis.imageData, brand.name);
-                  toast({ title: "PDF Downloaded", description: "Your analysis report has been saved." });
+                onClick={async () => {
+                  try {
+                    await exportDefectAnalysisPdf(analysis, analysis.imageData, { name: brand.name, slogan: brand.slogan, logo: brand.logo });
+                    toast({ title: "PDF Downloaded", description: "Your analysis report has been saved." });
+                  } catch (err) {
+                    toast({
+                      title: "Export Failed",
+                      description: (err as Error)?.message || "Could not generate the PDF.",
+                      variant: "destructive",
+                    });
+                  }
                 }}
               >
                 <Download className="h-4 w-4 mr-2" />

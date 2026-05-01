@@ -9,21 +9,48 @@ const LIGHT_GRAY = [245, 247, 250] as [number, number, number];
 const MID_GRAY = [100, 116, 139] as [number, number, number];
 const DARK_TEXT = [15, 23, 42] as [number, number, number];
 
-function addHeader(doc: jsPDF, subtitle: string, brandName: string = "ArcSide") {
+interface BrandHeaderOptions {
+  brandName?: string;
+  brandSlogan?: string;
+  brandLogoDataUrl?: string;
+  brandLogoFormat?: "PNG" | "JPEG";
+}
+
+function addHeader(
+  doc: jsPDF,
+  subtitle: string,
+  options: BrandHeaderOptions = {},
+) {
   const pageWidth = doc.internal.pageSize.getWidth();
+  const brandName = options.brandName || "ArcSide";
+  const brandSlogan = options.brandSlogan ?? "";
+  const logo = options.brandLogoDataUrl;
+  const format = options.brandLogoFormat || "PNG";
 
   doc.setFillColor(...DARK_NAVY);
   doc.rect(0, 0, pageWidth, 28, "F");
 
+  let textX = 14;
+  if (logo) {
+    try {
+      doc.addImage(logo, format, 14, 5, 18, 18);
+      textX = 36;
+    } catch {
+      textX = 14;
+    }
+  }
+
   doc.setTextColor(...BRAND_CYAN);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text(brandName, 14, 13);
+  doc.text(brandName, textX, 13);
 
-  doc.setTextColor(...WHITE);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("Made by Tradesmen for Tradesmen", 14, 19);
+  if (brandSlogan && brandSlogan.trim().length > 0) {
+    doc.setTextColor(...WHITE);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text(brandSlogan, textX, 19);
+  }
 
   doc.setTextColor(...BRAND_CYAN);
   doc.setFontSize(11);
@@ -34,6 +61,31 @@ function addHeader(doc: jsPDF, subtitle: string, brandName: string = "ArcSide") 
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - 14, 19, { align: "right" });
+}
+
+async function loadBrandLogo(
+  src?: string,
+): Promise<{ dataUrl: string; format: "PNG" | "JPEG" } | undefined> {
+  if (!src || typeof window === "undefined") return undefined;
+  try {
+    const res = await fetch(src, { credentials: "omit" });
+    if (!res.ok) return undefined;
+    const blob = await res.blob();
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const lower = (src.split("?")[0] || "").toLowerCase();
+    const format: "PNG" | "JPEG" =
+      lower.endsWith(".jpg") || lower.endsWith(".jpeg") || blob.type === "image/jpeg"
+        ? "JPEG"
+        : "PNG";
+    return { dataUrl, format };
+  } catch {
+    return undefined;
+  }
 }
 
 function addWatermark(doc: jsPDF, brandName: string = "ArcSide") {
@@ -82,12 +134,26 @@ function sectionTitle(doc: jsPDF, text: string, y: number): number {
   return y + 12;
 }
 
-export function exportWpsPdf(wpsResult: any, formData: any, brandName: string = "ArcSide") {
+export interface BrandPdfInfo {
+  name?: string;
+  slogan?: string;
+  logo?: string;
+}
+
+export async function exportWpsPdf(wpsResult: any, formData: any, brand: BrandPdfInfo | string = "ArcSide") {
+  const brandInfo: BrandPdfInfo = typeof brand === "string" ? { name: brand } : brand;
+  const brandName = brandInfo.name || "ArcSide";
+  const logoLoaded = await loadBrandLogo(brandInfo.logo);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 36;
 
-  addHeader(doc, "Welding Procedure Specification", brandName);
+  addHeader(doc, "Welding Procedure Specification", {
+    brandName,
+    brandSlogan: brandInfo.slogan,
+    brandLogoDataUrl: logoLoaded?.dataUrl,
+    brandLogoFormat: logoLoaded?.format,
+  });
 
   const result = wpsResult.result || wpsResult;
 
@@ -202,12 +268,20 @@ export function exportWpsPdf(wpsResult: any, formData: any, brandName: string = 
   doc.save(filename);
 }
 
-export function exportDefectAnalysisPdf(analysis: any, imageDataUrl?: string, brandName: string = "ArcSide") {
+export async function exportDefectAnalysisPdf(analysis: any, imageDataUrl?: string, brand: BrandPdfInfo | string = "ArcSide") {
+  const brandInfo: BrandPdfInfo = typeof brand === "string" ? { name: brand } : brand;
+  const brandName = brandInfo.name || "ArcSide";
+  const logoLoaded = await loadBrandLogo(brandInfo.logo);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 36;
 
-  addHeader(doc, "Weld Defect Analysis Report", brandName);
+  addHeader(doc, "Weld Defect Analysis Report", {
+    brandName,
+    brandSlogan: brandInfo.slogan,
+    brandLogoDataUrl: logoLoaded?.dataUrl,
+    brandLogoFormat: logoLoaded?.format,
+  });
 
   const result = analysis.result || analysis;
 
@@ -312,12 +386,20 @@ export function exportDefectAnalysisPdf(analysis: any, imageDataUrl?: string, br
   doc.save(filename);
 }
 
-export function exportMaterialCheckPdf(result: any, material1: string, material2: string, brandName: string = "ArcSide") {
+export async function exportMaterialCheckPdf(result: any, material1: string, material2: string, brand: BrandPdfInfo | string = "ArcSide") {
+  const brandInfo: BrandPdfInfo = typeof brand === "string" ? { name: brand } : brand;
+  const brandName = brandInfo.name || "ArcSide";
+  const logoLoaded = await loadBrandLogo(brandInfo.logo);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 36;
 
-  addHeader(doc, "Material Compatibility Report", brandName);
+  addHeader(doc, "Material Compatibility Report", {
+    brandName,
+    brandSlogan: brandInfo.slogan,
+    brandLogoDataUrl: logoLoaded?.dataUrl,
+    brandLogoFormat: logoLoaded?.format,
+  });
 
   const data = result.result || result;
 

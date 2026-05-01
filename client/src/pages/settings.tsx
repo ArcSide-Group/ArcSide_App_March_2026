@@ -276,34 +276,43 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {isArcside && (
-          <Card className="mt-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Info className="h-5 w-5 text-primary" />
-                About ArcSide
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center gap-3 py-2">
-                <img
-                  src={logoPath}
-                  alt="ArcSide"
-                  className="h-12 w-auto object-contain rounded-lg"
-                  data-testid="img-arcside-logo-settings"
-                />
-                <div className="text-center">
-                  <h3 className="font-bold text-base text-foreground">ArcSide&trade; Mobile App</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">v1.0.0</p>
-                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                    Built by Tradesmen, For Tradesmen.<br />
-                    AI-powered welding &amp; fabrication assistant.
+        <Card className="mt-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Info className="h-5 w-5 text-primary" />
+              About {brand.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center gap-3 py-2">
+              <img
+                src={brand.logo || logoPath}
+                alt={brand.name}
+                className="h-14 w-auto max-w-[180px] object-contain rounded-lg"
+                data-testid="img-brand-logo-settings"
+              />
+              <div className="text-center">
+                <h3 className="font-bold text-base text-foreground" data-testid="text-about-name">
+                  {brand.name}
+                  {isArcside ? <>&trade;</> : null}
+                </h3>
+                {brand.version && (
+                  <p className="text-xs text-muted-foreground mt-0.5" data-testid="text-about-version">
+                    {brand.version}
                   </p>
-                </div>
+                )}
+                {brand.description && (
+                  <p
+                    className="text-xs text-muted-foreground mt-2 leading-relaxed whitespace-pre-line"
+                    data-testid="text-about-description"
+                  >
+                    {brand.description}
+                  </p>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="mt-6 border-destructive/30">
           <CardHeader>

@@ -259,9 +259,17 @@ export default function MaterialChecker() {
                 {/* Export Button */}
                 <Button
                   className="w-full bg-primary text-primary-foreground mt-4"
-                  onClick={() => {
-                    exportMaterialCheckPdf(result, material1, material2, brand.name);
-                    toast({ title: "PDF Downloaded", description: "Your compatibility report has been saved." });
+                  onClick={async () => {
+                    try {
+                      await exportMaterialCheckPdf(result, material1, material2, { name: brand.name, slogan: brand.slogan, logo: brand.logo });
+                      toast({ title: "PDF Downloaded", description: "Your compatibility report has been saved." });
+                    } catch (err) {
+                      toast({
+                        title: "Export Failed",
+                        description: (err as Error)?.message || "Could not generate the PDF.",
+                        variant: "destructive",
+                      });
+                    }
                   }}
                 >
                   <Download className="h-4 w-4 mr-2" />
