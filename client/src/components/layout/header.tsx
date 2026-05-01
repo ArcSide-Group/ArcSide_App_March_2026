@@ -80,40 +80,45 @@ export default function Header() {
             {navigationItems.slice(1).map((item) => <NavLink key={item.href} {...item} />)}
             {isAdmin && <NavLink href="/admin-portal" icon={Settings} label="Admin" />}
           </nav>
-          {user && (
-            <div className="md:hidden flex items-center gap-2 mr-1" data-testid="header-user-cluster">
-              <button
-                type="button"
-                className="relative h-9 w-9 flex items-center justify-center rounded-full text-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                aria-label="Notifications"
-                data-testid="button-notifications"
-              >
-                <i className="fas fa-bell text-base"></i>
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-              </button>
-              <Link href="/profile">
-                <div
-                  className="w-9 h-9 bg-secondary rounded-full flex items-center justify-center border-2 border-primary/30 shrink-0 cursor-pointer hover:border-primary transition-colors overflow-hidden"
-                  data-testid="link-profile-header"
-                >
-                  {(user as any)?.profileImageUrl ? (
-                    <img
-                      src={(user as any).profileImageUrl}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <i className="fas fa-user text-sm text-secondary-foreground"></i>
-                  )}
-                </div>
-              </Link>
-            </div>
-          )}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden"><Button variant="ghost" size="icon" className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors h-11 w-11" data-testid="button-mobile-menu"><Menu className="h-6 w-6" /><span className="sr-only">Toggle menu</span></Button></SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-[#0a0a0a] dark:bg-[#111111] border-l border-[#2a2a2a]">
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center justify-center gap-3 px-4 pb-4 border-b border-border"><BrandMark size="menu" testId="brand-mark-menu" /></div>
+                {user && (
+                  <div className="flex items-center justify-between gap-3 px-4 pb-4 border-b border-border" data-testid="menu-user-cluster">
+                    <Link href="/profile" onClick={() => setIsOpen(false)}>
+                      <div className="flex items-center gap-3 cursor-pointer group" data-testid="link-profile-menu">
+                        <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center border-2 border-primary shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-primary/40 transition-all shadow-[0_0_12px_hsl(var(--primary)/0.25)]">
+                          {(user as any)?.profileImageUrl ? (
+                            <img
+                              src={(user as any).profileImageUrl}
+                              alt="Profile"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <i className="fas fa-user text-xl text-secondary-foreground"></i>
+                          )}
+                        </div>
+                        <div className="flex flex-col leading-tight">
+                          <span className="text-sm font-semibold text-slate-100 group-hover:text-primary transition-colors" data-testid="text-menu-user-name">
+                            {(user as any)?.firstName || "Profile"}
+                          </span>
+                          <span className="text-[11px] text-slate-400">View profile</span>
+                        </div>
+                      </div>
+                    </Link>
+                    <button
+                      type="button"
+                      className="relative h-10 w-10 flex items-center justify-center rounded-full border border-primary/30 text-primary hover:bg-primary/10 hover:border-primary transition-colors shrink-0"
+                      aria-label="Notifications"
+                      data-testid="button-notifications-menu"
+                    >
+                      <i className="fas fa-bell text-base"></i>
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                    </button>
+                  </div>
+                )}
                 <nav className="flex flex-col space-y-1 px-2">
                   {navigationItems.map((item) => <NavLink key={item.href} {...item} mobile />)}
                   {isAdmin && <NavLink href="/admin-portal" icon={Settings} label="Admin" mobile />}
