@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeWhitelist } from "./db";
+import { verifyMailTransport } from "./mailer";
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use((req, res, next) => {
 (async () => {
   try {
     await initializeWhitelist();
+    verifyMailTransport().catch(() => {}); // non-blocking SMTP probe on startup
     const server = await registerRoutes(app);
 
     // Global error handler with crash logging

@@ -7,7 +7,7 @@ import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema, insertWeldL
 import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
 import { z } from "zod";
-import { Resend } from "resend";
+import { sendMail } from "./mailer";
 
 const aiLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,
@@ -16,21 +16,6 @@ const aiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
-async function sendMail(options: { to: string; subject: string; text?: string; html?: string }) {
-  if (!resend) {
-    console.warn("[MAIL] RESEND_API_KEY not configured — emails will not be sent");
-    return null;
-  }
-  return resend.emails.send({
-    from: "ArcSide <onboarding@resend.dev>",
-    to: options.to,
-    subject: options.subject,
-    ...(options.html ? { html: options.html } : { text: options.text ?? "" }),
-  });
-}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware

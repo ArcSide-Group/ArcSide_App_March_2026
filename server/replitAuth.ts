@@ -10,7 +10,7 @@ import { pool } from "./db";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
 import crypto from "crypto";
-import { Resend } from "resend";
+import { sendMail } from "./mailer";
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required");
@@ -226,29 +226,26 @@ export function setupAuth(app: Express) {
       const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
       await storage.setPasswordResetToken(user.id, token, expires);
 
-      const domain = process.env.REPLIT_DOMAINS?.split(",")[0] ?? "localhost:5000";
-      const resetUrl = `https://${domain}/reset-password?token=${token}`;
+      const baseUrl = process.env.APP_URL
+        ?? (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : "http://localhost:5000");
+      const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
       try {
-        if (process.env.RESEND_API_KEY) {
-          const resend = new Resend(process.env.RESEND_API_KEY);
-          await resend.emails.send({
-            from: "ArcSide <onboarding@resend.dev>",
-            to: normalizedEmail,
-            subject: "ArcSide — Password Reset Request",
-            text: [
-              "You requested a password reset for your ArcSide account.",
-              "",
-              "Click the link below to set a new password (valid for 1 hour):",
-              resetUrl,
-              "",
-              "If you did not request this, you can safely ignore this email.",
-              "",
-              "— The ArcSide Team",
-            ].join("\n"),
-          });
-          console.log(`[MAIL] Password reset email sent to ${normalizedEmail}`);
-        }
+        await sendMail({
+          to: normalizedEmail,
+          subject: "ArcSide — Password Reset Request",
+          text: [
+            "You requested a password reset for your ArcSide account.",
+            "",
+            "Click the link below to set a new password (valid for 1 hour):",
+            resetUrl,
+            "",
+            "If you did not request this, you can safely ignore this email.",
+            "",
+            "— The ArcSide Team",
+          ].join("\n"),
+        });
+        console.log(`[MAIL] Password reset email sent to ${normalizedEmail}`);
       } catch (mailError) {
         console.error("[MAIL] Failed to send password reset email:", mailError);
         // Do not fail the request — token is already saved
