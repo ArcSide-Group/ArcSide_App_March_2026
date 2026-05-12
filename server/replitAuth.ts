@@ -87,7 +87,9 @@ async function upsertGoogleUser(profile: any): Promise<void> {
 }
 
 export function setupAuth(app: Express) {
-  const callbackURL = `https://${process.env.REPLIT_DOMAINS!.split(",")[0]}/api/callback`;
+  const callbackURL = process.env.APP_URL
+    ? `${process.env.APP_URL}/api/callback`
+    : `https://${process.env.REPLIT_DOMAINS!.split(",")[0]}/api/callback`;
 
   passport.use(new GoogleStrategy({ 
     clientID: process.env.GOOGLE_CLIENT_ID!, 

@@ -45,6 +45,8 @@ expertMode = true
 [userenv]
 
 [userenv.shared]
+SMTP_PORT = "465"
+SMTP_SECURE = "true"
 
 [userenv.production]
 
