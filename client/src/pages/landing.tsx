@@ -424,7 +424,7 @@ export default function Landing() {
 
         {/* Footer */}
         <div className="text-center pb-6 px-6 space-y-2 mt-4">
-          <p className="text-xs text-muted-foreground">© 2025 ArcSide™ — Professional Welding Solutions</p>
+          <p className="text-xs text-muted-foreground" data-testid="text-footer-copyright">© 2025 {brand.name}{brand.id === "arcside" ? <>&trade;</> : null} — Professional Welding Solutions</p>
           <div className="flex items-center justify-center gap-4">
             <a href="mailto:info@arcside.co.za" className="text-xs text-primary hover:underline flex items-center gap-1" data-testid="link-footer-email">
               <i className="fas fa-envelope text-[10px]"></i>

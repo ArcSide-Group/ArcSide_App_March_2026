@@ -20,7 +20,7 @@ import { exportWpsPdf } from "@/lib/pdf-export";
 export default function WpsGenerator() {
   const { user } = useAuth();
   const { brand } = useBrand();
-  const { isMetric, fromImperial } = useUnits();
+  const { isMetric, fromImperial, defaults } = useUnits();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     projectName: "",
@@ -207,7 +207,7 @@ export default function WpsGenerator() {
                       id="thickness"
                       value={formData.thickness}
                       onChange={(e) => updateFormData('thickness', e.target.value)}
-                      placeholder={isMetric ? "6" : "0.25"}
+                      placeholder={defaults.thickness}
                       data-testid="input-thickness"
                     />
                   </div>
