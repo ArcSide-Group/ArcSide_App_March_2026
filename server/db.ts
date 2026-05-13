@@ -60,6 +60,27 @@ export async function ensureSchema(): Promise<void> {
         ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'user'
     `);
 
+    // Subscriptions table — tier_level: 0=Basic, 1=Pro, 2=Enterprise
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id VARCHAR NOT NULL REFERENCES users(id),
+        tier_level INTEGER NOT NULL DEFAULT 0,
+        status VARCHAR NOT NULL DEFAULT 'active',
+        trial_ends_at TIMESTAMP,
+        current_period_start TIMESTAMP,
+        next_billing_date TIMESTAMP,
+        cancel_at_period_end BOOLEAN DEFAULT FALSE,
+        provider VARCHAR,
+        provider_subscription_id VARCHAR,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "IDX_subscriptions_user" ON subscriptions(user_id)
+    `);
+
     // Seed known admins
     for (const email of ADMIN_EMAILS) {
       await client.query(

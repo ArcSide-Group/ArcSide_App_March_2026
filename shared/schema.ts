@@ -199,12 +199,33 @@ export const betaFeedback = pgTable("beta_feedback", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Subscriptions — tier_level: 0=Basic, 1=Pro, 2=Enterprise
+export const subscriptions = pgTable("subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  tierLevel: integer("tier_level").notNull().default(0),
+  status: varchar("status").notNull().default("active"),
+  trialEndsAt: timestamp("trial_ends_at"),
+  currentPeriodStart: timestamp("current_period_start"),
+  nextBillingDate: timestamp("next_billing_date"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  provider: varchar("provider"),
+  providerSubscriptionId: varchar("provider_subscription_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [index("IDX_subscriptions_user").on(table.userId)]);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projects),
   analyses: many(analyses),
   wpsDocuments: many(wpsDocuments),
   usageTracking: many(usageTracking),
+  subscriptions: many(subscriptions),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, { fields: [subscriptions.userId], references: [users.id] }),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -283,6 +304,35 @@ export const insertWpsSchema = createInsertSchema(wpsDocuments).omit({
   createdAt: true,
   updatedAt: true,
 });
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
+
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "expired";
+
+export interface EffectivePlan {
+  tier: 0 | 1 | 2;
+  tierName: "Basic" | "Pro" | "Enterprise";
+  status: SubscriptionStatus;
+  isPro: boolean;
+  isTrialing: boolean;
+  trialDaysLeft: number | null;
+  trialEndsAt: string | null;
+  nextBillingDate: string | null;
+  willCancel: boolean;
+  provider: string | null;
+}
 
 // Types
 export type UpsertUser = typeof users.$inferInsert;
