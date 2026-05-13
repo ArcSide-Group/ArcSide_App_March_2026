@@ -28,6 +28,7 @@ import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
 import { z } from "zod";
 import { sendMail } from "./mailer";
+import { registerBillingRoutes } from "./billing-routes";
 
 const aiLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,
@@ -38,6 +39,7 @@ const aiLimiter = rateLimit({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  registerBillingRoutes(app);
   // Auth middleware
   await setupAuth(app);
 

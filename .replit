@@ -47,6 +47,10 @@ expertMode = true
 [userenv.shared]
 SMTP_PORT = "465"
 SMTP_SECURE = "true"
+PAYFAST_MERCHANT_ID = "10004002"
+PAYFAST_MERCHANT_KEY = "q1cd2rdny4a53"
+PAYFAST_MODE = "sandbox"
+PAYFAST_PASSPHRASE = ""
 
 [userenv.production]
 

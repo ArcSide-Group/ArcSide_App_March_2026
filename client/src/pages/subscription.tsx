@@ -34,13 +34,28 @@ export default function Subscription() {
   }, [toast]);
 
   const startTrial = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/subscription/upgrade"),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      toast({ title: "Trial started", description: `Enjoy ${TRIAL_DURATION_HOURS} hours of full Pro access.` });
-      setLocation("/dashboard");
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/billing/checkout/payfast");
+      return (await res.json()) as { redirectUrl: string; mode: string };
     },
-    onError: () => toast({ title: "Could not start trial", description: "Please try again in a moment.", variant: "destructive" }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+      if (data?.redirectUrl) {
+        toast({
+          title: "Redirecting to PayFast",
+          description: data.mode === "sandbox" ? "Sandbox checkout — no real charge." : undefined,
+        });
+        window.location.href = data.redirectUrl;
+      } else {
+        toast({ title: "Could not start checkout", variant: "destructive" });
+      }
+    },
+    onError: () =>
+      toast({
+        title: "Could not start checkout",
+        description: "Please try again in a moment.",
+        variant: "destructive",
+      }),
   });
 
   const cancelSub = useMutation({

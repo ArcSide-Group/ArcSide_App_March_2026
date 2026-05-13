@@ -141,6 +141,7 @@ export interface IStorage {
   getSetting(key: string): Promise<string | undefined>;
   setSetting(key: string, value: string): Promise<void>;
   getActiveSubscription(userId: string): Promise<Subscription | undefined>;
+  getSubscriptionById(id: string): Promise<Subscription | undefined>;
   createSubscription(data: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: string, data: Partial<InsertSubscription>): Promise<Subscription>;
   getEffectivePlan(userId: string): Promise<EffectivePlan>;
@@ -329,6 +330,11 @@ export class DatabaseStorage implements IStorage {
       .where(eq(subscriptions.userId, userId))
       .orderBy(desc(subscriptions.createdAt))
       .limit(1);
+    return sub;
+  }
+
+  async getSubscriptionById(id: string): Promise<Subscription | undefined> {
+    const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.id, id));
     return sub;
   }
 
