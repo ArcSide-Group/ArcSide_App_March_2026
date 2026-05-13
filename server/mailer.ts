@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const FROM = "ArcSide <info@arcside.co.za>";
+const FROM = "info@arcside.co.za";
 
 function createTransport() {
   const host = process.env.SMTP_HOST;

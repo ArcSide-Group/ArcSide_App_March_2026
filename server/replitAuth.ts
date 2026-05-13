@@ -226,8 +226,9 @@ export function setupAuth(app: Express) {
       const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
       await storage.setPasswordResetToken(user.id, token, expires);
 
-      const baseUrl = process.env.APP_URL
-        ?? (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : "http://localhost:5000");
+      const appUrl = (process.env.APP_URL ?? "").trim().replace(/[\[\]"']/g, "");
+      const baseUrl = appUrl
+        || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : "http://localhost:5000");
       const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
       try {

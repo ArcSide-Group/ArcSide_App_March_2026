@@ -19,6 +19,7 @@ export const pool = new Pool({ connectionString: databaseUrl });
 export const db = drizzle({ client: pool, schema });
 
 const SEED_EMAILS = ["info@arcside.co.za", "caitywills16@gmail.com"];
+const ADMIN_EMAILS = ["info@arcside.co.za", "arcside.group@gmail.com"];
 
 export async function initializeWhitelist(): Promise<void> {
   const client = await pool.connect();
@@ -40,6 +41,37 @@ export async function initializeWhitelist(): Promise<void> {
     }
 
     console.log("[DB] Whitelist table ready.");
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Idempotent schema patch — adds any columns that exist in the Drizzle schema
+ * but may be missing from older database instances (dev or prod). Safe to run
+ * on every startup; each ALTER TABLE is guarded by IF NOT EXISTS.
+ */
+export async function ensureSchema(): Promise<void> {
+  const client = await pool.connect();
+  try {
+    // Add role column if missing (was added post-initial-deploy)
+    await client.query(`
+      ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'user'
+    `);
+
+    // Seed known admins
+    for (const email of ADMIN_EMAILS) {
+      await client.query(
+        `UPDATE users SET role = 'admin' WHERE email = $1 AND (role IS NULL OR role != 'admin')`,
+        [email]
+      );
+    }
+
+    console.log("[DB] Schema patch applied — role column ready.");
+  } catch (err) {
+    // Non-fatal: log but don't crash startup if users table doesn't exist yet
+    console.warn("[DB] ensureSchema warning:", (err as Error).message);
   } finally {
     client.release();
   }
