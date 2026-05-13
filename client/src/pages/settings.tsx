@@ -11,7 +11,9 @@ import { useTheme } from "@/hooks/useTheme";
 import { useUnits } from "@/hooks/useUnits";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useBrand } from "@/hooks/useBrand";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useTranslation } from "@/lib/i18n";
+import { CreditCard, ArrowRight } from "lucide-react";
 import {
   User,
   Bell,
@@ -35,7 +37,31 @@ export default function Settings() {
   const { units, setUnits } = useUnits();
   const { preferences, setPreference } = useUserPreferences();
   const { brand } = useBrand();
+  const { plan } = useSubscription();
   const { t } = useTranslation();
+
+  const formatLongDate = (iso: string | null) => {
+    if (!iso) return null;
+    try {
+      return new Date(iso).toLocaleDateString("en-ZA", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch {
+      return null;
+    }
+  };
+  const statusBadge = (() => {
+    if (plan.isTrialing) return { label: "Trial", cls: "bg-amber-500/15 text-amber-400 border-amber-500/30" };
+    if (plan.willCancel && plan.isPro) return { label: "Cancels soon", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+    if (plan.status === "active") return { label: "Active", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" };
+    if (plan.status === "past_due") return { label: "Past due", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
+    if (plan.status === "canceled") return { label: "Canceled", cls: "bg-slate-500/15 text-slate-400 border-slate-500/30" };
+    return { label: "Free", cls: "bg-primary/15 text-primary border-primary/30" };
+  })();
+  const nextBillingFormatted = formatLongDate(plan.nextBillingDate);
+  const trialEndsFormatted = formatLongDate(plan.trialEndsAt);
   const pushNotifications = preferences.pushNotifications ?? true;
   const emailUpdates = preferences.emailUpdates ?? true;
   const autoSave = preferences.autoSave ?? true;
@@ -61,11 +87,74 @@ export default function Settings() {
               <div className="flex-1">
                 <h3 className="font-semibold">{user?.firstName} {user?.lastName}</h3>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
-                <Badge variant="outline" className="mt-1 text-xs">
-                  {user?.subscriptionTier === 'premium' ? 'Premium' : 'Free'} Plan
+                <Badge variant="outline" className="mt-1 text-xs" data-testid="badge-plan-tier">
+                  {plan.tierName} Plan
                 </Badge>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-6 border-primary/30" data-testid="card-current-plan">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CreditCard className="h-5 w-5 text-primary" />
+              Current Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-base font-semibold" data-testid="text-plan-name">
+                  {plan.tierName}
+                </div>
+                <div className="text-xs text-muted-foreground capitalize">
+                  Tier {plan.tier} · {plan.status.replace(/_/g, " ")}
+                </div>
+              </div>
+              <Badge variant="outline" className={`text-xs ${statusBadge.cls}`} data-testid="badge-plan-status">
+                {statusBadge.label}
+              </Badge>
+            </div>
+
+            {plan.isTrialing && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5 text-xs" data-testid="text-trial-info">
+                <p className="font-medium text-amber-500">
+                  {plan.trialDaysLeft !== null
+                    ? `${plan.trialDaysLeft} day${plan.trialDaysLeft === 1 ? "" : "s"} left in your trial`
+                    : "Trial active"}
+                </p>
+                {trialEndsFormatted && (
+                  <p className="text-muted-foreground mt-0.5">
+                    Trial ends {trialEndsFormatted}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {nextBillingFormatted && !plan.isTrialing && plan.tier > 0 && (
+              <div className="text-xs text-muted-foreground" data-testid="text-next-billing">
+                {plan.willCancel ? "Access ends" : "Next billing"}:{" "}
+                <span className="text-foreground font-medium">{nextBillingFormatted}</span>
+              </div>
+            )}
+
+            {!plan.isPro && (
+              <p className="text-xs text-muted-foreground">
+                Unlock AI-powered defect analysis, WPS generation, and the Weld Assistant by upgrading to Pro.
+              </p>
+            )}
+
+            <Link href="/subscription">
+              <Button
+                variant={plan.isPro ? "outline" : "default"}
+                className="w-full justify-between mt-1"
+                data-testid="button-manage-plan"
+              >
+                <span>{plan.isPro ? "Manage plan" : "Upgrade to Pro"}</span>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 

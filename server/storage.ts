@@ -52,23 +52,28 @@ export function deriveEffectivePlan(sub: Subscription | undefined): EffectivePla
   }
   const tier = (Math.max(0, Math.min(2, sub.tierLevel ?? 0)) as 0 | 1 | 2);
   const status = (sub.status as SubscriptionStatus) ?? "active";
+  const now = Date.now();
   const isActive = ACTIVE_STATUSES.includes(status);
   const isTrialing = status === "trialing";
+  // Canceled-but-still-paid: keep entitlement until the paid period ends.
+  const periodEndMs = sub.nextBillingDate?.getTime() ?? sub.trialEndsAt?.getTime() ?? null;
+  const stillPaidThroughPeriod =
+    status === "canceled" && periodEndMs !== null && periodEndMs > now;
   let trialDaysLeft: number | null = null;
   if (isTrialing && sub.trialEndsAt) {
-    const ms = sub.trialEndsAt.getTime() - Date.now();
+    const ms = sub.trialEndsAt.getTime() - now;
     trialDaysLeft = Math.max(0, Math.ceil(ms / 86_400_000));
   }
   return {
     tier,
     tierName: TIER_NAMES[tier],
     status,
-    isPro: tier >= 1 && isActive,
+    isPro: tier >= 1 && (isActive || stillPaidThroughPeriod),
     isTrialing,
     trialDaysLeft,
     trialEndsAt: sub.trialEndsAt ? sub.trialEndsAt.toISOString() : null,
     nextBillingDate: sub.nextBillingDate ? sub.nextBillingDate.toISOString() : null,
-    willCancel: !!sub.cancelAtPeriodEnd,
+    willCancel: !!sub.cancelAtPeriodEnd || status === "canceled",
     provider: sub.provider ?? null,
   };
 }
