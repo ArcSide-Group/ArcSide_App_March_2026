@@ -28,7 +28,7 @@ import {
   Moon,
   Info,
 } from "lucide-react";
-import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
+import logoPath from "@assets/ICON_-_Mobile_App_1778667338095.png";
 
 export default function Settings() {
   const { user } = useAuth();
@@ -214,16 +214,6 @@ export default function Settings() {
                     <Lock className="h-4 w-4 mr-2" />
                     Change
                   </Button>
-                </div>
-                <Separator />
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">{t("settings.twoFactor")}</h4>
-                    <p className="text-xs text-muted-foreground mt-1" data-testid="text-2fa-description">
-                      {t("settings.twoFactorDesc")}
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="text-xs shrink-0 mt-0.5">Google OAuth</Badge>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">

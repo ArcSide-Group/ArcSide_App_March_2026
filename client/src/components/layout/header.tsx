@@ -103,15 +103,6 @@ export default function Header() {
                         </div>
                       </div>
                     </Link>
-                    <button
-                      type="button"
-                      className="relative h-10 w-10 flex items-center justify-center rounded-full border border-primary/30 text-primary hover:bg-primary/10 hover:border-primary transition-colors shrink-0"
-                      aria-label="Notifications"
-                      data-testid="button-notifications-menu"
-                    >
-                      <i className="fas fa-bell text-base"></i>
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                    </button>
                   </div>
                 )}
                 <nav className="flex flex-col space-y-1 px-2">

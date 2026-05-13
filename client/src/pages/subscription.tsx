@@ -13,7 +13,6 @@ const plans = [
       "Basic calculators access",
       "Limited AI chatbot (10 queries/day)",
       "1 active project",
-      "Small CAD template library",
       "Community support"
     ],
     limitations: [
@@ -37,7 +36,6 @@ const plans = [
       "All calculators unlocked",
       "Unlimited AI chatbot interactions",
       "Up to 10 active projects",
-      "Expanded CAD template library",
       "Priority email support",
       "Export capabilities",
       "Ad-free experience",
@@ -58,9 +56,7 @@ const plans = [
     description: "Full solution for large shops and enterprises",
     features: [
       "All Premium features",
-      "Full Text-to-CAD access",
       "Unlimited projects & cloud storage",
-      "Complete CAD template library",
       "Priority phone & chat support",
       "Custom integrations",
       "Team collaboration tools",

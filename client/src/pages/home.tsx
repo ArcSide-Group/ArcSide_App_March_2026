@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 import { useQuery } from "@tanstack/react-query";
 import type { User, Project, UsageTracking } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
+  const { isPro, gateHref } = usePremiumAccess();
   const { toast } = useToast();
 
   const { data: projects } = useQuery<Project[]>({
@@ -59,33 +61,6 @@ export default function Home() {
     <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
 
-        {/* Welcome Card */}
-        <div className="px-4 pt-3 mb-5">
-          <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-            <CardContent className="p-4">
-              <h2 className="text-lg font-bold mb-1 text-foreground">
-                Welcome back, {userName}! 👋
-              </h2>
-              <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                Your professional welding companion is ready. AI tools and precision calculators — built for the field.
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-2 bg-background/50 rounded-lg p-2.5">
-                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${(user as User)?.subscriptionTier === 'premium' ? 'bg-primary' : 'bg-muted-foreground'} animate-pulse`}></div>
-                  <span className="text-xs font-medium truncate">
-                    {(user as User)?.subscriptionTier === 'premium' ? 'Premium Active' : 'Free Plan'}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2 bg-background/50 rounded-lg p-2.5">
-                  <i className="fas fa-chart-line text-accent text-xs shrink-0"></i>
-                  <span className="text-xs font-medium">
-                    {(usage as UsageTracking)?.analysesCount || 0} analyses
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Featured Section */}
         <div className="px-4 mb-5">
@@ -176,14 +151,14 @@ export default function Home() {
               />
             </Link>
 
-            <Link href="/tools/wps-generator">
+            <Link href={gateHref("/tools/wps-generator")}>
               <ToolCard
                 icon="fas fa-file-contract"
                 title="WPS Generator"
                 description="ISO/AWS procedures"
                 iconColor="text-accent"
                 bgColor="bg-accent/20"
-                premium={(user as User)?.subscriptionTier !== 'premium'}
+                premium={!isPro}
               />
             </Link>
 
@@ -217,14 +192,14 @@ export default function Home() {
               />
             </Link>
 
-            <Link href="/tools/process-optimizer">
+            <Link href={gateHref("/tools/process-optimizer")}>
               <ToolCard
                 icon="fas fa-sliders-h"
                 title="Optimizer"
                 description="Process parameters"
                 iconColor="text-accent"
                 bgColor="bg-accent/20"
-                premium={(user as User)?.subscriptionTier !== 'premium'}
+                premium={!isPro}
               />
             </Link>
           </div>

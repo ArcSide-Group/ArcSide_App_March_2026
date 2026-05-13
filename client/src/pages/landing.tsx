@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { useBrand } from "@/hooks/useBrand";
-import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
+import logoPath from "@assets/ICON_-_Mobile_App_1778667338095.png";
 
 type AuthMode = "choose" | "email-signin" | "email-register" | "forgot-password";
 

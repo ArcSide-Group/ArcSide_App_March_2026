@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import logoPath from "@assets/image_1773535782481(2)_1774714538260.jpg";
+import logoPath from "@assets/ICON_-_Mobile_App_1778667338095.png";
 
 const resetSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters."),

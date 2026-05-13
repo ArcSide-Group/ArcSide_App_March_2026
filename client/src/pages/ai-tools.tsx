@@ -1,9 +1,10 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Bot, Search, FileText, Layers, BookOpen, MessageSquare, Zap, Crown } from "lucide-react";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
 const aiTools = [
   {
@@ -57,6 +58,7 @@ const aiTools = [
 ];
 
 export default function AITools() {
+  const { isPro, gateHref } = usePremiumAccess();
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
@@ -73,28 +75,34 @@ export default function AITools() {
         </div>
 
         <div className="space-y-3">
-          {aiTools.map((tool, index) => (
+          {aiTools.map((tool, index) => {
+            const locked = tool.isPremium && !isPro;
+            return (
             <Card
               key={index}
-              className={`border-border ${tool.isPremium ? 'border-accent/30 bg-gradient-to-r from-accent/5 to-accent/10' : ''}`}
+              className={`relative overflow-hidden border-border ${tool.isPremium ? 'border-accent/30 bg-gradient-to-r from-accent/5 to-accent/10' : ''}`}
             >
+              {locked && (
+                <span
+                  className="absolute top-2 right-2 z-10 inline-flex items-center gap-0.5 rounded-full text-white font-semibold leading-none whitespace-nowrap shadow-sm"
+                  style={{ backgroundColor: "#0047AB", fontSize: "10px", padding: "3px 6px" }}
+                  data-testid={`badge-pro-ai-${tool.name.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <span aria-hidden="true">👑</span>
+                  <span>Pro</span>
+                </span>
+              )}
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   {/* Icon */}
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${tool.isPremium ? 'bg-accent/20' : 'bg-primary/15'}`}>
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${tool.isPremium ? 'bg-accent/20' : 'bg-primary/15'} ${locked ? 'opacity-40' : ''}`}>
                     <tool.icon className={`h-5 w-5 ${tool.isPremium ? 'text-accent' : 'text-primary'}`} />
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span className="font-semibold text-sm">{tool.name}</span>
-                      {tool.isPremium && (
-                        <Badge variant="secondary" className="bg-accent/15 text-accent border-accent/30 text-xs px-2 py-0">
-                          <Crown className="h-3 w-3 mr-1" />
-                          Pro
-                        </Badge>
-                      )}
+                      <span className={`font-semibold text-sm ${locked ? 'pr-12' : ''}`}>{tool.name}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{tool.description}</p>
                     <div className="flex flex-wrap gap-1 mb-3">
@@ -104,7 +112,7 @@ export default function AITools() {
                         </Badge>
                       ))}
                     </div>
-                    <Link href={tool.href}>
+                    <Link href={gateHref(tool.href)}>
                       <Button
                         size="sm"
                         className={`w-full h-10 font-semibold text-sm ${tool.isPremium
@@ -112,7 +120,9 @@ export default function AITools() {
                           : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                         }`}
                       >
-                        {tool.isPremium ? (
+                        {locked ? (
+                          <><Crown className="h-3.5 w-3.5 mr-1.5" />Upgrade to Unlock</>
+                        ) : tool.isPremium ? (
                           <><Crown className="h-3.5 w-3.5 mr-1.5" />Try Premium Tool</>
                         ) : (
                           <><i className="fas fa-rocket mr-1.5 text-xs"></i>Launch Tool</>
@@ -123,7 +133,7 @@ export default function AITools() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          );})}
         </div>
 
         {/* Bottom CTA */}
