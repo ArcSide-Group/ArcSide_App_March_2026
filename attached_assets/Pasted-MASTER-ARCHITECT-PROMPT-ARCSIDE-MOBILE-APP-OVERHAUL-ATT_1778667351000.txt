@@ -1,0 +1,41 @@
+MASTER ARCHITECT PROMPT: ARCSIDE MOBILE APP OVERHAUL
+"ATTENTION: I am switching to Plan Mode. Do not write or modify any code yet. I want you to act as a Senior Technical Lead. Your goal is to create a multi-stage development roadmap for a total overhaul of the ArcSide Mobile App.
+
+STRICT DEVELOPMENT RULE: You must break this project into 5 distinct 'Scheduled Tasks.' After you generate the plan, I will review it. During the Build phase, you must pause and wait for my explicit approval after completing each task before moving to the next.
+
+TASK 1: BRANDING & UI PURGE
+Logo: Replace all legacy logos with the provided 'A icon' logo (Sign-in, Home header, About page, Sidebar).
+
+Cleanup: Remove 'Welcome Back' section, Notifications tab, Bell icon, and 2FA settings.
+
+Visual Gatekeeping: Dim AI tools (40% opacity) for 'Basic' users and add a '👑 Pro' badge to their icons. Disable AI page access for non-subscribers.
+
+Audit: Remove every mention of 'CAD' from the codebase.
+
+TASK 2: SUBSCRIPTION DATABASE & TIER ARCHITECTURE
+Database: Implement a subscriptions table linked to users. Track tier_level (0=Basic, 1=Pro, 2=Enterprise), status (trialing, active, canceled), next_billing_date, and cancel_at_period_end.
+
+Settings UI: Create a dynamic 'Current Plan' display under the user email.
+
+3. BILLING LIFECYCLE & 3-DAY TRIAL LOGIC
+Trial Engine: Implement a strict 72-hour trial. No funds deducted during trial.
+
+Recurring Billing: Handle the transition from R99 (Promo Month 1) to R299 (Month 2+) using a 30-day cycle.
+
+Smart Cancellation: If a user cancels, they must retain Pro access until the next_billing_date. Revert to Basic only after the cycle ends.
+
+Retry Logic: Implement a 24/48-hour retry system for failed payments before locking.
+
+4. ENTERPRISE LEAD GENERATION & DISCLAIMERS
+Enterprise UI: Replace 'Buy' with 'Contact Sales'. Implement a Pop-up Form (Business Name, Qty of Users, Location, Contact Person, Email).
+
+Automation: Form submissions must email info@arcside.co.za.
+
+Legal: Update Liability Disclaimer with POPIA (South Africa) and GDPR compliance. Add auto-renewal liability clauses.
+
+5. PAYMENT GATEWAY STAGING
+Infrastructure: Set up Stripe (Web) and RevenueCat (Mobile) integrations.  
+
+Sandbox: All gateways must remain in TEST/SANDBOX MODE. Do not enable live payments.
+
+AGENT ACTION: Please analyze these requirements and provide a detailed Task List. Include a 'Risk Assessment' for the Subscription Logic and explain how you will handle the ZAR currency formatting."
