@@ -39,9 +39,10 @@ const aiLimiter = rateLimit({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  registerBillingRoutes(app);
-  // Auth middleware
+  // Auth middleware MUST run before any authenticated route is registered,
+  // otherwise session/passport doesn't attach and isAuthenticated returns 401.
   await setupAuth(app);
+  registerBillingRoutes(app);
 
   // Projects routes
   app.get('/api/projects', isAuthenticated, async (req: any, res) => {
