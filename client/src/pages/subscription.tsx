@@ -1,13 +1,35 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, Star, Clock, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Check, Crown, Zap, Star, Clock, Sparkles, Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { insertEnterpriseLeadSchema, type InsertEnterpriseLead } from "@shared/schema";
 import {
   PRO_FIRST_CHARGE_ZAR,
   PRO_RECURRING_ZAR,
@@ -21,6 +43,42 @@ export default function Subscription() {
   const { plan, isLoading } = useSubscription();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [enterpriseOpen, setEnterpriseOpen] = useState(false);
+
+  const enterpriseForm = useForm<InsertEnterpriseLead>({
+    resolver: zodResolver(insertEnterpriseLeadSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      company: "",
+      phone: "",
+      teamSize: "",
+      message: "",
+      source: "subscription_page",
+    },
+  });
+
+  const enterpriseMutation = useMutation({
+    mutationFn: async (data: InsertEnterpriseLead) => {
+      const res = await apiRequest("POST", "/api/enterprise-lead", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Enquiry sent",
+        description: "We'll be in touch within one business day.",
+      });
+      enterpriseForm.reset();
+      setEnterpriseOpen(false);
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Could not submit",
+        description: err?.message || "Please try again in a moment.",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -281,12 +339,172 @@ export default function Subscription() {
                   </li>
                 ))}
               </ul>
-              <a href="mailto:info@arcside.co.za" data-testid="link-contact-sales">
-                <Button className="w-full h-11 font-semibold bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Crown className="h-4 w-4 mr-2" />
-                  Contact Sales
-                </Button>
-              </a>
+              <Dialog open={enterpriseOpen} onOpenChange={setEnterpriseOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="w-full h-11 font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
+                    data-testid="button-contact-sales"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    Contact Sales
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Talk to ArcSide Enterprise</DialogTitle>
+                    <DialogDescription>
+                      Tell us a little about your team and we'll be in touch within one business day.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...enterpriseForm}>
+                    <form
+                      onSubmit={enterpriseForm.handleSubmit((d) => enterpriseMutation.mutate(d))}
+                      className="space-y-3"
+                      data-testid="form-enterprise-lead"
+                    >
+                      <FormField
+                        control={enterpriseForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Your name *</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Jane Welder"
+                                data-testid="input-lead-name"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={enterpriseForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Work email *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="jane@yourcompany.co.za"
+                                data-testid="input-lead-email"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={enterpriseForm.control}
+                        name="company"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Business name *</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="ACME Fabrication (Pty) Ltd"
+                                data-testid="input-lead-company"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField
+                          control={enterpriseForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="tel"
+                                  placeholder="+27 ..."
+                                  data-testid="input-lead-phone"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={enterpriseForm.control}
+                          name="teamSize"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Team size</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g. 1-10, 50+"
+                                  data-testid="input-lead-team-size"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormField
+                        control={enterpriseForm.control}
+                        name="message"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>What do you need?</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="VAT number, white-labelling, integrations, training, etc."
+                                rows={3}
+                                data-testid="input-lead-message"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter className="gap-2 sm:gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setEnterpriseOpen(false)}
+                          disabled={enterpriseMutation.isPending}
+                          data-testid="button-lead-cancel"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={enterpriseMutation.isPending}
+                          data-testid="button-lead-submit"
+                        >
+                          {enterpriseMutation.isPending && (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          )}
+                          Send enquiry
+                        </Button>
+                      </DialogFooter>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">
+                        By submitting, you consent to ArcSide processing the details above to respond to
+                        your enquiry, in line with POPIA and the GDPR. See our{" "}
+                        <a href="/disclaimer" className="text-primary hover:underline">
+                          legal &amp; privacy notice
+                        </a>
+                        .
+                      </p>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>

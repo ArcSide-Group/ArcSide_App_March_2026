@@ -199,6 +199,35 @@ export const betaFeedback = pgTable("beta_feedback", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Enterprise lead capture (Contact Sales form on /subscription)
+export const enterpriseLeads = pgTable("enterprise_leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  email: varchar("email").notNull(),
+  company: varchar("company").notNull(),
+  phone: varchar("phone"),
+  teamSize: varchar("team_size"),
+  message: text("message"),
+  source: varchar("source").default("subscription_page"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertEnterpriseLeadSchema = createInsertSchema(enterpriseLeads).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  name: z.string().trim().min(2, "Name is required").max(120),
+  email: z.string().trim().toLowerCase().email("Valid email required").max(254),
+  company: z.string().trim().min(2, "Company is required").max(160),
+  phone: z.string().trim().max(40).optional().or(z.literal("")),
+  teamSize: z.string().trim().max(40).optional().or(z.literal("")),
+  message: z.string().trim().max(2000).optional().or(z.literal("")),
+  source: z.string().trim().max(60).optional(),
+});
+
+export type InsertEnterpriseLead = z.infer<typeof insertEnterpriseLeadSchema>;
+export type EnterpriseLead = typeof enterpriseLeads.$inferSelect;
+
 // Subscriptions — tier_level: 0=Basic, 1=Pro, 2=Enterprise
 export const subscriptions = pgTable("subscriptions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

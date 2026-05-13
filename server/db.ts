@@ -81,6 +81,21 @@ export async function ensureSchema(): Promise<void> {
       CREATE INDEX IF NOT EXISTS "IDX_subscriptions_user" ON subscriptions(user_id)
     `);
 
+    // Enterprise leads — Contact Sales form on /subscription
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS enterprise_leads (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR NOT NULL,
+        email VARCHAR NOT NULL,
+        company VARCHAR NOT NULL,
+        phone VARCHAR,
+        team_size VARCHAR,
+        message TEXT,
+        source VARCHAR DEFAULT 'subscription_page',
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
     // Seed known admins
     for (const email of ADMIN_EMAILS) {
       await client.query(

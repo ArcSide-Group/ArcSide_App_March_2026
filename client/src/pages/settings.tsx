@@ -13,6 +13,7 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useBrand } from "@/hooks/useBrand";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useTranslation } from "@/lib/i18n";
+import { DISCLAIMER_LAST_UPDATED, formatDisclaimerDate } from "@shared/disclaimer";
 import { CreditCard, ArrowRight } from "lucide-react";
 import {
   User,
@@ -30,6 +31,8 @@ import {
   Moon,
   Info,
 } from "lucide-react";
+
+const disclaimerLastUpdatedDisplay = formatDisclaimerDate(DISCLAIMER_LAST_UPDATED);
 
 export default function Settings() {
   const { user } = useAuth();
@@ -364,9 +367,15 @@ export default function Settings() {
               <Link href="/disclaimer">
                 <Button variant="outline" className="w-full justify-start text-accent border-accent/30 hover:bg-accent/10">
                   <Shield className="h-4 w-4 mr-2" />
-                  Liability Disclaimer
+                  Legal &amp; Privacy Notice
                 </Button>
               </Link>
+              <p
+                className="text-[11px] text-muted-foreground text-center -mt-1"
+                data-testid="text-settings-disclaimer-updated"
+              >
+                Last updated: {disclaimerLastUpdatedDisplay}
+              </p>
             </div>
           </CardContent>
         </Card>

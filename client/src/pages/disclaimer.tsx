@@ -2,8 +2,17 @@ import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  PRO_FIRST_CHARGE_ZAR,
+  PRO_RECURRING_ZAR,
+  TRIAL_DURATION_HOURS,
+  formatZar,
+} from '@shared/pricing';
+import { DISCLAIMER_LAST_UPDATED, formatDisclaimerDate } from '@shared/disclaimer';
 
 export default function Disclaimer() {
+  const lastUpdated = formatDisclaimerDate(DISCLAIMER_LAST_UPDATED);
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
@@ -15,8 +24,10 @@ export default function Disclaimer() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-lg font-bold">Liability Disclaimer</h1>
-            <p className="text-xs text-muted-foreground">Legal Notice — Read Before Use</p>
+            <h1 className="text-lg font-bold">Legal &amp; Privacy Notice</h1>
+            <p className="text-xs text-muted-foreground" data-testid="text-disclaimer-last-updated">
+              Last updated: {lastUpdated}
+            </p>
           </div>
         </div>
 
@@ -37,7 +48,7 @@ export default function Disclaimer() {
                 </div>
                 <h2 className="font-bold text-base">ArcSide™ Liability Notice</h2>
               </div>
-              <Badge variant="secondary" className="text-xs">Effective: March 2026</Badge>
+              <Badge variant="secondary" className="text-xs">Effective: {lastUpdated}</Badge>
 
               <div className="industrial-divider"></div>
 
@@ -54,7 +65,7 @@ export default function Disclaimer() {
                 <h3 className="font-semibold text-sm text-foreground">2. No Warranty of Accuracy</h3>
                 <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
                   Calculations performed by ArcSide's welding calculators are based on empirical formulas, industry guidelines
-                  (including AWS D1.1, ASME Section IX, and Lincoln Electric reference data), and AI-assisted analysis. Results
+                  (including AWS D1.1, ASME Section IX, ISO 15614-1, and Lincoln Electric reference data), and AI-assisted analysis. Results
                   may vary from actual welding conditions due to material variability, equipment calibration, operator technique,
                   environmental factors, and the inherent limitations of simplified mathematical models.
                 </p>
@@ -77,7 +88,7 @@ export default function Disclaimer() {
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
-                    Qualify procedures per the applicable code (AWS D1.1, ASME IX, API 1104, or equivalent)
+                    Qualify procedures per the applicable code (AWS D1.1, ASME IX, ISO 15614-1, API 1104, or equivalent)
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
@@ -93,7 +104,7 @@ export default function Disclaimer() {
               <section className="space-y-2">
                 <h3 className="font-semibold text-sm text-foreground">4. AI-Generated Content</h3>
                 <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
-                  ArcSide uses Google Gemini 2.0 Flash to power its AI Defect Analyzer, Weld Assistant, Material Compatibility
+                  ArcSide uses Google Gemini 2.5 Flash to power its AI Defect Analyzer, Weld Assistant, Material Compatibility
                   Checker, WPS Generator, and Terminology tools. AI-generated content can contain errors, hallucinations, or
                   outdated information. Never rely solely on AI analysis for acceptance or rejection of welds in code work.
                   All AI outputs require review by a qualified person.
@@ -120,12 +131,126 @@ export default function Disclaimer() {
                 </p>
               </section>
 
+              <div className="industrial-divider"></div>
+
+              {/* POPIA */}
+              <section className="space-y-2" data-testid="section-popia">
+                <h3 className="font-semibold text-sm text-foreground">7. POPIA — South African Data Protection</h3>
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
+                  ArcSide is based in South Africa and processes personal information in accordance with the
+                  <strong className="text-foreground"> Protection of Personal Information Act, No. 4 of 2013 (POPIA)</strong>.
+                </p>
+                <ul className="text-xs text-slate-900 dark:text-slate-100 space-y-1.5 mt-1">
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Information collected:</strong> account details (name, email, optional phone &amp; company), authentication identifiers, subscription &amp; billing references, your project content (WPS drafts, weld log entries, calculator inputs), AI prompts and responses, and basic usage telemetry.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Purpose:</strong> to provide and improve the service, secure your account, process payments via PayFast, send transactional emails, and respond to support enquiries.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Legal basis:</strong> performance of the contract you accept on signup, your consent (e.g. enterprise enquiries, marketing emails) and our legitimate interests in service security and improvement.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Sub-processors:</strong> Neon (PostgreSQL hosting), Google (OAuth login &amp; Gemini AI), Resend (email delivery), PayFast (payments), Replit (hosting). Each receives only the data needed for their function.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Your rights:</strong> access, correction, deletion, objection, withdrawal of consent, and complaint to the Information Regulator. Contact <a href="mailto:info@arcside.co.za" className="text-primary hover:underline">info@arcside.co.za</a> to exercise any of these.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Retention:</strong> account data is kept while your account is active and for up to 24 months after closure for tax and audit purposes, after which it is deleted or anonymised.</span>
+                  </li>
+                </ul>
+              </section>
+
+              <div className="industrial-divider"></div>
+
+              {/* GDPR */}
+              <section className="space-y-2" data-testid="section-gdpr">
+                <h3 className="font-semibold text-sm text-foreground">8. GDPR — Users in the European Economic Area</h3>
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
+                  If you access ArcSide from the EEA or UK, the
+                  <strong className="text-foreground"> EU General Data Protection Regulation (Regulation 2016/679)</strong> and
+                  UK GDPR apply in addition to POPIA. You have the right to:
+                </p>
+                <ul className="text-xs text-slate-900 dark:text-slate-100 space-y-1.5 mt-1">
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    Access, rectify, erase or port the personal data we hold about you
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    Restrict or object to processing, including profiling
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    Withdraw consent at any time without affecting prior lawful processing
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    Lodge a complaint with your local supervisory authority
+                  </li>
+                </ul>
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
+                  Data may be transferred to South Africa and the United States (where Google &amp; Replit operate).
+                  These transfers rely on Standard Contractual Clauses and our sub-processors' equivalent safeguards.
+                  The data controller is ArcSide, contactable at
+                  <a href="mailto:info@arcside.co.za" className="text-primary hover:underline"> info@arcside.co.za</a>.
+                </p>
+              </section>
+
+              <div className="industrial-divider"></div>
+
+              {/* Auto-renewal */}
+              <section className="space-y-2" data-testid="section-auto-renewal">
+                <h3 className="font-semibold text-sm text-foreground">9. Subscription, Trial &amp; Auto-Renewal</h3>
+                <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed">
+                  ArcSide Pro is a paid subscription billed in South African Rand (ZAR) through PayFast. By starting a trial
+                  or subscribing, you authorise the following recurring charges:
+                </p>
+                <ul className="text-xs text-slate-900 dark:text-slate-100 space-y-1.5 mt-1">
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Free trial:</strong> {TRIAL_DURATION_HOURS} hours from activation, no charge.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">First month:</strong> {formatZar(PRO_FIRST_CHARGE_ZAR)} charged automatically when the trial ends, unless you cancel before then.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Recurring:</strong> {formatZar(PRO_RECURRING_ZAR)} per month, charged on the same day each cycle, until you cancel.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Cancellation:</strong> available at any time from the in-app Subscription page. You keep Pro access until the end of the period you've already paid for. No partial refunds are issued for unused days.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Price changes:</strong> we will notify you by email at least 14 days before any change to the recurring price. Continued use after the change date constitutes acceptance.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-chevron-right text-accent mt-0.5 shrink-0 text-[10px]"></i>
+                    <span><strong className="text-foreground">Failed payments:</strong> if a charge fails, we may retry within 7 days and pause your Pro access until payment succeeds.</span>
+                  </li>
+                </ul>
+              </section>
+
+              <div className="industrial-divider"></div>
+
               <section className="space-y-2">
-                <h3 className="font-semibold text-sm text-foreground">7. Applicable Standards Referenced</h3>
+                <h3 className="font-semibold text-sm text-foreground">10. Applicable Standards Referenced</h3>
                 <ul className="text-xs text-slate-900 dark:text-slate-100 space-y-1">
                   <li><span className="text-foreground font-medium">AWS D1.1</span> — Structural Welding Code (Steel)</li>
                   <li><span className="text-foreground font-medium">AWS D1.2</span> — Structural Welding Code (Aluminum)</li>
-                  <li><span className="text-foreground font-medium">ASME Section IX</span> — Welding & Brazing Qualifications</li>
+                  <li><span className="text-foreground font-medium">ASME Section IX</span> — Welding &amp; Brazing Qualifications</li>
+                  <li><span className="text-foreground font-medium">ISO 15614-1</span> — Specification &amp; qualification of welding procedures</li>
+                  <li><span className="text-foreground font-medium">ISO 13916</span> — Heat input measurement</li>
                   <li><span className="text-foreground font-medium">API 1104</span> — Welding of Pipelines</li>
                   <li><span className="text-foreground font-medium">AWS A2.4</span> — Welding Symbols</li>
                   <li><span className="text-foreground font-medium">AWS A3.0</span> — Welding Terms and Definitions</li>

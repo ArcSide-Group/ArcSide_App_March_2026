@@ -22,6 +22,9 @@ import {
   type WeldLogEntry,
   type InsertBetaFeedback,
   type BetaFeedback,
+  enterpriseLeads,
+  type EnterpriseLead,
+  type InsertEnterpriseLead,
   type WhitelistEntry,
   subscriptions,
   type Subscription,
@@ -132,6 +135,7 @@ export interface IStorage {
   deleteWeldLogEntry(id: string, userId: string): Promise<void>;
   upgradeSubscription(userId: string): Promise<User>;
   submitBetaFeedback(feedback: InsertBetaFeedback): Promise<BetaFeedback>;
+  createEnterpriseLead(lead: InsertEnterpriseLead): Promise<EnterpriseLead>;
   getWhitelist(): Promise<WhitelistEntry[]>;
   addToWhitelist(email: any, addedBy?: string): Promise<WhitelistEntry>;
   removeFromWhitelist(id: string): Promise<void>;
@@ -276,6 +280,11 @@ export class DatabaseStorage implements IStorage {
 
   async submitBetaFeedback(feedback: InsertBetaFeedback): Promise<BetaFeedback> {
     const [entry] = await db.insert(betaFeedback).values(feedback).returning();
+    return entry;
+  }
+
+  async createEnterpriseLead(lead: InsertEnterpriseLead): Promise<EnterpriseLead> {
+    const [entry] = await db.insert(enterpriseLeads).values(lead).returning();
     return entry;
   }
 
@@ -456,6 +465,8 @@ export class MemStorage implements IStorage {
   async deleteWeldLogEntry(id: string, userId: string) { const entry = this.weldLogEntries.get(id); if (entry && entry.userId === userId) this.weldLogEntries.delete(id); }
   async upgradeSubscription(userId: string) { const user = this.users.get(userId)!; const updated = { ...user, subscriptionTier: 'premium', subscriptionStatus: 'active', updatedAt: new Date() }; this.users.set(userId, updated); return updated; }
   async submitBetaFeedback(feedback: InsertBetaFeedback) { const id = crypto.randomUUID(); const entry = { id, ...feedback, createdAt: new Date() } as BetaFeedback; this.feedbackData.set(id, entry); return entry; }
+  private leadsData = new Map<string, EnterpriseLead>();
+  async createEnterpriseLead(lead: InsertEnterpriseLead) { const id = crypto.randomUUID(); const entry = { id, ...lead, createdAt: new Date() } as EnterpriseLead; this.leadsData.set(id, entry); return entry; }
   async getWhitelist() { return Array.from(this.whitelistData.values()); }
   async addToWhitelist(email: any, addedBy?: string) { 
     const normalized = normalizeEmail(email); 

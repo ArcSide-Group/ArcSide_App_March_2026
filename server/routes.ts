@@ -23,7 +23,7 @@ const requirePro = async (req: any, res: Response, next: NextFunction) => {
     res.status(500).json({ message: "Failed to verify subscription." });
   }
 };
-import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema, insertWeldLogSchema } from "@shared/schema";
+import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema, insertWeldLogSchema, insertEnterpriseLeadSchema } from "@shared/schema";
 import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
 import { z } from "zod";
@@ -568,6 +568,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("resume subscription failed:", error);
       res.status(500).json({ message: "Failed to resume subscription" });
+    }
+  });
+
+  // Enterprise sales lead — public endpoint, rate-limited per IP
+  const enterpriseLeadLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    message: { message: "Too many requests. Please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  app.post('/api/enterprise-lead', enterpriseLeadLimiter, async (req, res) => {
+    try {
+      const parsed = insertEnterpriseLeadSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Please check the form and try again.",
+          errors: parsed.error.flatten().fieldErrors,
+        });
+      }
+      const lead = await storage.createEnterpriseLead(parsed.data);
+
+      const teamSize = parsed.data.teamSize?.trim() || "—";
+      const phone = parsed.data.phone?.trim() || "—";
+      const message = parsed.data.message?.trim() || "(no message)";
+      const internalText = [
+        `New Enterprise lead from ${parsed.data.name} (${parsed.data.email})`,
+        `Company: ${parsed.data.company}`,
+        `Phone: ${phone}`,
+        `Team size: ${teamSize}`,
+        `Source: ${parsed.data.source ?? 'subscription_page'}`,
+        ``,
+        `Message:`,
+        message,
+        ``,
+        `Lead ID: ${lead.id}`,
+      ].join("\n");
+
+      try {
+        await sendMail({
+          to: "info@arcside.co.za",
+          subject: `[ArcSide] Enterprise enquiry — ${parsed.data.company}`,
+          text: internalText,
+        });
+      } catch (mailErr) {
+        console.error("[MAIL] Enterprise internal notification failed:", mailErr);
+      }
+
+      try {
+        await sendMail({
+          to: parsed.data.email,
+          subject: "We've received your ArcSide Enterprise enquiry",
+          text: [
+            `Hi ${parsed.data.name},`,
+            ``,
+            `Thanks for reaching out about ArcSide Enterprise. We've logged your enquiry and a member of our team will be in touch within one business day (Mon–Fri, SAST).`,
+            ``,
+            `If your matter is urgent, you can also reach us on +27 79 681 9319.`,
+            ``,
+            `Kind regards,`,
+            `The ArcSide team`,
+            `info@arcside.co.za`,
+          ].join("\n"),
+        });
+      } catch (mailErr) {
+        console.error("[MAIL] Enterprise courtesy auto-reply failed:", mailErr);
+      }
+
+      res.status(201).json({ id: lead.id, ok: true });
+    } catch (err) {
+      console.error("Error creating enterprise lead:", err);
+      res.status(500).json({ message: "Could not submit your enquiry. Please try again." });
     }
   });
 
