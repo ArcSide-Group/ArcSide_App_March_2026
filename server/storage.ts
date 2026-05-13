@@ -35,6 +35,25 @@ import { eq, and, desc, gte, gt } from "drizzle-orm";
 const TIER_NAMES = ["Basic", "Pro", "Enterprise"] as const;
 const ACTIVE_STATUSES: SubscriptionStatus[] = ["trialing", "active"];
 
+export function legacyPremiumPlan(user: User): EffectivePlan {
+  const status: SubscriptionStatus =
+    (user.subscriptionStatus as SubscriptionStatus | null) === "canceled"
+      ? "canceled"
+      : "active";
+  return {
+    tier: 1,
+    tierName: "Pro",
+    status,
+    isPro: true,
+    isTrialing: false,
+    trialDaysLeft: null,
+    trialEndsAt: null,
+    nextBillingDate: null,
+    willCancel: status === "canceled",
+    provider: "legacy",
+  };
+}
+
 export function deriveEffectivePlan(sub: Subscription | undefined): EffectivePlan {
   if (!sub) {
     return {
@@ -323,16 +342,8 @@ export class DatabaseStorage implements IStorage {
     // Legacy compatibility: honour pre-existing users.subscriptionTier until
     // a real subscription row is created for that user.
     const user = await this.getUser(userId);
-    if (user && (user as any).subscriptionTier === "premium") {
-      return deriveEffectivePlan({
-        userId,
-        tierLevel: 1,
-        status: ((user as any).subscriptionStatus ?? "active") as any,
-        provider: "legacy",
-        trialEndsAt: null,
-        nextBillingDate: null,
-        cancelAtPeriodEnd: false,
-      } as any);
+    if (user && user.subscriptionTier === "premium") {
+      return legacyPremiumPlan(user);
     }
     return deriveEffectivePlan(undefined);
   }
@@ -412,16 +423,8 @@ export class MemStorage implements IStorage {
     const sub = await this.getActiveSubscription(userId);
     if (sub) return deriveEffectivePlan(sub);
     const user = this.users.get(userId);
-    if (user && (user as any).subscriptionTier === "premium") {
-      return deriveEffectivePlan({
-        userId,
-        tierLevel: 1,
-        status: ((user as any).subscriptionStatus ?? "active") as any,
-        provider: "legacy",
-        trialEndsAt: null,
-        nextBillingDate: null,
-        cancelAtPeriodEnd: false,
-      } as any);
+    if (user && user.subscriptionTier === "premium") {
+      return legacyPremiumPlan(user);
     }
     return deriveEffectivePlan(undefined);
   }

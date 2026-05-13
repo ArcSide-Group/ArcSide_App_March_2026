@@ -3,6 +3,18 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    if (res.status === 403) {
+      try {
+        const body = JSON.parse(text);
+        if (body?.proRequired) {
+          if (typeof window !== "undefined" && !window.location.pathname.startsWith("/subscription")) {
+            window.location.assign("/subscription?upgrade=1");
+          }
+        }
+      } catch {
+        // not JSON — fall through to throw
+      }
+    }
     throw new Error(`${res.status}: ${text}`);
   }
 }
