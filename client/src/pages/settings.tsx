@@ -225,6 +225,23 @@ export default function Settings() {
                     Export
                   </Button>
                 </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Two-Factor Authentication</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Managed via your Google OAuth security settings.
+                    </p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] gap-1 border-primary/40 text-primary/80 bg-primary/5"
+                    data-testid="badge-2fa-managed"
+                  >
+                    <Info className="h-3 w-3" />
+                    Google
+                  </Badge>
+                </div>
               </div>
             </CardContent>
           </Card>

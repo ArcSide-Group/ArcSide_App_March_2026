@@ -3,6 +3,26 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
+import type { Request, Response, NextFunction } from "express";
+
+const requirePro = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const plan = await storage.getEffectivePlan(userId);
+    if (!plan.isPro) {
+      return res.status(403).json({
+        message: "Pro subscription required to use AI tools.",
+        proRequired: true,
+        plan,
+      });
+    }
+    next();
+  } catch (err) {
+    console.error("requirePro check failed:", err);
+    res.status(500).json({ message: "Failed to verify subscription." });
+  }
+};
 import { insertAnalysisSchema, insertProjectSchema, insertWpsSchema, insertWeldLogSchema } from "@shared/schema";
 import { WeldingCalculators, FabricationCalculators } from "./calculators";
 import { GeminiAIService } from "./ai-service";
@@ -44,18 +64,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Tools routes
-  app.post('/api/ai/analyze-defect', isAuthenticated, aiLimiter, async (req: any, res) => {
+  app.get('/api/subscription', isAuthenticated, async (req: any, res) => {
+    try {
+      const plan = await storage.getEffectivePlan(req.user.id);
+      res.json(plan);
+    } catch (err) {
+      console.error("GET /api/subscription failed:", err);
+      res.status(500).json({ message: "Failed to load subscription." });
+    }
+  });
+
+  app.post('/api/ai/analyze-defect', isAuthenticated, requirePro, aiLimiter, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const { imageData, additionalDetails, projectId } = req.body;
-
-      const user = await storage.getUser(userId);
-      if (user?.subscriptionTier === 'free') {
-        const todayUsage = await storage.getTodayUsage(userId);
-        if (todayUsage && (todayUsage.analysesCount || 0) >= 5) {
-          return res.status(403).json({ message: "Daily analysis limit reached. Upgrade to Premium for unlimited analyses." });
-        }
-      }
 
       const analysisInput = additionalDetails || "Weld defect analysis from uploaded image";
       const unitPreference = req.body.unitPreference || 'metric';
@@ -85,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/generate-wps', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/generate-wps', isAuthenticated, requirePro, async (req: any, res) => {
     try {
       const userId = req.user.id;
       // Beta launch: WPS generation is open to all authenticated users.
@@ -116,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/check-compatibility', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/check-compatibility', isAuthenticated, requirePro, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const { material1, material2, projectId } = req.body;
@@ -143,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/search-terminology', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/search-terminology', isAuthenticated, requirePro, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const { term } = req.body;
@@ -168,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/ask-assistant', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/ask-assistant', isAuthenticated, requirePro, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const { question, projectId, conversationHistory, unitPreference } = req.body;
@@ -196,14 +218,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/optimize-process', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/optimize-process', isAuthenticated, requirePro, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const user = await storage.getUser(userId);
-
-      if (user?.subscriptionTier === 'free') {
-        return res.status(403).json({ message: "Process Optimizer requires a Premium subscription" });
-      }
 
       const result = await GeminiAIService.optimizeProcess(req.body);
 

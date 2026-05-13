@@ -130,7 +130,7 @@ export default function Landing() {
         <div className="text-center pt-12 pb-8 px-6 hero-section">
           <img
             src={brand.logo}
-            alt={`${brand.name} Mobile App`}
+            alt={brand.name}
             className="h-32 w-auto mx-auto mb-6 object-contain rounded-xl logo-glow"
             data-testid="img-brand-logo-hero"
           />

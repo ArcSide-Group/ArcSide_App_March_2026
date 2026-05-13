@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
 interface CalculatorCardProps {
   icon: string;
@@ -16,9 +17,8 @@ interface CalculatorCardProps {
 }
 
 function CalculatorCard({ icon, title, description, href, isPremium, category }: CalculatorCardProps) {
-  const { user } = useAuth();
-  const BETA_MODE = true;
-  const canAccess = BETA_MODE || !isPremium || user?.subscriptionTier !== 'free';
+  const { isPro } = usePremiumAccess();
+  const canAccess = !isPremium || isPro;
   
   const categoryColors = {
     welding: 'text-primary',

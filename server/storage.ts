@@ -23,9 +23,55 @@ import {
   type InsertBetaFeedback,
   type BetaFeedback,
   type WhitelistEntry,
+  subscriptions,
+  type Subscription,
+  type InsertSubscription,
+  type EffectivePlan,
+  type SubscriptionStatus,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, gt } from "drizzle-orm";
+
+const TIER_NAMES = ["Basic", "Pro", "Enterprise"] as const;
+const ACTIVE_STATUSES: SubscriptionStatus[] = ["trialing", "active"];
+
+export function deriveEffectivePlan(sub: Subscription | undefined): EffectivePlan {
+  if (!sub) {
+    return {
+      tier: 0,
+      tierName: "Basic",
+      status: "active",
+      isPro: false,
+      isTrialing: false,
+      trialDaysLeft: null,
+      trialEndsAt: null,
+      nextBillingDate: null,
+      willCancel: false,
+      provider: null,
+    };
+  }
+  const tier = (Math.max(0, Math.min(2, sub.tierLevel ?? 0)) as 0 | 1 | 2);
+  const status = (sub.status as SubscriptionStatus) ?? "active";
+  const isActive = ACTIVE_STATUSES.includes(status);
+  const isTrialing = status === "trialing";
+  let trialDaysLeft: number | null = null;
+  if (isTrialing && sub.trialEndsAt) {
+    const ms = sub.trialEndsAt.getTime() - Date.now();
+    trialDaysLeft = Math.max(0, Math.ceil(ms / 86_400_000));
+  }
+  return {
+    tier,
+    tierName: TIER_NAMES[tier],
+    status,
+    isPro: tier >= 1 && isActive,
+    isTrialing,
+    trialDaysLeft,
+    trialEndsAt: sub.trialEndsAt ? sub.trialEndsAt.toISOString() : null,
+    nextBillingDate: sub.nextBillingDate ? sub.nextBillingDate.toISOString() : null,
+    willCancel: !!sub.cancelAtPeriodEnd,
+    provider: sub.provider ?? null,
+  };
+}
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -63,6 +109,10 @@ export interface IStorage {
   getUserByResetToken(token: string): Promise<User | undefined>;
   getSetting(key: string): Promise<string | undefined>;
   setSetting(key: string, value: string): Promise<void>;
+  getActiveSubscription(userId: string): Promise<Subscription | undefined>;
+  createSubscription(data: InsertSubscription): Promise<Subscription>;
+  updateSubscription(id: string, data: Partial<InsertSubscription>): Promise<Subscription>;
+  getEffectivePlan(userId: string): Promise<EffectivePlan>;
 }
 
 const normalizeEmail = (email: any): string => (String(email || '')).toLowerCase().trim();
@@ -237,8 +287,38 @@ export class DatabaseStorage implements IStorage {
       .values({ key, value, updatedAt: new Date() })
       .onConflictDoUpdate({ target: appSettings.key, set: { value, updatedAt: new Date() } });
   }
+
+  async getActiveSubscription(userId: string): Promise<Subscription | undefined> {
+    const [sub] = await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.userId, userId))
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1);
+    return sub;
+  }
+
+  async createSubscription(data: InsertSubscription): Promise<Subscription> {
+    const [sub] = await db.insert(subscriptions).values(data).returning();
+    return sub;
+  }
+
+  async updateSubscription(id: string, data: Partial<InsertSubscription>): Promise<Subscription> {
+    const [sub] = await db
+      .update(subscriptions)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(subscriptions.id, id))
+      .returning();
+    return sub;
+  }
+
+  async getEffectivePlan(userId: string): Promise<EffectivePlan> {
+    const sub = await this.getActiveSubscription(userId);
+    return deriveEffectivePlan(sub);
+  }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class MemStorage implements IStorage {
   private users = new Map<string, User>();
   private projects = new Map<string, Project>();
@@ -290,6 +370,27 @@ export class MemStorage implements IStorage {
   private settings = new Map<string, string>();
   async getSetting(key: string) { return this.settings.get(key); }
   async setSetting(key: string, value: string) { this.settings.set(key, value); }
+  private subs = new Map<string, Subscription>();
+  async getActiveSubscription(userId: string) {
+    return Array.from(this.subs.values())
+      .filter(s => s.userId === userId)
+      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))[0];
+  }
+  async createSubscription(data: InsertSubscription) {
+    const id = crypto.randomUUID();
+    const sub = { id, ...data, createdAt: new Date(), updatedAt: new Date() } as Subscription;
+    this.subs.set(id, sub);
+    return sub;
+  }
+  async updateSubscription(id: string, data: Partial<InsertSubscription>) {
+    const existing = this.subs.get(id)!;
+    const updated = { ...existing, ...data, updatedAt: new Date() } as Subscription;
+    this.subs.set(id, updated);
+    return updated;
+  }
+  async getEffectivePlan(userId: string) {
+    return deriveEffectivePlan(await this.getActiveSubscription(userId));
+  }
 }
 
 export const storage = new DatabaseStorage();

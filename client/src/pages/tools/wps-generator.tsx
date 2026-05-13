@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBrand } from "@/hooks/useBrand";
 import { useUnits } from "@/hooks/useUnits";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 import { useMutation } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -20,6 +21,7 @@ import { exportWpsPdf } from "@/lib/pdf-export";
 export default function WpsGenerator() {
   const { user } = useAuth();
   const { brand } = useBrand();
+  const { isPro } = usePremiumAccess();
   const { isMetric, fromImperial, defaults } = useUnits();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -103,8 +105,7 @@ export default function WpsGenerator() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const BETA_MODE = true;
-  if (!BETA_MODE && (user as User)?.subscriptionTier !== 'premium') {
+  if (!isPro) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">

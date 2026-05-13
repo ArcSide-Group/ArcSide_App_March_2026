@@ -1,9 +1,8 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export function usePremiumAccess() {
-  const { user } = useAuth();
-  const tier = (user as { subscriptionTier?: string } | null | undefined)?.subscriptionTier;
-  const isPro = tier === "premium" || tier === "pro" || tier === "enterprise";
+  const { plan } = useSubscription();
+  const isPro = plan.isPro;
   const gateHref = (target: string) => (isPro ? target : "/subscription");
-  return { isPro, gateHref };
+  return { isPro, gateHref, plan };
 }
