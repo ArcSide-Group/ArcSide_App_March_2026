@@ -72,12 +72,19 @@ export function deriveEffectivePlan(sub: Subscription | undefined): EffectivePla
   const tier = (Math.max(0, Math.min(2, sub.tierLevel ?? 0)) as 0 | 1 | 2);
   const status = (sub.status as SubscriptionStatus) ?? "active";
   const now = Date.now();
-  const isActive = ACTIVE_STATUSES.includes(status);
   const isTrialing = status === "trialing";
-  // Canceled-but-still-paid: keep entitlement until the paid period ends.
   const periodEndMs = sub.nextBillingDate?.getTime() ?? sub.trialEndsAt?.getTime() ?? null;
+  // Cancel-at-period-end: user keeps Pro until the paid period truly ends.
+  // Applies to both active+cancelAtPeriodEnd and the canceled status the
+  // lifecycle worker assigns at the moment cancellation is queued.
+  const cancellationQueued = !!sub.cancelAtPeriodEnd || status === "canceled";
   const stillPaidThroughPeriod =
-    status === "canceled" && periodEndMs !== null && periodEndMs > now;
+    cancellationQueued && periodEndMs !== null && periodEndMs > now;
+  // active+queued-cancel where the period already lapsed → drop entitlement
+  // until the worker flips status to canceled/expired.
+  const baseActive = ACTIVE_STATUSES.includes(status);
+  const lapsed = cancellationQueued && periodEndMs !== null && periodEndMs <= now;
+  const isActive = baseActive && !lapsed;
   let trialDaysLeft: number | null = null;
   if (isTrialing && sub.trialEndsAt) {
     const ms = sub.trialEndsAt.getTime() - now;
@@ -92,7 +99,7 @@ export function deriveEffectivePlan(sub: Subscription | undefined): EffectivePla
     trialDaysLeft,
     trialEndsAt: sub.trialEndsAt ? sub.trialEndsAt.toISOString() : null,
     nextBillingDate: sub.nextBillingDate ? sub.nextBillingDate.toISOString() : null,
-    willCancel: !!sub.cancelAtPeriodEnd || status === "canceled",
+    willCancel: cancellationQueued,
     provider: sub.provider ?? null,
   };
 }
@@ -137,6 +144,9 @@ export interface IStorage {
   createSubscription(data: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: string, data: Partial<InsertSubscription>): Promise<Subscription>;
   getEffectivePlan(userId: string): Promise<EffectivePlan>;
+  startProTrial(userId: string): Promise<Subscription>;
+  queueCancellation(userId: string): Promise<Subscription | undefined>;
+  resumeSubscription(userId: string): Promise<Subscription | undefined>;
 }
 
 const normalizeEmail = (email: any): string => (String(email || '')).toLowerCase().trim();
@@ -334,6 +344,61 @@ export class DatabaseStorage implements IStorage {
       .where(eq(subscriptions.id, id))
       .returning();
     return sub;
+  }
+
+  async startProTrial(userId: string): Promise<Subscription> {
+    const { TRIAL_DURATION_MS } = await import("@shared/pricing");
+    const now = new Date();
+    const trialEndsAt = new Date(now.getTime() + TRIAL_DURATION_MS);
+    const existing = await this.getActiveSubscription(userId);
+    // If user is already a paying or trialing Pro, don't reset their state.
+    if (existing && existing.tierLevel >= 1 && ["trialing", "active"].includes(existing.status as string)) {
+      return existing;
+    }
+    if (existing) {
+      const [updated] = await db.update(subscriptions).set({
+        tierLevel: 1,
+        status: "trialing",
+        trialEndsAt,
+        currentPeriodStart: now,
+        // First real charge attempt happens when the trial ends.
+        nextBillingDate: trialEndsAt,
+        cancelAtPeriodEnd: false,
+        provider: existing.provider ?? "pending",
+        updatedAt: new Date(),
+      }).where(eq(subscriptions.id, existing.id)).returning();
+      return updated;
+    }
+    return this.createSubscription({
+      userId,
+      tierLevel: 1,
+      status: "trialing",
+      trialEndsAt,
+      currentPeriodStart: now,
+      nextBillingDate: trialEndsAt,
+      cancelAtPeriodEnd: false,
+      provider: "pending",
+    });
+  }
+
+  async queueCancellation(userId: string): Promise<Subscription | undefined> {
+    const sub = await this.getActiveSubscription(userId);
+    if (!sub) return undefined;
+    const [updated] = await db.update(subscriptions).set({
+      cancelAtPeriodEnd: true,
+      updatedAt: new Date(),
+    }).where(eq(subscriptions.id, sub.id)).returning();
+    return updated;
+  }
+
+  async resumeSubscription(userId: string): Promise<Subscription | undefined> {
+    const sub = await this.getActiveSubscription(userId);
+    if (!sub) return undefined;
+    const [updated] = await db.update(subscriptions).set({
+      cancelAtPeriodEnd: false,
+      updatedAt: new Date(),
+    }).where(eq(subscriptions.id, sub.id)).returning();
+    return updated;
   }
 
   async getEffectivePlan(userId: string): Promise<EffectivePlan> {

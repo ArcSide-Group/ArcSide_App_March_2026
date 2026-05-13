@@ -525,13 +525,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription management
+  // Starts a 72-hour Pro trial. Idempotent: if the user is already trialing or
+  // active Pro, returns the current plan unchanged.
   app.post('/api/subscription/upgrade', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      await storage.upgradeSubscription(userId);
-      res.json({ message: "Subscription upgraded successfully" });
+      await storage.startProTrial(userId);
+      const plan = await storage.getEffectivePlan(userId);
+      res.json({ message: "Trial started", plan });
     } catch (error) {
-      res.status(500).json({ message: "Failed to upgrade subscription" });
+      console.error("startProTrial failed:", error);
+      res.status(500).json({ message: "Failed to start trial" });
+    }
+  });
+
+  // Smart cancel — flags cancel_at_period_end=true; entitlement persists until
+  // next_billing_date, after which the lifecycle worker flips status.
+  app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const updated = await storage.queueCancellation(userId);
+      if (!updated) return res.status(404).json({ message: "No active subscription" });
+      const plan = await storage.getEffectivePlan(userId);
+      res.json({ message: "Cancellation scheduled", plan });
+    } catch (error) {
+      console.error("cancel subscription failed:", error);
+      res.status(500).json({ message: "Failed to cancel subscription" });
+    }
+  });
+
+  // Resume — clears cancel_at_period_end so the next billing cycle proceeds.
+  app.post('/api/subscription/resume', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const updated = await storage.resumeSubscription(userId);
+      if (!updated) return res.status(404).json({ message: "No active subscription" });
+      const plan = await storage.getEffectivePlan(userId);
+      res.json({ message: "Subscription resumed", plan });
+    } catch (error) {
+      console.error("resume subscription failed:", error);
+      res.status(500).json({ message: "Failed to resume subscription" });
     }
   });
 
