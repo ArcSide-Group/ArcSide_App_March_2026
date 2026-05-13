@@ -319,7 +319,22 @@ export class DatabaseStorage implements IStorage {
 
   async getEffectivePlan(userId: string): Promise<EffectivePlan> {
     const sub = await this.getActiveSubscription(userId);
-    return deriveEffectivePlan(sub);
+    if (sub) return deriveEffectivePlan(sub);
+    // Legacy compatibility: honour pre-existing users.subscriptionTier until
+    // a real subscription row is created for that user.
+    const user = await this.getUser(userId);
+    if (user && (user as any).subscriptionTier === "premium") {
+      return deriveEffectivePlan({
+        userId,
+        tierLevel: 1,
+        status: ((user as any).subscriptionStatus ?? "active") as any,
+        provider: "legacy",
+        trialEndsAt: null,
+        nextBillingDate: null,
+        cancelAtPeriodEnd: false,
+      } as any);
+    }
+    return deriveEffectivePlan(undefined);
   }
 }
 
@@ -394,7 +409,21 @@ export class MemStorage implements IStorage {
     return updated;
   }
   async getEffectivePlan(userId: string) {
-    return deriveEffectivePlan(await this.getActiveSubscription(userId));
+    const sub = await this.getActiveSubscription(userId);
+    if (sub) return deriveEffectivePlan(sub);
+    const user = this.users.get(userId);
+    if (user && (user as any).subscriptionTier === "premium") {
+      return deriveEffectivePlan({
+        userId,
+        tierLevel: 1,
+        status: ((user as any).subscriptionStatus ?? "active") as any,
+        provider: "legacy",
+        trialEndsAt: null,
+        nextBillingDate: null,
+        cancelAtPeriodEnd: false,
+      } as any);
+    }
+    return deriveEffectivePlan(undefined);
   }
 }
 
