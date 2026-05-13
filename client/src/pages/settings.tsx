@@ -215,20 +215,6 @@ export default function Settings() {
                   </Button>
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between" data-testid="row-two-factor">
-                  <div className="flex-1 pr-4">
-                    <h4 className="font-medium text-sm">Two-Factor Authentication</h4>
-                    <p className="text-xs text-muted-foreground mt-1">Managed via Google OAuth security settings.</p>
-                  </div>
-                  <span
-                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-muted text-muted-foreground border border-border whitespace-nowrap"
-                    data-testid="chip-two-factor-info"
-                  >
-                    <Info className="h-3 w-3" />
-                    Google
-                  </span>
-                </div>
-                <Separator />
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
                     <h4 className="font-medium text-sm">{t("settings.exportData")}</h4>
