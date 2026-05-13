@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import logoPath from "@assets/ICON_-_Mobile_App_1778667338095.png";
+import { useBrand } from "@/hooks/useBrand";
 
 const resetSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters."),
@@ -23,6 +23,7 @@ type ResetValues = z.infer<typeof resetSchema>;
 export default function ResetPassword() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const { brand } = useBrand();
   const [done, setDone] = useState(false);
 
   const token = new URLSearchParams(window.location.search).get("token");
@@ -61,8 +62,8 @@ export default function ResetPassword() {
 
         <div className="text-center pt-12 pb-8 px-6">
           <img
-            src={logoPath}
-            alt="ArcSide"
+            src={brand.logo}
+            alt={brand.name}
             className="h-24 w-auto mx-auto mb-6 object-contain rounded-xl logo-glow"
             data-testid="img-reset-logo"
           />

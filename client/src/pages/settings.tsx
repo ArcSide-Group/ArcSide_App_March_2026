@@ -28,7 +28,6 @@ import {
   Moon,
   Info,
 } from "lucide-react";
-import logoPath from "@assets/ICON_-_Mobile_App_1778667338095.png";
 
 export default function Settings() {
   const { user } = useAuth();
@@ -216,6 +215,20 @@ export default function Settings() {
                   </Button>
                 </div>
                 <Separator />
+                <div className="flex items-center justify-between" data-testid="row-two-factor">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-medium text-sm">Two-Factor Authentication</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Managed via Google OAuth security settings.</p>
+                  </div>
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-muted text-muted-foreground border border-border whitespace-nowrap"
+                    data-testid="chip-two-factor-info"
+                  >
+                    <Info className="h-3 w-3" />
+                    Google
+                  </span>
+                </div>
+                <Separator />
                 <div className="flex items-center justify-between">
                   <div className="flex-1 pr-4">
                     <h4 className="font-medium text-sm">{t("settings.exportData")}</h4>
@@ -235,7 +248,7 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <HelpCircle className="h-5 w-5 text-primary" />
-              Support & Help
+              {t("settings.support")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -276,7 +289,7 @@ export default function Settings() {
           <CardContent>
             <div className="flex flex-col items-center gap-3 py-2">
               <img
-                src={brand.logo || logoPath}
+                src={brand.logo}
                 alt={brand.name}
                 className="h-14 w-auto max-w-[180px] object-contain rounded-lg"
                 data-testid="img-brand-logo-settings"

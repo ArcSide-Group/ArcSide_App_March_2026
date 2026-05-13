@@ -3,8 +3,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Wrench, Calculator, Ruler, Weight, DollarSign, Clock, ChevronRight } from "lucide-react";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
-const toolCategories = [
+interface ToolEntry {
+  name: string;
+  href: string;
+  icon: typeof Calculator;
+  premium?: boolean;
+}
+
+const toolCategories: Array<{
+  title: string;
+  description: string;
+  accentClass: string;
+  bgClass: string;
+  tools: ToolEntry[];
+}> = [
   {
     title: "Welding Calculators",
     description: "Essential calculations for welding parameters",
@@ -33,13 +47,14 @@ const toolCategories = [
     accentClass: "text-primary",
     bgClass: "bg-primary/10",
     tools: [
-      { name: "Project Cost", href: "/calculators/project-cost", icon: DollarSign },
-      { name: "Weld Time Estimator", href: "/calculators/weld-time", icon: Clock },
+      { name: "Project Cost", href: "/calculators/project-cost", icon: DollarSign, premium: true },
+      { name: "Weld Time Estimator", href: "/calculators/weld-time", icon: Clock, premium: true },
     ]
   }
 ];
 
 export default function Tools() {
+  const { isPro, gateHref } = usePremiumAccess();
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
@@ -62,20 +77,33 @@ export default function Tools() {
               </CardHeader>
               <CardContent className="px-4 pb-4">
                 <div className="grid grid-cols-1 gap-2">
-                  {category.tools.map((tool, toolIndex) => (
-                    <Link key={toolIndex} href={tool.href}>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between gap-3 h-12 px-4 text-sm border-border hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <tool.icon className={`h-4 w-4 shrink-0 ${category.accentClass}`} />
-                          <span className="font-medium">{tool.name}</span>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                      </Button>
-                    </Link>
-                  ))}
+                  {category.tools.map((tool, toolIndex) => {
+                    const locked = !!tool.premium && !isPro;
+                    return (
+                      <Link key={toolIndex} href={gateHref(tool.href)}>
+                        <Button
+                          variant="outline"
+                          className="relative w-full justify-between gap-3 h-12 px-4 text-sm border-border hover:border-primary/40 hover:bg-primary/5 transition-colors overflow-hidden"
+                        >
+                          <div className="flex items-center gap-3">
+                            <tool.icon className={`h-4 w-4 shrink-0 ${category.accentClass} ${locked ? 'opacity-40' : ''}`} />
+                            <span className={`font-medium ${locked ? 'pr-12' : ''}`}>{tool.name}</span>
+                          </div>
+                          {locked && (
+                            <span
+                              className="absolute top-1.5 right-9 z-10 inline-flex items-center gap-0.5 rounded-full text-white font-semibold leading-none whitespace-nowrap shadow-sm"
+                              style={{ backgroundColor: "#0047AB", fontSize: "10px", padding: "3px 6px" }}
+                              data-testid={`badge-pro-tool-${tool.name.toLowerCase().replace(/\s+/g, '-')}`}
+                            >
+                              <span aria-hidden="true">👑</span>
+                              <span>Pro</span>
+                            </span>
+                          )}
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </Button>
+                      </Link>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

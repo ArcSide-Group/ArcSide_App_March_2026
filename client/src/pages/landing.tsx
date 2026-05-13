@@ -10,7 +10,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { useBrand } from "@/hooks/useBrand";
-import logoPath from "@assets/ICON_-_Mobile_App_1778667338095.png";
 
 type AuthMode = "choose" | "email-signin" | "email-register" | "forgot-password";
 
@@ -130,7 +129,7 @@ export default function Landing() {
         {/* Hero */}
         <div className="text-center pt-12 pb-8 px-6 hero-section">
           <img
-            src={brand.logo || logoPath}
+            src={brand.logo}
             alt={`${brand.name} Mobile App`}
             className="h-32 w-auto mx-auto mb-6 object-contain rounded-xl logo-glow"
             data-testid="img-brand-logo-hero"
@@ -242,7 +241,7 @@ export default function Landing() {
           <div className="px-6 pb-8">
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-1">Sign In</h2>
-              <p className="text-sm text-muted-foreground">Enter your email and password to access ArcSide.</p>
+              <p className="text-sm text-muted-foreground">Enter your email and password to access {brand.name}.</p>
             </div>
 
             <Form {...signInForm}>
