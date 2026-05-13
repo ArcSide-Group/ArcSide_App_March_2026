@@ -51,7 +51,10 @@ export function getSession() {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, secure: true, sameSite: "strict", maxAge: sessionTtl },
+    // sameSite="lax" is the modern default. "strict" was blocking cookies on
+    // POSTs from inside the Replit dev preview iframe (embedded context),
+    // which is why GETs to /api/auth/user worked but POST /api/billing/* 401'd.
+    cookie: { httpOnly: true, secure: true, sameSite: "lax", maxAge: sessionTtl },
   });
 }
 

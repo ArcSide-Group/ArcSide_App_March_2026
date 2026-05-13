@@ -37,7 +37,11 @@ export function registerBillingRoutes(app: Express) {
    * the user immediately so they can use Pro tools while the redirect
    * completes / before the user finalises card capture.
    */
-  app.post("/api/billing/checkout/payfast", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/billing/checkout/payfast", (req: any, _res, next) => {
+    // TEMP debug — leave on while we verify the cookie/session fix end-to-end.
+    console.log("[payfast-debug] cookieHeader present:", !!req.headers.cookie, "sessionID:", req.sessionID, "user:", req.user ? "present" : "missing");
+    next();
+  }, isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user?.id;
       if (!userId) return res.status(401).json({ message: "Unauthorized" });
