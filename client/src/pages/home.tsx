@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { usePremiumAccess } from "@/hooks/usePremiumAccess";
+import { useBrand } from "@/hooks/useBrand";
 import { useQuery } from "@tanstack/react-query";
 import type { User, Project, UsageTracking } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 export default function Home() {
   const { user, isLoading } = useAuth();
   const { isPro, gateHref } = usePremiumAccess();
+  const { brand } = useBrand();
   const { toast } = useToast();
 
   const { data: projects } = useQuery<Project[]>({
@@ -58,9 +60,23 @@ export default function Home() {
   const userName = (user as User)?.firstName || 'Professional';
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-20 pb-20">
       <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
 
+        {/* Hero Logo */}
+        {brand.logo && (
+          <div
+            className="flex items-center justify-center px-4 pt-6 pb-8"
+            data-testid="hero-brand-logo"
+          >
+            <img
+              src={brand.logo}
+              alt={brand.name}
+              style={{ maxHeight: "none" }}
+              className="h-40 w-auto rounded-xl logo-glow"
+            />
+          </div>
+        )}
 
         {/* Featured Section */}
         <div className="px-4 mb-5">
