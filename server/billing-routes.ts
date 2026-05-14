@@ -33,9 +33,10 @@ export function registerBillingRoutes(app: Express) {
    *
    * Strategy: with PayFast subscription_type=1, the `amount` is charged at
    * checkout. We charge the R99 first-month promo at checkout and schedule
-   * the first R299 recurring charge 30 days later. Local DB trial entitles
-   * the user immediately so they can use Pro tools while the redirect
-   * completes / before the user finalises card capture.
+   * the first R299 recurring charge 30 days later. The user is NOT granted
+   * Pro access here — a `pending` subscription row is created purely to
+   * provide a stable m_payment_id. Entitlement (trialing/active) only flips
+   * when the ITN webhook from PayFast confirms a successful payment.
    */
   app.post("/api/billing/checkout/payfast", isAuthenticated, async (req: any, res: Response) => {
     try {
@@ -44,7 +45,7 @@ export function registerBillingRoutes(app: Express) {
       const user = await storage.getUser(userId);
       if (!user?.email) return res.status(400).json({ message: "User email required" });
 
-      const sub = await storage.startProTrial(userId);
+      const sub = await storage.createPendingPayfastSubscription(userId);
 
       const cfg = getPayFastConfig(getBaseUrl(req));
       const now = new Date();

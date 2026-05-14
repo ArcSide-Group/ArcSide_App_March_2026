@@ -150,6 +150,7 @@ export interface IStorage {
   updateSubscription(id: string, data: Partial<InsertSubscription>): Promise<Subscription>;
   getEffectivePlan(userId: string): Promise<EffectivePlan>;
   startProTrial(userId: string): Promise<Subscription>;
+  createPendingPayfastSubscription(userId: string): Promise<Subscription>;
   queueCancellation(userId: string): Promise<Subscription | undefined>;
   resumeSubscription(userId: string): Promise<Subscription | undefined>;
 }
@@ -396,6 +397,38 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  /**
+   * Create (or reset) a PayFast subscription row in `pending` state used as
+   * the m_payment_id for checkout. Does NOT grant Pro access — entitlement
+   * happens only when the ITN webhook flips status to `trialing`/`active`.
+   */
+  async createPendingPayfastSubscription(userId: string): Promise<Subscription> {
+    const existing = await this.getActiveSubscription(userId);
+    if (existing && existing.tierLevel >= 1 && ["trialing", "active"].includes(existing.status as string)) {
+      return existing;
+    }
+    if (existing) {
+      const [updated] = await db.update(subscriptions).set({
+        tierLevel: 0,
+        status: "pending",
+        trialEndsAt: null,
+        currentPeriodStart: null,
+        nextBillingDate: null,
+        cancelAtPeriodEnd: false,
+        provider: "payfast",
+        updatedAt: new Date(),
+      }).where(eq(subscriptions.id, existing.id)).returning();
+      return updated;
+    }
+    return this.createSubscription({
+      userId,
+      tierLevel: 0,
+      status: "pending",
+      provider: "payfast",
+      cancelAtPeriodEnd: false,
+    });
+  }
+
   async queueCancellation(userId: string): Promise<Subscription | undefined> {
     const sub = await this.getActiveSubscription(userId);
     if (!sub) return undefined;
@@ -500,6 +533,9 @@ export class MemStorage implements IStorage {
     const updated = { ...existing, ...data, updatedAt: new Date() } as Subscription;
     this.subs.set(id, updated);
     return updated;
+  }
+  async createPendingPayfastSubscription(userId: string) {
+    return this.createSubscription({ userId, tierLevel: 0, status: "pending", provider: "payfast", cancelAtPeriodEnd: false } as InsertSubscription);
   }
   async getEffectivePlan(userId: string) {
     const sub = await this.getActiveSubscription(userId);

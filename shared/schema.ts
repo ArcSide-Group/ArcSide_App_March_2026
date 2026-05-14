@@ -344,6 +344,7 @@ export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type Subscription = typeof subscriptions.$inferSelect;
 
 export type SubscriptionStatus =
+  | "pending"
   | "trialing"
   | "active"
   | "past_due"
