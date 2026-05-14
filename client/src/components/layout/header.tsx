@@ -22,6 +22,8 @@ export default function Header() {
   const { brand } = useBrand();
   const isAdmin = (user as any)?.role === "admin";
 
+  const isHome = location === "/" || location === "/dashboard";
+
   const BrandMark = ({ size, testId }: { size: "header" | "menu"; testId: string }) => {
     if (size === "menu" && brand.logo) {
       return (
@@ -30,6 +32,17 @@ export default function Header() {
           alt={brand.name}
           style={{ maxHeight: "none" }}
           className="h-36 w-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow"
+          data-testid={testId}
+        />
+      );
+    }
+    if (size === "header" && brand.logo) {
+      return (
+        <img
+          src={brand.logo}
+          alt={brand.name}
+          style={{ maxHeight: "none" }}
+          className="h-12 w-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
           data-testid={testId}
         />
       );
@@ -69,9 +82,11 @@ export default function Header() {
       <div className="max-w-[600px] landscape:max-w-[900px] md:max-w-[800px] mx-auto">
         <div className="flex h-16 items-center justify-between px-3 border-b border-border relative gap-4">
           <div className="w-11" />
-          <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <BrandMark size="header" testId="brand-mark-header" />
-          </Link>
+          {!isHome && (
+            <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <BrandMark size="header" testId="brand-mark-header" />
+            </Link>
+          )}
           <nav className="hidden md:flex items-center space-x-1">
             {navigationItems.slice(1).map((item) => <NavLink key={item.href} {...item} />)}
             {isAdmin && <NavLink href="/admin-portal" icon={Settings} label="Admin" />}

@@ -56,7 +56,7 @@ const toolCategories: Array<{
 export default function Tools() {
   const { isPro, gateHref } = usePremiumAccess();
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-sm mx-auto px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-1">Professional Tools</h1>
