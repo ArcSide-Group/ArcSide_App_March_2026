@@ -73,7 +73,7 @@ export default function ResetPassword() {
           {done ? (
             <Card className="bg-card border-border">
               <CardContent className="p-6 text-center space-y-4">
-                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
                   <i className="fas fa-check text-green-500 text-xl"></i>
                 </div>
                 <h2 className="text-lg font-bold">Password Updated</h2>

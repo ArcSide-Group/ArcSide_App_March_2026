@@ -131,7 +131,8 @@ export default function Landing() {
           <img
             src={brand.logo}
             alt={brand.name}
-            className="h-48 w-auto mx-auto mb-6 object-contain rounded-xl logo-glow"
+            style={{ maxHeight: "none" }}
+            className="h-72 w-auto mx-auto mb-6 rounded-xl logo-glow"
             data-testid="img-brand-logo-hero"
           />
           <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">

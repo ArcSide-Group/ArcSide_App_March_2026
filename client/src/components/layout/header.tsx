@@ -28,8 +28,8 @@ export default function Header() {
         <img
           src={brand.logo}
           alt={brand.name}
-          style={{ maxHeight: "none" }}
-          className={`${size === "header" ? "h-[4.5rem]" : "h-24"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
+          style={{ maxHeight: "none", objectFit: "none" }}
+          className={`${size === "header" ? "h-20" : "h-36"} w-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
           data-testid={testId}
         />
       );
