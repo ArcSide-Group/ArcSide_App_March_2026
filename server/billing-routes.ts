@@ -61,7 +61,6 @@ export function registerBillingRoutes(app: Express) {
         recurringAmount: PRO_RECURRING_ZAR,
         billingDate: firstRecurringDate,
         itemName: "ArcSide Pro",
-        itemDescription: "ArcSide Pro monthly subscription (first month promo)",
       });
 
       res.json({ redirectUrl, mode: cfg.mode });

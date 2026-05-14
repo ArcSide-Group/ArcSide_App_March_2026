@@ -18,8 +18,10 @@ export const BRANDS: Record<BrandId, Brand> = {
     id: "arcside",
     name: "ArcSide",
     logo: arcsideLogo,
-    primaryColor: "#007bff",
-    secondaryColor: "#0a0a0a",
+    // Metallic Electric Blue (cyan highlight) over deep navy chrome — matches
+    // the ICON - Mobile App.png brand mark.
+    primaryColor: "#5DBBFF",
+    secondaryColor: "#0B1B3A",
     slogan: "Made by Tradesmen for Tradesmen",
     version: "v1.0.0",
     description:

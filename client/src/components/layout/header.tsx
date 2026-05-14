@@ -28,7 +28,7 @@ export default function Header() {
         <img
           src={brand.logo}
           alt={brand.name}
-          className={`${size === "header" ? "h-11" : "h-11"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
+          className={`${size === "header" ? "h-14" : "h-24"} w-auto object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity logo-glow`}
           data-testid={testId}
         />
       );
@@ -66,7 +66,7 @@ export default function Header() {
   return (
     <header className="header-professional">
       <div className="max-w-[600px] landscape:max-w-[900px] md:max-w-[800px] mx-auto">
-        <div className="flex h-16 items-center justify-between px-3 border-b border-border relative gap-4">
+        <div className="flex h-20 items-center justify-between px-3 border-b border-border relative gap-4">
           <div className="w-11" />
           <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <BrandMark size="header" testId="brand-mark-header" />

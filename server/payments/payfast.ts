@@ -25,7 +25,10 @@ export function getPayFastConfig(baseUrl: string): PayFastConfig {
   return {
     merchantId: process.env.PAYFAST_MERCHANT_ID || "10000100",
     merchantKey: process.env.PAYFAST_MERCHANT_KEY || "46f0cd694581a",
-    passphrase: process.env.PAYFAST_PASSPHRASE || "",
+    // PayFast sandbox default passphrase. PayFast's signature spec REQUIRES
+    // the passphrase to be appended even in sandbox; using an empty string
+    // produces a "400 Bad Request" on the process.payfast.co.za page.
+    passphrase: process.env.PAYFAST_PASSPHRASE || "payfast",
     mode: (process.env.PAYFAST_MODE as PayFastMode) || "sandbox",
     returnUrl: `${baseUrl}/subscription?pf=success`,
     cancelUrl: `${baseUrl}/subscription?pf=cancel`,
@@ -96,6 +99,10 @@ export interface CheckoutOpts {
   itemDescription?: string;
 }
 
+// PayFast subscription field order. `item_description` is intentionally
+// omitted: including it has been observed to break sandbox signature
+// validation (400 Bad Request on the process page) when the description
+// contains characters PayFast normalises differently from our pfEncode.
 const PARAM_ORDER: string[] = [
   "merchant_id",
   "merchant_key",
@@ -108,7 +115,6 @@ const PARAM_ORDER: string[] = [
   "m_payment_id",
   "amount",
   "item_name",
-  "item_description",
   "subscription_type",
   "billing_date",
   "recurring_amount",
@@ -149,7 +155,6 @@ export function buildSubscriptionCheckout(
     m_payment_id: opts.mPaymentId,
     amount: fmtAmount(opts.amount),
     item_name: opts.itemName,
-    item_description: opts.itemDescription ?? "",
     subscription_type: "1", // 1 = Subscription, 2 = Tokenization
     billing_date: fmtBillingDate(opts.billingDate),
     recurring_amount: fmtAmount(opts.recurringAmount),
