@@ -60,21 +60,21 @@ export default function Home() {
   const userName = (user as User)?.firstName || 'Professional';
 
   return (
-    <div className="min-h-screen bg-background pt-16 pb-20">
-      <div className="max-w-sm mx-auto min-h-screen bg-background border-x border-border">
+    <div className="min-h-screen bg-background pt-4 pb-20">
+      <div className="max-w-md mx-auto min-h-screen bg-background border-x border-border">
 
         {/* Hero Logo */}
         {brand.logo && (
           <>
             <div
-              className="flex items-center justify-center px-4 mt-10 mb-6"
+              className="flex items-center justify-center px-4 mt-[5%] mb-6"
               data-testid="hero-brand-logo"
             >
               <img
                 src={brand.logo}
                 alt={brand.name}
                 style={{ maxHeight: "none" }}
-                className="h-32 w-auto rounded-xl logo-glow"
+                className="h-24 md:h-32 w-auto rounded-xl logo-glow"
               />
             </div>
             <div className="border-t border-border/40 mb-6" />

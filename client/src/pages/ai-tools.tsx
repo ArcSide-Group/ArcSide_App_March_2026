@@ -60,8 +60,8 @@ const aiTools = [
 export default function AITools() {
   const { isPro, gateHref } = usePremiumAccess();
   return (
-    <div className="min-h-screen bg-background pt-16 pb-20">
-      <div className="max-w-sm mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background pt-4 pb-20">
+      <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6 text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"

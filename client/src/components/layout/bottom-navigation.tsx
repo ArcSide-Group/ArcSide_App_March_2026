@@ -22,7 +22,7 @@ export default function BottomNavigation() {
   };
 
   return (
-    <div className="bottom-nav max-w-[600px] landscape:max-w-[900px] md:max-w-[800px] mx-auto" style={{ backgroundColor: '#0a0a0a' }}>
+    <div className="bottom-nav max-w-md mx-auto" style={{ backgroundColor: '#0a0a0a' }}>
       {showPoweredBy && (
         <div
           className="text-center text-[9px] tracking-[0.18em] uppercase text-slate-500/80 pt-1.5 pb-0.5 select-none"

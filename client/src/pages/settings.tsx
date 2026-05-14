@@ -72,8 +72,8 @@ export default function Settings() {
   const isArcside = brand.id === "arcside";
 
   return (
-    <div className="min-h-screen bg-background pt-16 pb-20">
-      <div className="max-w-sm mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background pt-4 pb-20">
+      <div className="max-w-md mx-auto px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-2">{t("settings.title")}</h1>
           <p className="text-muted-foreground">

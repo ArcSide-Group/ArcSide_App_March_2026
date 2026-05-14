@@ -42,7 +42,7 @@ export default function Header() {
           src={brand.logo}
           alt={brand.name}
           style={{ maxHeight: "none" }}
-          className="h-12 w-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+          className="h-10 w-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
           data-testid={testId}
         />
       );
@@ -79,7 +79,7 @@ export default function Header() {
 
   return (
     <header className="header-professional">
-      <div className="max-w-[600px] landscape:max-w-[900px] md:max-w-[800px] mx-auto">
+      <div className="max-w-md mx-auto">
         <div className="flex h-16 items-center justify-between px-3 border-b border-border relative gap-4">
           <div className="w-11" />
           {!isHome && (
@@ -87,12 +87,8 @@ export default function Header() {
               <BrandMark size="header" testId="brand-mark-header" />
             </Link>
           )}
-          <nav className="hidden md:flex items-center space-x-1">
-            {navigationItems.slice(1).map((item) => <NavLink key={item.href} {...item} />)}
-            {isAdmin && <NavLink href="/admin-portal" icon={Settings} label="Admin" />}
-          </nav>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden"><Button variant="ghost" size="icon" className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors h-11 w-11" data-testid="button-mobile-menu"><Menu className="h-6 w-6" /><span className="sr-only">Toggle menu</span></Button></SheetTrigger>
+            <SheetTrigger asChild><Button variant="ghost" size="icon" className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors h-11 w-11" data-testid="button-mobile-menu"><Menu className="h-6 w-6" /><span className="sr-only">Toggle menu</span></Button></SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-[#0a0a0a] dark:bg-[#111111] border-l border-[#2a2a2a]">
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center justify-center gap-3 px-4 pb-4 border-b border-border"><BrandMark size="menu" testId="brand-mark-menu" /></div>
