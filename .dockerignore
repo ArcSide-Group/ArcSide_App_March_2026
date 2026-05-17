@@ -1,0 +1,38 @@
+# Version control
+.git
+.gitignore
+
+# Development build outputs (rebuilt inside Docker)
+dist/
+node_modules/
+
+# Local environment files — secrets must come from Cloud Run / Secret Manager
+.env
+.env.*
+*.local
+
+# Replit-specific files
+.replit
+replit.nix
+.config/
+.cache/
+.local/
+
+# Android / Capacitor native projects (not needed for the web server)
+android/
+ios/
+capacitor.config.ts
+
+# Test artefacts and editors
+coverage/
+*.test.ts
+*.spec.ts
+.vscode/
+.idea/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Attached canvas / design assets
+attached_assets/

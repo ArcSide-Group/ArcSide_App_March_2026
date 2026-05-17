@@ -5,17 +5,20 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT } = process.env;
-
-if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD) {
-  throw new Error(
-    "Database credentials not found. Did you forget to provision a database?",
-  );
+function buildConnectionString(): string {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+  const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT } = process.env;
+  if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD) {
+    throw new Error(
+      "Database credentials not found. Set DATABASE_URL or PGHOST/PGDATABASE/PGUSER/PGPASSWORD.",
+    );
+  }
+  return `postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT || 5432}/${PGDATABASE}?sslmode=require`;
 }
 
-const databaseUrl = `postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT || 5432}/${PGDATABASE}?sslmode=require`;
-
-export const pool = new Pool({ connectionString: databaseUrl });
+export const pool = new Pool({ connectionString: buildConnectionString() });
 export const db = drizzle({ client: pool, schema });
 
 const SEED_EMAILS = ["info@arcside.co.za", "caitywills16@gmail.com"];

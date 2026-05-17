@@ -22,14 +22,23 @@ export interface PayFastConfig {
 }
 
 export function getPayFastConfig(baseUrl: string): PayFastConfig {
+  const mode = (process.env.PAYFAST_MODE as PayFastMode) || "sandbox";
+
+  // In live mode all three credentials must be explicitly provided via env vars.
+  // The sandbox fallbacks below are intentionally NOT used in live mode.
+  if (mode === "live") {
+    if (!process.env.PAYFAST_MERCHANT_ID || !process.env.PAYFAST_MERCHANT_KEY || !process.env.PAYFAST_PASSPHRASE) {
+      throw new Error(
+        "PAYFAST_MERCHANT_ID, PAYFAST_MERCHANT_KEY and PAYFAST_PASSPHRASE are required when PAYFAST_MODE=live",
+      );
+    }
+  }
+
   return {
     merchantId: process.env.PAYFAST_MERCHANT_ID || "10000100",
     merchantKey: process.env.PAYFAST_MERCHANT_KEY || "46f0cd694581a",
-    // PayFast sandbox default passphrase. PayFast's signature spec REQUIRES
-    // the passphrase to be appended even in sandbox; using an empty string
-    // produces a "400 Bad Request" on the process.payfast.co.za page.
     passphrase: process.env.PAYFAST_PASSPHRASE || "payfast",
-    mode: (process.env.PAYFAST_MODE as PayFastMode) || "sandbox",
+    mode,
     returnUrl: `${baseUrl}/subscription?pf=success`,
     cancelUrl: `${baseUrl}/subscription?pf=cancel`,
     notifyUrl: `${baseUrl}/api/billing/webhooks/payfast`,
